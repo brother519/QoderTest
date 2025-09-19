@@ -11,17 +11,62 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.app-header h1 {
+.header-controls {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title-section {
+  text-align: left;
+}
+
+.title-section h1 {
   margin: 0 0 0.5rem 0;
   color: #333;
   font-size: 2.5rem;
   font-weight: 700;
 }
 
-.app-header p {
+.title-section p {
   margin: 0;
   color: #666;
   font-size: 1.1rem;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 0.5rem;
+  background: #f8f9fa;
+  padding: 0.25rem;
+  border-radius: 25px;
+  border: 1px solid #e9ecef;
+}
+
+.toggle-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  background: transparent;
+  color: #666;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.toggle-btn:hover {
+  background: #e9ecef;
+}
+
+.toggle-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .app-nav {
@@ -78,8 +123,27 @@
     padding: 1rem;
   }
   
-  .app-header h1 {
+  .header-controls {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .title-section {
+    text-align: center;
+  }
+  
+  .title-section h1 {
     font-size: 2rem;
+  }
+  
+  .view-toggle {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .toggle-btn {
+    flex: 1;
+    text-align: center;
   }
   
   .app-nav {
