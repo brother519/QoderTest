@@ -107,3 +107,69 @@ export interface SearchResult {
   filters: SearchFilters;
   sortBy: string;
 }
+
+// 任务优先级枚举
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+// 任务状态枚举
+export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+
+// 任务数据模型
+export interface Task {
+  /** 任务唯一标识符，使用 UUID 格式 */
+  id: string;
+  /** 任务标题，长度限制为 1-100 字符 */
+  title: string;
+  /** 任务详细描述，支持富文本格式 */
+  description: string;
+  /** 任务负责人，可以是用户名或用户ID */
+  assignee: string;
+  /** 任务优先级，影响任务排序和显示样式 */
+  priority: TaskPriority;
+  /** 任务当前状态，决定任务的生命周期流转 */
+  status: TaskStatus;
+  /** 任务截止日期，null 表示无截止日期 */
+  dueDate: Date | null;
+  /** 任务标签数组，用于分类和筛选 */
+  tags: string[];
+  /** 任务创建时间，自动设置为当前时间 */
+  createdAt: Date;
+  /** 任务最后更新时间，每次修改时自动更新 */
+  updatedAt: Date;
+}
+
+// 创建任务时的输入数据模型
+export interface CreateTaskInput {
+  /** 任务标题 */
+  title: string;
+  /** 任务描述 */
+  description: string;
+  /** 任务负责人 */
+  assignee: string;
+  /** 任务优先级，默认为 'medium' */
+  priority?: TaskPriority;
+  /** 任务截止日期，可选 */
+  dueDate?: Date | null;
+  /** 任务标签，默认为空数组 */
+  tags?: string[];
+}
+
+// 更新任务时的输入数据模型
+export interface UpdateTaskInput {
+  /** 要更新的任务ID */
+  id: string;
+  /** 任务标题 */
+  title?: string;
+  /** 任务描述 */
+  description?: string;
+  /** 任务负责人 */
+  assignee?: string;
+  /** 任务优先级 */
+  priority?: TaskPriority;
+  /** 任务状态 */
+  status?: TaskStatus;
+  /** 任务截止日期 */
+  dueDate?: Date | null;
+  /** 任务标签 */
+  tags?: string[];
+}
