@@ -1,42 +1,42 @@
 /**
- * AppContext.tsx - 应用全局状态管理Context实现
+ * AppContext.tsx - Application Global State Management Context Implementation
  * 
- * 文件功能概述：
- * - 提供应用级别的全局状态管理，采用React Context API + useReducer模式
- * - 统一管理任务状态、模态框状态、过滤器配置等全局共享数据
- * - 为整个应用提供统一的状态访问接口和状态变更方法
+ * File Overview:
+ * - Provides application-level global state management using React Context API + useReducer pattern
+ * - Unified management of task state, modal state, filter configuration and other globally shared data
+ * - Provides unified state access interface and state change methods for the entire application
  * 
- * 核心职责：
- * - 任务管理：任务的增删改查、状态变更、批量操作
- * - 模态框状态：确认对话框、提示框等UI状态管理
- * - 过滤器管理：全局搜索、筛选条件的状态维护
- * - 应用设置：主题、语言、用户偏好等配置管理
+ * Core Responsibilities:
+ * - Task Management: CRUD operations, status changes, batch operations for tasks
+ * - Modal State: Confirmation dialogs, alert boxes and other UI state management
+ * - Filter Management: Global search and filter condition state maintenance
+ * - App Settings: Theme, language, user preferences and other configuration management
  * 
- * 使用场景：
- * - 跨组件的状态共享和通信
- * - 复杂业务逻辑的集中管理
- * - 应用级别的数据持久化和同步
+ * Use Cases:
+ * - Cross-component state sharing and communication
+ * - Centralized management of complex business logic
+ * - Application-level data persistence and synchronization
  * 
- * 依赖说明：
- * - React Context API：用于跨组件状态共享
- * - useReducer Hook：实现复杂状态逻辑管理
- * - 现有Store系统：与Zustand store进行集成协作
+ * Dependencies:
+ * - React Context API: For cross-component state sharing
+ * - useReducer Hook: For complex state logic management
+ * - Existing Store System: Integration with Zustand store
  * 
- * 技术架构：
- * - 采用单一状态树设计，所有状态集中管理
- * - 使用不可变数据更新模式，确保状态一致性
- * - 支持异步操作和错误处理机制
- * - 提供TypeScript类型安全保障
+ * Technical Architecture:
+ * - Single state tree design with centralized state management
+ * - Immutable data update pattern ensuring state consistency
+ * - Support for async operations and error handling mechanisms
+ * - TypeScript type safety guarantees
  * 
- * @author 系统生成
+ * @author System Generated
  * @version 1.0.0
  * @since 2024-09-20
  * @lastModified 2024-09-20
  */
 
-/* ========== 依赖导入分组 ========== */
+/* ========== Dependency Import Groups ========== */
 
-// React核心功能导入 - 提供Context、Reducer、Effect等核心Hook
+// React core functionality imports - Provides Context, Reducer, Effect and other core Hooks
 import React, { 
   createContext, 
   useContext, 
@@ -46,7 +46,7 @@ import React, {
   useMemo 
 } from 'react';
 
-// TypeScript类型定义导入 - 应用内部类型系统
+// TypeScript type definition imports - Application internal type system
 import type { 
   Product, 
   CartItem, 
@@ -56,310 +56,310 @@ import type {
   Order 
 } from './types/index.js';
 
-/* ========== 应用状态类型定义 ========== */
+/* ========== Application State Type Definitions ========== */
 
 /**
- * 任务数据模型
- * 定义应用中任务实体的完整数据结构
+ * Task Data Model
+ * Defines the complete data structure for task entities in the application
  */
 export interface Task {
-  /** 任务唯一标识符 */
+  /** Unique task identifier */
   id: string;
-  /** 任务标题，简短描述任务内容 */
+  /** Task title, brief description of task content */
   title: string;
-  /** 任务详细描述，包含具体要求和说明 */
+  /** Detailed task description, including specific requirements and instructions */
   description: string;
-  /** 任务当前状态：待处理、进行中、已完成、已取消 */
+  /** Current task status: pending, in progress, completed, cancelled */
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
-  /** 任务优先级：高、中、低 */
+  /** Task priority: high, medium, low */
   priority: 'high' | 'medium' | 'low';
-  /** 任务创建时间戳 */
+  /** Task creation timestamp */
   createdAt: Date;
-  /** 任务最后更新时间戳 */
+  /** Task last update timestamp */
   updatedAt: Date;
-  /** 任务截止时间，可选字段 */
+  /** Task due date, optional field */
   dueDate?: Date;
-  /** 任务分类标签，用于筛选和归类 */
+  /** Task category tags for filtering and classification */
   tags: string[];
-  /** 任务负责人ID，关联用户数据 */
+  /** Task assignee ID, linked to user data */
   assigneeId?: string;
 }
 
 /**
- * 确认对话框配置
- * 定义确认对话框的显示内容和回调处理
+ * Confirmation Dialog Configuration
+ * Defines the display content and callback handling for confirmation dialogs
  */
 export interface ConfirmDialog {
-  /** 对话框是否显示 */
+  /** Whether the dialog is visible */
   isVisible: boolean;
-  /** 对话框标题文本 */
+  /** Dialog title text */
   title: string;
-  /** 对话框内容描述 */
+  /** Dialog content description */
   message: string;
-  /** 确认按钮文本，默认为"确认" */
+  /** Confirm button text, defaults to "Confirm" */
   confirmText?: string;
-  /** 取消按钮文本，默认为"取消" */
+  /** Cancel button text, defaults to "Cancel" */
   cancelText?: string;
-  /** 确认操作回调函数 */
+  /** Confirm action callback function */
   onConfirm?: () => void;
-  /** 取消操作回调函数 */
+  /** Cancel action callback function */
   onCancel?: () => void;
-  /** 对话框类型：信息、警告、错误、成功 */
+  /** Dialog type: info, warning, error, success */
   type?: 'info' | 'warning' | 'error' | 'success';
 }
 
 /**
- * 应用全局状态接口
- * 定义整个应用的状态树结构，包含所有共享状态
+ * Application Global State Interface
+ * Defines the entire application's state tree structure, containing all shared states
  */
 export interface AppState {
-  /* ===== 任务管理状态 ===== */
-  /** 任务列表数据，存储所有任务信息 */
+  /* ===== Task Management State ===== */
+  /** Task list data, stores all task information */
   tasks: Task[];
-  /** 当前选中的任务，用于详情显示和编辑 */
+  /** Currently selected task, used for detail display and editing */
   currentTask: Task | null;
-  /** 任务筛选条件，控制任务列表的显示 */
+  /** Task filter conditions, controls task list display */
   taskFilters: {
-    /** 按状态筛选 */
+    /** Filter by status */
     status?: Task['status'];
-    /** 按优先级筛选 */
+    /** Filter by priority */
     priority?: Task['priority'];
-    /** 按标签筛选 */
+    /** Filter by tags */
     tags?: string[];
-    /** 搜索关键词 */
+    /** Search keyword */
     searchKeyword?: string;
   };
 
-  /* ===== UI状态管理 ===== */
-  /** 确认对话框状态配置 */
+  /* ===== UI State Management ===== */
+  /** Confirmation dialog state configuration */
   confirmDialog: ConfirmDialog;
-  /** 全局加载状态，用于显示加载指示器 */
+  /** Global loading state, used to display loading indicators */
   loading: boolean;
-  /** 错误信息状态，用于全局错误提示 */
+  /** Error message state, used for global error prompts */
   error: string | null;
-  /** 成功提示信息 */
+  /** Success message */
   successMessage: string | null;
 
-  /* ===== 应用设置状态 ===== */
-  /** 应用主题配置：亮色、暗色、自动 */
+  /* ===== Application Settings State ===== */
+  /** Application theme configuration: light, dark, auto */
   theme: 'light' | 'dark' | 'auto';
-  /** 应用语言设置 */
+  /** Application language setting */
   language: 'zh-CN' | 'en-US';
-  /** 侧边栏是否展开 */
+  /** Whether sidebar is collapsed */
   sidebarCollapsed: boolean;
-  /** 用户偏好设置 */
+  /** User preference settings */
   userPreferences: {
-    /** 每页显示条数 */
+    /** Items per page */
     pageSize: number;
-    /** 默认排序方式 */
+    /** Default sort method */
     defaultSort: string;
-    /** 自动保存间隔（分钟） */
+    /** Auto-save interval (minutes) */
     autoSaveInterval: number;
   };
 }
 
 /**
- * 状态变更动作类型定义
- * 定义所有可能的状态变更操作，遵循Redux风格的Action模式
+ * State Change Action Type Definitions
+ * Defines all possible state change operations, following Redux-style Action pattern
  */
 export type AppAction =
-  /* ===== 任务相关动作 ===== */
-  /** 设置任务列表 */
+  /* ===== Task Related Actions ===== */
+  /** Set task list */
   | { type: 'SET_TASKS'; payload: Task[] }
-  /** 添加新任务 */
+  /** Add new task */
   | { type: 'ADD_TASK'; payload: Task }
-  /** 更新任务信息 */
+  /** Update task information */
   | { type: 'UPDATE_TASK'; payload: { id: string; updates: Partial<Task> } }
-  /** 删除任务 */
+  /** Delete task */
   | { type: 'DELETE_TASK'; payload: string }
-  /** 设置当前任务 */
+  /** Set current task */
   | { type: 'SET_CURRENT_TASK'; payload: Task | null }
-  /** 更新任务筛选条件 */
+  /** Update task filter conditions */
   | { type: 'UPDATE_TASK_FILTERS'; payload: Partial<AppState['taskFilters']> }
-  /** 清空任务筛选 */
+  /** Clear task filters */
   | { type: 'CLEAR_TASK_FILTERS' }
 
-  /* ===== UI状态动作 ===== */
-  /** 显示确认对话框 */
+  /* ===== UI State Actions ===== */
+  /** Show confirmation dialog */
   | { type: 'SHOW_CONFIRM_DIALOG'; payload: Omit<ConfirmDialog, 'isVisible'> }
-  /** 隐藏确认对话框 */
+  /** Hide confirmation dialog */
   | { type: 'HIDE_CONFIRM_DIALOG' }
-  /** 设置加载状态 */
+  /** Set loading state */
   | { type: 'SET_LOADING'; payload: boolean }
-  /** 设置错误信息 */
+  /** Set error message */
   | { type: 'SET_ERROR'; payload: string | null }
-  /** 设置成功信息 */
+  /** Set success message */
   | { type: 'SET_SUCCESS_MESSAGE'; payload: string | null }
-  /** 清除所有提示信息 */
+  /** Clear all messages */
   | { type: 'CLEAR_MESSAGES' }
 
-  /* ===== 应用设置动作 ===== */
-  /** 切换主题 */
+  /* ===== Application Settings Actions ===== */
+  /** Toggle theme */
   | { type: 'TOGGLE_THEME' }
-  /** 设置主题 */
+  /** Set theme */
   | { type: 'SET_THEME'; payload: AppState['theme'] }
-  /** 设置语言 */
+  /** Set language */
   | { type: 'SET_LANGUAGE'; payload: AppState['language'] }
-  /** 切换侧边栏状态 */
+  /** Toggle sidebar */
   | { type: 'TOGGLE_SIDEBAR' }
-  /** 更新用户偏好 */
+  /** Update user preferences */
   | { type: 'UPDATE_USER_PREFERENCES'; payload: Partial<AppState['userPreferences']> };
 
-/* ========== Context接口定义 ========== */
+/* ========== Context Interface Definition ========== */
 
 /**
- * AppContext接口定义
- * 定义Context提供给消费组件的完整API接口
+ * AppContext Interface Definition
+ * Defines the complete API interface provided by Context to consumer components
  */
 export interface AppContextType {
-  /* ===== 状态访问接口 ===== */
-  /** 当前应用状态 */
+  /* ===== State Access Interface ===== */
+  /** Current application state */
   state: AppState;
 
-  /* ===== 任务管理方法 ===== */
+  /* ===== Task Management Methods ===== */
   /** 
-   * 加载任务列表
-   * 从服务端或本地存储加载任务数据
+   * Load task list
+   * Load task data from server or local storage
    */
   loadTasks: () => Promise<void>;
   
   /** 
-   * 创建新任务
-   * @param taskData 新任务数据
-   * @returns 创建成功的任务对象
+   * Create new task
+   * @param taskData New task data
+   * @returns Successfully created task object
    */
   createTask: (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Task>;
   
   /** 
-   * 更新任务信息
-   * @param taskId 任务ID
-   * @param updates 更新的字段
+   * Update task information
+   * @param taskId Task ID
+   * @param updates Fields to update
    */
   updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
   
   /** 
-   * 删除任务
-   * @param taskId 任务ID
+   * Delete task
+   * @param taskId Task ID
    */
   deleteTask: (taskId: string) => Promise<void>;
   
   /** 
-   * 设置当前选中任务
-   * @param task 任务对象或null
+   * Set currently selected task
+   * @param task Task object or null
    */
   setCurrentTask: (task: Task | null) => void;
 
-  /* ===== UI交互方法 ===== */
+  /* ===== UI Interaction Methods ===== */
   /** 
-   * 显示确认对话框
-   * @param config 对话框配置
+   * Show confirmation dialog
+   * @param config Dialog configuration
    */
   showConfirmDialog: (config: Omit<ConfirmDialog, 'isVisible'>) => void;
   
-  /** 隐藏确认对话框 */
+  /** Hide confirmation dialog */
   hideConfirmDialog: () => void;
   
   /** 
-   * 显示成功提示
-   * @param message 提示信息
+   * Show success message
+   * @param message Success message
    */
   showSuccess: (message: string) => void;
   
   /** 
-   * 显示错误提示
-   * @param message 错误信息
+   * Show error message
+   * @param message Error message
    */
   showError: (message: string) => void;
   
-  /** 清除所有提示信息 */
+  /** Clear all messages */
   clearMessages: () => void;
 
-  /* ===== 应用设置方法 ===== */
-  /** 切换应用主题 */
+  /* ===== Application Settings Methods ===== */
+  /** Toggle application theme */
   toggleTheme: () => void;
   
   /** 
-   * 设置应用主题
-   * @param theme 主题名称
+   * Set application theme
+   * @param theme Theme name
    */
   setTheme: (theme: AppState['theme']) => void;
   
   /** 
-   * 设置应用语言
-   * @param language 语言代码
+   * Set application language
+   * @param language Language code
    */
   setLanguage: (language: AppState['language']) => void;
   
-  /** 切换侧边栏展开状态 */
+  /** Toggle sidebar expand state */
   toggleSidebar: () => void;
   
   /** 
-   * 更新用户偏好设置
-   * @param preferences 偏好配置
+   * Update user preference settings
+   * @param preferences Preference configuration
    */
   updateUserPreferences: (preferences: Partial<AppState['userPreferences']>) => void;
 }
 
-/* ========== 初始状态定义 ========== */
+/* ========== Initial State Definition ========== */
 
 /**
- * 应用初始状态配置
- * 定义应用启动时的默认状态值，确保所有状态都有合理的初始值
+ * Application Initial State Configuration
+ * Defines default state values when the application starts, ensuring all states have reasonable initial values
  */
 const initialState: AppState = {
-  /* ===== 任务管理初始状态 ===== */
-  tasks: [], // 初始任务列表为空，等待从存储或API加载
-  currentTask: null, // 初始未选中任何任务
+  /* ===== Task Management Initial State ===== */
+  tasks: [], // Initial task list is empty, waiting to load from storage or API
+  currentTask: null, // Initially no task is selected
   taskFilters: {
-    // 初始筛选条件为空，显示所有任务
+    // Initial filter conditions are empty, showing all tasks
     status: undefined,
     priority: undefined,
     tags: [],
     searchKeyword: ''
   },
 
-  /* ===== UI状态初始值 ===== */
+  /* ===== UI State Initial Values ===== */
   confirmDialog: {
-    isVisible: false, // 对话框初始隐藏
+    isVisible: false, // Dialog initially hidden
     title: '',
     message: '',
-    confirmText: '确认',
-    cancelText: '取消',
+    confirmText: 'Confirm',
+    cancelText: 'Cancel',
     type: 'info'
   },
-  loading: false, // 应用初始不处于加载状态
-  error: null, // 初始无错误信息
-  successMessage: null, // 初始无成功提示
+  loading: false, // Application initially not in loading state
+  error: null, // Initially no error messages
+  successMessage: null, // Initially no success messages
 
-  /* ===== 应用设置初始值 ===== */
-  theme: 'light', // 默认使用亮色主题
-  language: 'zh-CN', // 默认使用中文
-  sidebarCollapsed: false, // 侧边栏初始展开
+  /* ===== Application Settings Initial Values ===== */
+  theme: 'light', // Default to light theme
+  language: 'zh-CN', // Default to Chinese
+  sidebarCollapsed: false, // Sidebar initially expanded
   userPreferences: {
-    pageSize: 20, // 默认每页显示20条记录
-    defaultSort: 'createdAt_desc', // 默认按创建时间倒序
-    autoSaveInterval: 5 // 默认5分钟自动保存间隔
+    pageSize: 20, // Default 20 items per page
+    defaultSort: 'createdAt_desc', // Default sort by creation time desc
+    autoSaveInterval: 5 // Default 5-minute auto-save interval
   }
 };
 
-/* ========== Reducer函数实现 ========== */
+/* ========== Reducer Function Implementation ========== */
 
 /**
- * 应用状态Reducer函数
- * 根据不同的Action类型执行相应的状态变更逻辑
- * 严格遵循不可变数据更新原则，确保状态变更的可预测性
+ * Application State Reducer Function
+ * Executes corresponding state change logic based on different Action types
+ * Strictly follows immutable data update principles to ensure predictable state changes
  * 
- * @param state 当前状态
- * @param action 状态变更动作
- * @returns 新的状态对象
+ * @param state Current state
+ * @param action State change action
+ * @returns New state object
  */
 function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
-    /* ===== 任务管理相关的状态变更 ===== */
+    /* ===== Task Management Related State Changes ===== */
     
     case 'SET_TASKS': {
-      // 设置任务列表，通常用于初始化或重新加载任务数据
-      // 确保任务按创建时间排序，保持列表的一致性
+      // Set task list, usually used for initialization or reloading task data
+      // Ensure tasks are sorted by creation time to maintain list consistency
       const sortedTasks = [...action.payload].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
@@ -370,8 +370,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
     }
     
     case 'ADD_TASK': {
-      // 添加新任务到列表开头，保持最新任务在顶部
-      // 使用展开运算符确保不直接修改原数组
+      // Add new task to the beginning of list, keeping newest tasks at top
+      // Use spread operator to ensure original array is not directly modified
       return {
         ...state,
         tasks: [action.payload, ...state.tasks]
@@ -379,8 +379,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
     }
     
     case 'UPDATE_TASK': {
-      // 更新指定任务的信息，保持其他任务不变
-      // 同时更新updatedAt时间戳，记录最后修改时间
+      // Update specified task information, keeping other tasks unchanged
+      // Also update updatedAt timestamp to record last modification time
       const { id, updates } = action.payload;
       return {
         ...state,
@@ -389,11 +389,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
             ? { 
                 ...task, 
                 ...updates, 
-                updatedAt: new Date() // 自动更新修改时间
+                updatedAt: new Date() // Automatically update modification time
               }
             : task
         ),
-        // 如果更新的是当前选中的任务，同步更新currentTask
+        // If updating the currently selected task, sync update currentTask
         currentTask: state.currentTask?.id === id 
           ? { ...state.currentTask, ...updates, updatedAt: new Date() }
           : state.currentTask
@@ -555,10 +555,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
       };
     }
 
-    /* ===== 默认情况处理 ===== */
+    /* ===== Default Case Handling ===== */
     default: {
-      // 对于未知的action类型，返回当前状态不变
-      // 在开发模式下可以添加警告日志
+      // For unknown action types, return current state unchanged
+      // Can add warning logs in development mode
       if (process.env.NODE_ENV === 'development') {
         console.warn('Unknown action type:', (action as any).type);
       }
@@ -567,13 +567,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
   }
 }
 
-/* ========== Context创建和管理 ========== */
+/* ========== Context Creation and Management ========== */
 
 /**
- * 应用全局Context实例
- * 使用React.createContext创建全局状态共享的Context对象
- * 初始值设为undefined，在Provider中提供实际值
- * 这样设计可以在useContext时检测到未在Provider内使用的情况
+ * Application Global Context Instance
+ * Creates global state sharing Context object using React.createContext
+ * Initial value set to undefined, actual value provided in Provider
+ * This design allows detection of usage outside Provider in useContext
  */
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
