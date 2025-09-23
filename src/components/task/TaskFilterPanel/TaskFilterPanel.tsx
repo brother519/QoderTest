@@ -17,8 +17,8 @@ import {
   ExpandLess as ExpandLessIcon,
   Clear as ClearIcon,
 } from '@mui/icons-material';
-import { useAppContext } from '../../contexts/AppContext';
-import { debounce } from '../../utils';
+import { useAppContext } from '../../../contexts/AppContext';
+import { debounce } from '../../../utils';
 
 export const TaskFilterPanel: React.FC = () => {
   const { state, dispatch } = useAppContext();
