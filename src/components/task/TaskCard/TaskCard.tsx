@@ -148,7 +148,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
   const isOverdue = task.dueDate && task.dueDate < new Date() && task.status !== 'DONE';
 
   return (
-    {/* 任务卡片主容器 - 支持逾期状态样式和悬停效果 */}
+    // 任务卡片主容器 - 支持逾期状态样式和悬停效果
     <Card 
       sx={{ 
         mb: 2,
