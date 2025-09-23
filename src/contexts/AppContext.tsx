@@ -1,3 +1,45 @@
+/**
+ * 应用全局状态管理上下文
+ * 
+ * 该文件定义了任务管理系统的核心状态管理逻辑，包括任务数据、筛选条件、
+ * 模态框状态等全局状态的管理。采用React Context + useReducer模式，
+ * 提供了统一的状态管理和操作接口。
+ * 
+ * 主要功能特性：
+ * - 任务CRUD操作：创建、查询、更新、删除任务
+ * - 筛选状态管理：管理多维度的任务筛选条件
+ * - 模态框状态管理：创建、详情、确认模态框的状态管理
+ * - 异步操作封装：将业务逻辑封装为容易使用的异步方法
+ * - 错误处理：统一的错误处理和用户反馈机制
+ * 
+ * 状态结构：
+ * - tasks: 任务数据数组
+ * - filter: 当前筛选条件
+ * - selectedTask: 当前选中的任务
+ * - 模态框状态: 各种模态框的显示/隐藏状态
+ * 
+ * @fileoverview 应用全局状态管理上下文
+ * @author 任务管理系统开发团队
+ * @version 1.0.0
+ * @created 2025-01-20
+ * @lastModified 2025-01-20
+ * 
+ * @example
+ * ```tsx
+ * // 在应用根组件中使用
+ * function App() {
+ *   return (
+ *     <AppProvider>
+ *       <TaskManagementPage />
+ *     </AppProvider>
+ *   );
+ * }
+ * 
+ * // 在子组件中使用
+ * const { state, createTask, updateTask } = useAppContext();
+ * ```
+ */
+
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { AppState, AppAction, Task, TaskFilter } from '../types';
 import { taskService } from '../services/taskService';

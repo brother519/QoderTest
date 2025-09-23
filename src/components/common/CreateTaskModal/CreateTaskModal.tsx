@@ -1,3 +1,45 @@
+/**
+ * 任务创建和编辑模态框组件
+ * 
+ * 该组件是任务管理系统的核心操作组件，支持任务的创建和编辑功能。
+ * 组件采用表单驱动的设计，提供丰富的表单控件和数据验证机制。
+ * 
+ * 主要功能特性：
+ * - 双模式操作：支持创建新任务和编辑现有任务
+ * - 全面的表单字段：标题、描述、负责人、优先级、状态、截止日期、标签
+ * - 智能日期选择器：支持中文本地化和日期格式化
+ * - 动态标签管理：支持添加、删除和去重处理
+ * - 负责人自动补全：基于历史数据的智能推荐
+ * - 实时表单验证：即时错误提示和数据校验
+ * 
+ * 数据验证规则：
+ * - 任务标题：必填，不能为空
+ * - 任务描述：必填，不能为空
+ * - 负责人：必填，不能为空
+ * - 标签去重：防止重复添加相同标签
+ * 
+ * @fileoverview 任务创建和编辑模态框组件
+ * @author 任务管理系统开发团队
+ * @version 1.0.0
+ * @created 2025-01-20
+ * @lastModified 2025-01-20
+ * 
+ * @example
+ * ```tsx
+ * // 创建新任务
+ * const handleCreateNew = () => {
+ *   dispatch({ type: 'SET_SELECTED_TASK', payload: null });
+ *   dispatch({ type: 'TOGGLE_CREATE_MODAL', payload: true });
+ * };
+ * 
+ * // 编辑现有任务
+ * const handleEditTask = (task: Task) => {
+ *   dispatch({ type: 'SET_SELECTED_TASK', payload: task });
+ *   dispatch({ type: 'TOGGLE_CREATE_MODAL', payload: true });
+ * };
+ * ```
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -50,7 +92,7 @@ export const CreateTaskModal: React.FC = () => {
   const [errors, setErrors] = useState<Partial<TaskFormData>>({});
 
   const isEditMode = Boolean(selectedTask);
-  // 获取现有的负责人列表12345
+  // 获取现有的负责人列表
   const existingAssignees = Array.from(new Set(tasks.map(task => task.assignee)));
 
   useEffect(() => {
