@@ -1,3 +1,41 @@
+/**
+ * 任务详情查看模态框组件
+ * 
+ * 该组件提供一个综合的任务信息展示界面，允许用户查看任务的所有详细信息，
+ * 并提供快速编辑和删除功能。组件采用响应式设计，支持不同屏幕尺寸的适配。
+ * 
+ * 主要功能特性：
+ * - 完整的任务信息展示（标题、描述、状态、优先级等）
+ * - 智能状态标签显示（优先级、状态、逾期提醒）
+ * - 日期时间格式化展示和逾期检测
+ * - 标签管理和展示
+ * - 快速编辑和删除操作
+ * - 安全删除确认机制
+ * 
+ * 交互设计：
+ * - 点击编辑按钮直接跳转到编辑模式
+ * - 删除操作需要用户确认以防止误操作
+ * - 自动关闭模态框并清理状态
+ * 
+ * @fileoverview 任务详情查看模态框组件
+ * @author 任务管理系统开发团队
+ * @version 1.0.0
+ * @created 2025-01-20
+ * @lastModified 2025-01-20
+ * 
+ * @example
+ * ```tsx
+ * // 在TaskList组件中触发详情查看
+ * const handleViewTask = (task: Task) => {
+ *   dispatch({ type: 'SET_SELECTED_TASK', payload: task });
+ *   dispatch({ type: 'TOGGLE_DETAIL_MODAL', payload: true });
+ * };
+ * 
+ * // 在App组件中引入
+ * <TaskDetailModal />
+ * ```
+ */
+
 import React from 'react';
 import {
   Dialog,
