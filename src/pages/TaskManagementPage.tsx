@@ -56,19 +56,19 @@ import {
 import { Add as AddIcon } from '@mui/icons-material';
 
 // 任务筛选面板组件 - 提供任务搜索和过滤功能
-import { TaskFilterPanel } from '../components/TaskFilterPanel/TaskFilterPanel';
+import { TaskFilterPanel } from '../components/task/TaskFilterPanel/TaskFilterPanel';
 
 // 任务列表组件 - 展示过滤后的任务列表
-import { TaskList } from '../components/TaskList/TaskList';
+import { TaskList } from '../components/task/TaskList/TaskList';
 
 // 任务创建/编辑模态框 - 处理任务的创建和编辑操作
-import { CreateTaskModal } from '../components/CreateTaskModal/CreateTaskModal';
+import { CreateTaskModal } from '../components/common/CreateTaskModal/CreateTaskModal';
 
 // 任务详情模态框 - 展示任务的详细信息
-import { TaskDetailModal } from '../components/TaskDetailModal/TaskDetailModal';
+import { TaskDetailModal } from '../components/common/TaskDetailModal/TaskDetailModal';
 
 // 确认操作模态框 - 处理需要用户确认的危险操作
-import { ConfirmModal } from '../components/ConfirmModal/ConfirmModal';
+import { ConfirmModal } from '../components/common/ConfirmModal/ConfirmModal';
 
 // 应用程序上下文钩子 - 提供全局状态管理和操作方法
 import { useAppContext } from '../contexts/AppContext';

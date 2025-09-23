@@ -1,8 +1,8 @@
 import React from 'react';
 import { Box, Typography, Grid } from '@mui/material';
 import { TaskCard } from '../TaskCard/TaskCard';
-import { useAppContext } from '../../contexts/AppContext';
-import { filterTasks } from '../../utils';
+import { useAppContext } from '../../../contexts/AppContext';
+import { filterTasks } from '../../../utils';
 
 export const TaskList: React.FC = () => {
   const { state } = useAppContext();

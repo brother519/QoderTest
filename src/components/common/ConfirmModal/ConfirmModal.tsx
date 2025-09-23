@@ -7,7 +7,7 @@ import {
   DialogActions,
   Button,
 } from '@mui/material';
-import { useAppContext } from '../../contexts/AppContext';
+import { useAppContext } from '../../../contexts/AppContext';
 
 export const ConfirmModal: React.FC = () => {
   const { state, dispatch } = useAppContext();

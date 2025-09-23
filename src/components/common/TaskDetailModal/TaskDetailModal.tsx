@@ -15,8 +15,8 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
-import { useAppContext } from '../../contexts/AppContext';
-import { formatDateTime, getPriorityColor, getStatusColor } from '../../utils';
+import { useAppContext } from '../../../contexts/AppContext';
+import { formatDateTime, getPriorityColor, getStatusColor } from '../../../utils';
 
 export const TaskDetailModal: React.FC = () => {
   const { state, dispatch, showConfirmDialog, deleteTask } = useAppContext();

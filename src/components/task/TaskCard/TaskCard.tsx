@@ -42,13 +42,13 @@ import {
 } from '@mui/icons-material';
 
 // 本地模块 - 类型定义
-import { Task } from '../../types';
+import { Task } from '../../../types';
 
 // 本地模块 - 工具函数
-import { formatDate, getPriorityColor, getStatusColor } from '../../utils';
+import { formatDate, getPriorityColor, getStatusColor } from '../../../utils';
 
 // 本地模块 - 应用上下文
-import { useAppContext } from '../../contexts/AppContext';
+import { useAppContext } from '../../../contexts/AppContext';
 
 /**
  * 任务卡片组件的Props接口
