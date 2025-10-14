@@ -1,8 +1,26 @@
+/**
+ * @fileoverview 评论列表组件
+ * @description 展示商品评论列表，支持筛选、排序、分页和点赞功能
+ * @module components/CommentList
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useCommentStore } from '../../store/commentStore.js';
 import { StarIcon, ThumbsUpIcon, ImageIcon, FilterIcon } from 'lucide-react';
 
+/**
+ * 评论列表组件
+ * @component
+ * @description 显示商品的用户评价列表，包括评分统计、筛选器和分页
+ * 
+ * @param {Object} props - 组件属性
+ * @param {string} props.productId - 商品ID
+ * @param {string} [props.className=''] - 额外的CSS类名
+ * 
+ * @returns {JSX.Element} 评论列表组件
+ */
 const CommentList = ({ productId, className = '' }) => {
+  // 从评论 Store 获取状态和方法
   const {
     comments,
     currentPage,
@@ -18,24 +36,45 @@ const CommentList = ({ productId, className = '' }) => {
     formatTime
   } = useCommentStore();
 
+  /** @type {[boolean, Function]} 筛选器显示状态 */
   const [showFilters, setShowFilters] = useState(false);
+  
+  // 获取评论统计摘要
   const summary = getCommentSummary();
 
+  /**
+   * 组件挂载时加载评论
+   * @description 当productId变化时重新加载评论数据
+   */
   useEffect(() => {
     if (productId) {
       loadComments(productId, 1, filterOptions);
     }
   }, [productId, loadComments]);
 
+  /**
+   * 处理筛选条件变化
+   * @param {string} key - 筛选条件键名
+   * @param {*} value - 筛选条件值
+   */
   const handleFilterChange = (key, value) => {
     setFilter(key, value);
     loadComments(productId, 1, { ...filterOptions, [key]: value });
   };
 
+  /**
+   * 处理分页操作
+   * @param {number} page - 目标页码
+   */
   const handlePageChange = (page) => {
     loadComments(productId, page, filterOptions);
   };
 
+  /**
+   * 渲染评分星星
+   * @param {number} rating - 评分值
+   * @returns {JSX.Element[]} 星星图标数组
+   */
   const renderStars = (rating) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -50,6 +89,7 @@ const CommentList = ({ productId, className = '' }) => {
     return stars;
   };
 
+  // 加载状态显示
   if (loading) {
     return (
       <div className="flex items-center justify-center h-32">

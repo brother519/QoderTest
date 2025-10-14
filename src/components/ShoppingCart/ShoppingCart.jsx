@@ -1,8 +1,25 @@
+/**
+ * @fileoverview 购物车组件
+ * @description 侧边栏式购物车组件，支持商品数量调整、删除和结算功能
+ * @module components/ShoppingCart
+ */
+
 import React from 'react';
 import { useCartStore } from '../../store/cartStore.js';
 import { ShoppingCartIcon, XMarkIcon, PlusIcon, MinusIcon } from 'lucide-react';
 
+/**
+ * 购物车组件
+ * @component
+ * @description 显示购物车内容，支持展开/折叠、商品管理和结算
+ * 
+ * @param {Object} props - 组件属性
+ * @param {string} [props.className=''] - 额外的CSS类名
+ * 
+ * @returns {JSX.Element} 购物车组件
+ */
 const ShoppingCart = ({ className = '' }) => {
+  // 从购物车 Store 获取状态和方法
   const {
     items,
     isVisible,
@@ -17,11 +34,20 @@ const ShoppingCart = ({ className = '' }) => {
     calculateTotals
   } = useCartStore();
 
-  // 组件挂载时计算总计
+  /**
+   * 组件挂载时计算总计
+   * @description 确保购物车打开时显示最新的总价和总数
+   */
   React.useEffect(() => {
     calculateTotals();
   }, [calculateTotals]);
 
+  /**
+   * 处理商品数量变化
+   * @param {Object} item - 购物车项
+   * @param {number} newQuantity - 新数量
+   * @description 如果数量<=0则删除商品，否则更新数量
+   */
   const handleQuantityChange = (item, newQuantity) => {
     if (newQuantity <= 0) {
       removeFromCart(item.productId, item.selectedVariant);
@@ -30,6 +56,11 @@ const ShoppingCart = ({ className = '' }) => {
     }
   };
 
+  /**
+   * 格式化价格显示
+   * @param {number} price - 价格数值
+   * @returns {string} 格式化后的价格字符串
+   */
   const formatPrice = (price) => {
     return new Intl.NumberFormat('zh-CN', {
       style: 'currency',
@@ -37,10 +68,20 @@ const ShoppingCart = ({ className = '' }) => {
     }).format(price);
   };
 
+  /**
+   * 获取商品实际价格
+   * @param {Object} item - 购物车项
+   * @returns {number} 价格（优先使用规格价格）
+   */
   const getItemPrice = (item) => {
     return item.selectedVariant?.price || item.product.price;
   };
 
+  /**
+   * 获取商品显示名称
+   * @param {Object} item - 购物车项
+   * @returns {string} 商品名称（包含规格信息）
+   */
   const getItemDisplayName = (item) => {
     const baseName = item.product.name;
     if (item.selectedVariant) {
@@ -49,6 +90,7 @@ const ShoppingCart = ({ className = '' }) => {
     return baseName;
   };
 
+  // 购物车折叠时，显示浮动按钮
   if (!isVisible) {
     return (
       <button

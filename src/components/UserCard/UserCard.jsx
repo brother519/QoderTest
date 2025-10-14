@@ -1,11 +1,30 @@
+/**
+ * @fileoverview 用户信息卡片组件
+ * @description 显示用户信息、统计数据和快捷操作菜单的卡片组件
+ * @module components/UserCard
+ */
+
 import React from 'react';
 import { useUserStore } from '../../store/userStore.js';
 import { UserIcon, SettingsIcon, LogOutIcon, ShoppingBagIcon } from 'lucide-react';
 
+/**
+ * 用户信息卡片组件
+ * @component
+ * @description 展示用户头像、基本信息、消费统计和快捷操作菜单
+ * 
+ * @param {Object} props - 组件属性
+ * @param {string} [props.className=''] - 额外的CSS类名
+ * 
+ * @returns {JSX.Element} 用户卡片组件
+ */
 const UserCard = ({ className = '' }) => {
+  // 从用户 Store 获取状态和方法
   const { user, isLoggedIn, quickActions, logout, getUserStats } = useUserStore();
+  // 获取用户统计信息
   const stats = getUserStats();
 
+  // 未登录状态显示
   if (!isLoggedIn || !user) {
     return (
       <div className={`bg-white rounded-lg shadow-lg p-6 ${className}`}>

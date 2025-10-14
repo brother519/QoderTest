@@ -1,4 +1,16 @@
-// Mock商品数据
+/**
+ * @fileoverview 模拟数据源
+ * @description 提供用于开发和测试的模拟数据，包括商品、评论、用户、地址和支付方式
+ * @module data/mockData
+ */
+
+/**
+ * 模拟商品数据
+ * @type {Array<Object>}
+ * @description 包含5个模拟商品，涵盖手机数码、电脑办公、运动户外、家用电器、数码配件等分类
+ * @example
+ * const product = mockProducts[0]; // 获取第一个商品
+ */
 export const mockProducts = [
   {
     id: 'prod-001',
@@ -91,7 +103,20 @@ export const mockProducts = [
   }
 ];
 
-// Mock评论数据
+/**
+ * 模拟评论数据
+ * @type {Array<Object>}
+ * @description 包含3条模拟评论，分别针对不同商品
+ * @property {string} id - 评论ID
+ * @property {string} userId - 用户ID
+ * @property {string} productId - 关联的商品ID
+ * @property {number} rating - 评分 (1-5)
+ * @property {string} content - 评论内容
+ * @property {string[]} images - 评论图片URL数组
+ * @property {Date} createdAt - 评论时间
+ * @property {number} likesCount - 点赞数
+ * @property {Object} userInfo - 用户信息
+ */
 export const mockComments = [
   {
     id: 'comment-001',
@@ -137,7 +162,18 @@ export const mockComments = [
   }
 ];
 
-// Mock用户数据
+/**
+ * 模拟用户数据
+ * @type {Object}
+ * @description 模拟已登录用户的基本信息
+ * @property {string} id - 用户ID
+ * @property {string} username - 用户名
+ * @property {string} email - 邮箱
+ * @property {string} avatar - 头像URL
+ * @property {string} memberLevel - 会员等级
+ * @property {string} profile - 个人简介
+ * @property {boolean} isLoggedIn - 登录状态
+ */
 export const mockUser = {
   id: 'user-001',
   username: '张三',
@@ -148,7 +184,20 @@ export const mockUser = {
   isLoggedIn: true
 };
 
-// Mock地址数据
+/**
+ * 模拟地址数据
+ * @type {Array<Object>}
+ * @description 包含2个模拟收货地址，分别位于北京和上海
+ * @property {string} id - 地址ID
+ * @property {string} recipientName - 收件人姓名
+ * @property {string} phoneNumber - 联系电话
+ * @property {string} province - 省份
+ * @property {string} city - 城市
+ * @property {string} district - 区/县
+ * @property {string} detailAddress - 详细地址
+ * @property {string} postalCode - 邮编
+ * @property {boolean} isDefault - 是否为默认地址
+ */
 export const mockAddresses = [
   {
     id: 'addr-001',
@@ -174,7 +223,16 @@ export const mockAddresses = [
   }
 ];
 
-// Mock支付方式数据
+/**
+ * 模拟支付方式数据
+ * @type {Array<Object>}
+ * @description 包含4种支付方式：支付宝、微信支付、信用卡、银行转账
+ * @property {string} id - 支付方式ID
+ * @property {string} name - 支付方式名称
+ * @property {string} type - 支付类型
+ * @property {string} icon - 图标emoji
+ * @property {boolean} isAvailable - 是否可用
+ */
 export const mockPaymentMethods = [
   {
     id: 'pay-001',
