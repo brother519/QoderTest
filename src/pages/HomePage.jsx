@@ -1,3 +1,9 @@
+/**
+ * @fileoverview 首页组件
+ * @description 商品售卖系统的主页面，展示商品列表、商品详情、评论和用户信息
+ * @module pages/HomePage
+ */
+
 import React, { useEffect } from 'react';
 import { useProductStore } from '../store/productStore.js';
 import { useUserStore } from '../store/userStore.js';
@@ -7,15 +13,39 @@ import UserCard from '../components/UserCard/index.js';
 import ShoppingCart from '../components/ShoppingCart/index.js';
 import { SearchIcon, FilterIcon } from 'lucide-react';
 
+/**
+ * 首页组件
+ * @component
+ * @description 系统主页面，包含导航栏、搜索、商品展示、评论列表和用户信息
+ * 
+ * 布局结构：
+ * - 头部：导航栏和搜索栏
+ * - 左侧栏：用户信息卡片
+ * - 主内容区：商品详情、评论列表、其他商品
+ * - 浮动组件：购物车
+ * 
+ * @returns {JSX.Element} 首页组件
+ */
 const HomePage = () => {
+  // 从 Store 获取商品相关状态和方法
   const { products, loadProducts, searchProducts } = useProductStore();
+  // 从 Store 获取用户相关方法
   const { autoLogin } = useUserStore();
 
+  /**
+   * 组件挂载时初始化
+   * @description 加载商品数据和尝试自动登录
+   */
   useEffect(() => {
     loadProducts();
     autoLogin();
   }, [loadProducts, autoLogin]);
 
+  /**
+   * 处理搜索操作
+   * @param {string} keyword - 搜索关键词
+   * @description 根据关键词搜索商品
+   */
   const handleSearch = (keyword) => {
     if (keyword.trim()) {
       searchProducts(keyword);

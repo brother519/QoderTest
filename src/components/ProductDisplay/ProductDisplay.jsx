@@ -1,24 +1,57 @@
+/**
+ * @fileoverview 商品展示组件
+ * @description 用于展示商品详情的React组件，包括图片轮播、规格选择、数量调整和加入购物车功能
+ * @module components/ProductDisplay
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useCartStore } from '../../store/cartStore.js';
 import { useProductStore } from '../../store/productStore.js';
 import { StarIcon, ShoppingCartIcon, HeartIcon, ShareIcon } from 'lucide-react';
 
+/**
+ * 商品展示组件
+ * @component
+ * @description 显示商品详细信息，包括图片、价格、描述、规格选择和购买操作
+ * 
+ * @param {Object} props - 组件属性
+ * @param {string} props.productId - 商品ID，用于查询商品信息
+ * @param {string} [props.className=''] - 额外的CSS类名
+ * 
+ * @returns {JSX.Element} 商品展示组件
+ * 
+ * @example
+ * <ProductDisplay productId="product-001" className="my-4" />
+ */
 const ProductDisplay = ({ productId, className = '' }) => {
+  /** @type {[Object|null, Function]} 当前选中的商品规格 */
   const [selectedVariant, setSelectedVariant] = useState(null);
+  
+  /** @type {[number, Function]} 当前显示的主图片索引 */
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  
+  /** @type {[number, Function]} 购买数量 */
   const [quantity, setQuantity] = useState(1);
-
+  
+  // 从商品Store获取查询方法
   const { getProductById } = useProductStore();
+  // 从购物车Store获取相关方法
   const { addToCart, getCartItemCount } = useCartStore();
   
+  // 根据ID获取商品数据
   const product = getProductById(productId);
   
+  /**
+   * 初始化默认规格
+   * @description 当商品数据加载后，自动选中第一个规格
+   */
   useEffect(() => {
     if (product?.variants?.length > 0) {
       setSelectedVariant(product.variants[0]);
     }
   }, [product]);
 
+  // 商品未找到的情况
   if (!product) {
     return (
       <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
@@ -27,16 +60,28 @@ const ProductDisplay = ({ productId, className = '' }) => {
     );
   }
 
+  // 计算当前价格（优先使用规格价格）
   const currentPrice = selectedVariant?.price || product.price;
+  // 计算当前库存（优先使用规格库存）
   const currentStock = selectedVariant?.stock || product.stock;
+  // 获取当前商品在购物车中的数量
   const cartItemCount = getCartItemCount(product.id, selectedVariant);
 
+  /**
+   * 处理添加到购物车操作
+   * @description 将当前商品按指定数量和规格添加到购物车
+   */
   const handleAddToCart = () => {
     addToCart(product, quantity, selectedVariant);
-    // 可以添加成功提示
+    // TODO: 添加成功提示组件
     console.log('商品已添加到购物车');
   };
 
+  /**
+   * 格式化价格显示
+   * @param {number} price - 价格数值
+   * @returns {string} 格式化后的价格字符串
+   */
   const formatPrice = (price) => {
     return new Intl.NumberFormat('zh-CN', {
       style: 'currency',
@@ -44,10 +89,15 @@ const ProductDisplay = ({ productId, className = '' }) => {
     }).format(price);
   };
 
+  /**
+   * 渲染评分星星
+   * @param {number} rating - 评分值
+   * @returns {JSX.Element[]} 星星图标数组
+   */
   const renderStars = (rating) => {
     const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
+    const fullStars = Math.floor(rating); // 实心星数量
+    const hasHalfStar = rating % 1 >= 0.5; // 是否显示半星
 
     for (let i = 0; i < fullStars; i++) {
       stars.push(<StarIcon key={i} size={16} className="fill-yellow-400 text-yellow-400" />);
@@ -55,6 +105,7 @@ const ProductDisplay = ({ productId, className = '' }) => {
     if (hasHalfStar) {
       stars.push(<StarIcon key="half" size={16} className="fill-yellow-400 text-yellow-400 opacity-50" />);
     }
+    // 添加空心星
     for (let i = stars.length; i < 5; i++) {
       stars.push(<StarIcon key={i} size={16} className="text-gray-300" />);
     }
