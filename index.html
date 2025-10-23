@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>坦克大战</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui-overlay">
+            <div id="top-bar">
+                <div id="player1-info" class="player-info">
+                    <span>玩家1</span>
+                    <div id="p1-lives" class="lives"></div>
+                </div>
+                <div id="level-info">关卡 <span id="level-number">1</span></div>
+                <div id="enemy-count">
+                    <div id="enemy-icons"></div>
+                </div>
+                <div id="player2-info" class="player-info" style="display:none;">
+                    <span>玩家2</span>
+                    <div id="p2-lives" class="lives"></div>
+                </div>
+            </div>
+            <div id="score-info">
+                <div>得分: <span id="score">0</span></div>
+                <button id="btn-mute" class="mute-btn" title="音效开/关">🔊</button>
+            </div>
+        </div>
+        <div id="menu-screen" class="screen">
+            <h1>坦克大战</h1>
+            <div class="menu-options">
+                <button id="btn-single" class="menu-btn">单人模式</button>
+                <button id="btn-double" class="menu-btn">双人模式</button>
+            </div>
+            <div class="controls-info">
+                <p>玩家1: WASD移动, J射击</p>
+                <p>玩家2: 方向键移动, 1射击</p>
+                <p>P/ESC: 暂停游戏</p>
+            </div>
+        </div>
+        <div id="pause-screen" class="screen" style="display:none;">
+            <h2>游戏暂停</h2>
+            <div class="menu-options">
+                <button id="btn-resume" class="menu-btn">继续游戏</button>
+                <button id="btn-quit" class="menu-btn">退出游戏</button>
+            </div>
+        </div>
+        <div id="gameover-screen" class="screen" style="display:none;">
+            <h2 id="result-title">游戏结束</h2>
+            <div id="result-stats">
+                <p>最终得分: <span id="final-score">0</span></p>
+                <p>完成关卡: <span id="final-level">0</span></p>
+            </div>
+            <div class="menu-options">
+                <button id="btn-restart" class="menu-btn">重新开始</button>
+                <button id="btn-menu" class="menu-btn">返回菜单</button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
