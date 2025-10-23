@@ -1,0 +1,17 @@
+{
+  "name": "tank-battle",
+  "version": "1.0.0",
+  "description": "经典坦克大战网页游戏",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["game", "tank", "battle", "canvas"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
