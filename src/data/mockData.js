@@ -20,6 +20,7 @@ export const mockProducts = [
       { id: 'var-003', name: '512GB 钛蓝色', price: 11999, stock: 30, attributes: { storage: '512GB', color: '钛蓝色' } }
     ]
   },
+  
   {
     id: 'prod-002',
     name: 'MacBook Pro 14英寸',
