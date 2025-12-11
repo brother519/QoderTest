@@ -1,4 +1,4 @@
-import { Tank, EnemyType, Position } from '../types';
+import type { Tank, EnemyType, Position } from '../types';
 import { MAX_ENEMIES_ON_SCREEN, SPAWN_INVINCIBILITY_FRAMES } from '../constants';
 import { LevelManager } from '../levels/LevelManager';
 import { AISystem } from './AISystem';

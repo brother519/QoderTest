@@ -1,5 +1,7 @@
-import { GameMap, TileType } from '../types';
-import { LEVELS, LevelConfig } from './levelData';
+import type { GameMap } from '../types';
+import { TileType } from '../types';
+import type { LevelConfig } from './levelData';
+import { LEVELS } from './levelData';
 
 export class LevelManager {
   static getLevel(levelNumber: number): LevelConfig | null {

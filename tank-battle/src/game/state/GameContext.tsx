@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { GameState, GameAction } from '../types';
+import { createContext, useContext, useReducer } from 'react';
+import type { ReactNode } from 'react';
+import type { GameState, GameAction } from '../types';
 import { gameReducer, initialState } from './gameReducer';
 
 interface GameContextType {
   state: GameState;
-  dispatch: React.Dispatch<GameAction>;
+  dispatch: (action: GameAction) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);

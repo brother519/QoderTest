@@ -1,4 +1,4 @@
-import React from 'react';
+
 import './StartMenu.css';
 
 interface StartMenuProps {

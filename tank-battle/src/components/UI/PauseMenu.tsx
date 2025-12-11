@@ -1,11 +1,6 @@
-import React from 'react';
 import './PauseMenu.css';
 
-interface PauseMenuProps {
-  onResume: () => void;
-}
-
-export function PauseMenu({ onResume }: PauseMenuProps) {
+export function PauseMenu() {
   return (
     <div className="pause-overlay">
       <div className="pause-content">

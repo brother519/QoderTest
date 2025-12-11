@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import './LevelStart.css';
 
 interface LevelStartProps {

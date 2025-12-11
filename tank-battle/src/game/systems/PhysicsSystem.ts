@@ -1,5 +1,4 @@
-import { Tank, Direction, Position, GameMap } from '../types';
-import { TANK_SPEED, BULLET_SPEED } from '../constants';
+import type { Tank, Direction, Position, GameMap } from '../types';
 import { CollisionSystem } from './CollisionSystem';
 
 export class PhysicsSystem {

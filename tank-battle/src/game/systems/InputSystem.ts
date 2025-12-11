@@ -1,4 +1,4 @@
-import { InputState } from '../types';
+import type { InputState } from '../types';
 
 export class InputSystem {
   private static keyState: InputState = {

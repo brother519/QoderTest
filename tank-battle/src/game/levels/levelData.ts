@@ -1,10 +1,10 @@
-import { TileType, GameMap } from '../types';
+import type { GameMap } from '../types';
+import { TileType } from '../types';
 
 const E = TileType.EMPTY;
 const B = TileType.BRICK;
 const S = TileType.STEEL;
 const W = TileType.WATER;
-const G = TileType.GRASS;
 const X = TileType.BASE;
 
 export const LEVEL_1: GameMap = [

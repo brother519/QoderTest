@@ -1,4 +1,4 @@
-import { GameAction, Position, Direction } from '../types';
+import type { GameAction, Position, Direction } from '../types';
 
 export const startGame = (): GameAction => ({
   type: 'START_GAME',

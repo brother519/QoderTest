@@ -1,4 +1,5 @@
-import { GameState, GameAction, Tank, Bullet, TileType, Direction, Position } from '../types';
+import type { GameState, GameAction, Tank, Bullet, Direction, Position } from '../types';
+import { TileType } from '../types';
 import { LevelManager } from '../levels/LevelManager';
 import { PLAYER_START_LIVES, TANK_SPEED, SHOOT_COOLDOWN, BULLET_SPEED, CANVAS_WIDTH, CANVAS_HEIGHT } from '../constants';
 import { PhysicsSystem } from '../systems/PhysicsSystem';

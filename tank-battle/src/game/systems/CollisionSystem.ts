@@ -1,4 +1,5 @@
-import { Tank, Direction, GameMap, TileType, Position } from '../types';
+import type { Tank, GameMap, Position } from '../types';
+import { TileType } from '../types';
 import { TILE_SIZE, TANK_SIZE } from '../constants';
 
 export class CollisionSystem {

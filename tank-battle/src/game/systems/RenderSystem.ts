@@ -1,4 +1,5 @@
-import { GameState, Tank, Bullet, TileType } from '../types';
+import type { GameState, Tank, Bullet } from '../types';
+import { TileType } from '../types';
 import { TILE_SIZE, TANK_SIZE, BULLET_SIZE, COLORS } from '../constants';
 
 export class RenderSystem {

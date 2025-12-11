@@ -1,4 +1,4 @@
-import { Tank, Direction, EnemyType, Position } from '../types';
+import type { Tank, Direction, EnemyType, Position } from '../types';
 import { ENEMY_THINK_INTERVAL, TANK_SPEED } from '../constants';
 
 export class AISystem {

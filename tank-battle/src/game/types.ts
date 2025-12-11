@@ -1,11 +1,13 @@
-export enum TileType {
-  EMPTY = 0,
-  BRICK = 1,
-  STEEL = 2,
-  WATER = 3,
-  GRASS = 4,
-  BASE = 5,
-}
+export const TileType = {
+  EMPTY: 0,
+  BRICK: 1,
+  STEEL: 2,
+  WATER: 3,
+  GRASS: 4,
+  BASE: 5,
+} as const;
+
+export type TileType = typeof TileType[keyof typeof TileType];
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 

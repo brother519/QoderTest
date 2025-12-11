@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useGame } from '../game/state/GameContext';
 import { InputSystem } from '../game/systems/InputSystem';
 import { GameCanvas } from './GameCanvas';
@@ -10,7 +10,7 @@ import './Game.css';
 
 export function Game() {
   const { state, dispatch } = useGame();
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
   const lastPauseState = useRef(false);
 
   const gameLoop = useCallback(() => {
@@ -71,7 +71,7 @@ export function Game() {
           <LevelStart level={state.level + 1} onContinue={handleLevelContinue} />
         )}
         {state.status === 'paused' && (
-          <PauseMenu onResume={() => dispatch({ type: 'RESUME' })} />
+          <PauseMenu />
         )}
       </div>
     </div>

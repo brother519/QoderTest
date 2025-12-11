@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useGame } from '../game/state/GameContext';
 import { RenderSystem } from '../game/systems/RenderSystem';
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../game/constants';
