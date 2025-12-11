@@ -1,4 +1,4 @@
-import type { GameState, Tank, Bullet } from '../types';
+import type { GameState, Tank, Bullet, Explosion, PowerUp } from '../types';
 import { TileType } from '../types';
 import { TILE_SIZE, TANK_SIZE, BULLET_SIZE, COLORS } from '../constants';
 
@@ -7,13 +7,18 @@ export class RenderSystem {
     this.clearCanvas(ctx);
     this.drawMap(ctx, gameState.map);
     this.drawBase(ctx, gameState.base);
+    this.drawPowerUps(ctx, gameState.powerUps);
     this.drawBullets(ctx, gameState.bullets);
     if (gameState.player) {
       this.drawTank(ctx, gameState.player);
     }
+    if (gameState.player2) {
+      this.drawTank(ctx, gameState.player2);
+    }
     gameState.enemies.forEach(enemy => {
       this.drawTank(ctx, enemy);
     });
+    this.drawExplosions(ctx, gameState.explosions);
     this.drawGrassOverlay(ctx, gameState.map);
   }
 
@@ -85,6 +90,14 @@ export class RenderSystem {
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, TANK_SIZE, TANK_SIZE);
     
+    if (tank.hasShield) {
+      ctx.strokeStyle = COLORS.SHIELD;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x + TANK_SIZE / 2, y + TANK_SIZE / 2, TANK_SIZE / 2 + 4, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    
     ctx.fillStyle = '#000000';
     const barrelLength = 12;
     const barrelWidth = 4;
@@ -105,6 +118,51 @@ export class RenderSystem {
         ctx.fillRect(x + TANK_SIZE - 4, centerY - barrelWidth / 2, barrelLength + 4, barrelWidth);
         break;
     }
+  }
+
+  private static drawExplosions(ctx: CanvasRenderingContext2D, explosions: Explosion[]): void {
+    explosions.forEach(explosion => {
+      const progress = explosion.frame / explosion.maxFrames;
+      const radius = 16 * (1 + progress);
+      const colorIndex = Math.floor(progress * (COLORS.EXPLOSION.length - 1));
+      
+      ctx.fillStyle = COLORS.EXPLOSION[colorIndex];
+      ctx.globalAlpha = 1 - progress;
+      ctx.beginPath();
+      ctx.arc(explosion.position.x, explosion.position.y, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1.0;
+    });
+  }
+
+  private static drawPowerUps(ctx: CanvasRenderingContext2D, powerUps: PowerUp[]): void {
+    powerUps.forEach(powerUp => {
+      const { x, y } = powerUp.position;
+      const time = Date.now() / 200;
+      const pulse = Math.sin(time) * 0.2 + 1;
+      
+      let color: string;
+      switch (powerUp.type) {
+        case 'shield':
+          color = COLORS.POWERUP_SHIELD;
+          break;
+        case 'rapidFire':
+          color = COLORS.POWERUP_RAPIDFIRE;
+          break;
+        case 'extraLife':
+          color = COLORS.POWERUP_LIFE;
+          break;
+      }
+      
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.8;
+      ctx.fillRect(x - 12 * pulse, y - 12 * pulse, 24 * pulse, 24 * pulse);
+      ctx.globalAlpha = 1.0;
+      
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x - 12 * pulse, y - 12 * pulse, 24 * pulse, 24 * pulse);
+    });
   }
 
   private static drawBullets(ctx: CanvasRenderingContext2D, bullets: Bullet[]): void {
@@ -141,7 +199,7 @@ export class RenderSystem {
 
   private static getTankColor(tank: Tank): string {
     if (tank.type === 'player') {
-      return COLORS.PLAYER_TANK;
+      return tank.playerNumber === 2 ? COLORS.PLAYER2_TANK : COLORS.PLAYER_TANK;
     }
     
     switch (tank.enemyType) {

@@ -15,6 +15,22 @@ export type EnemyType = 'basic' | 'fast' | 'armored';
 
 export type GameStatus = 'menu' | 'playing' | 'paused' | 'levelTransition' | 'gameOver';
 
+export type PowerUpType = 'shield' | 'rapidFire' | 'extraLife';
+
+export interface Explosion {
+  id: string;
+  position: Position;
+  frame: number;
+  maxFrames: number;
+}
+
+export interface PowerUp {
+  id: string;
+  type: PowerUpType;
+  position: Position;
+  spawnTime: number;
+}
+
 export interface Position {
   x: number;
   y: number;
@@ -23,6 +39,7 @@ export interface Position {
 export interface Tank {
   id: string;
   type: 'player' | 'enemy';
+  playerNumber?: 1 | 2;
   position: Position;
   direction: Direction;
   speed: number;
@@ -32,6 +49,10 @@ export interface Tank {
   shootCooldown: number;
   health: number;
   enemyType?: EnemyType;
+  hasShield?: boolean;
+  shieldTimer?: number;
+  rapidFire?: boolean;
+  rapidFireTimer?: number;
 }
 
 export interface Bullet {
@@ -56,10 +77,15 @@ export interface GameState {
   level: number;
   map: GameMap;
   player: Tank | null;
+  player2: Tank | null;
   enemies: Tank[];
   bullets: Bullet[];
   base: Base;
   spawnQueue: number;
+  explosions: Explosion[];
+  powerUps: PowerUp[];
+  twoPlayerMode: boolean;
+  player2Lives: number;
 }
 
 export type GameAction =
@@ -77,8 +103,12 @@ export type GameAction =
   | { type: 'GAME_OVER' }
   | { type: 'PAUSE' }
   | { type: 'RESUME' }
-  | { type: 'START_GAME' }
-  | { type: 'GAME_TICK'; payload: { input: InputState } };
+  | { type: 'START_GAME'; payload?: { twoPlayer?: boolean } }
+  | { type: 'GAME_TICK'; payload: { input: InputState; input2?: InputState } }
+  | { type: 'ADD_EXPLOSION'; payload: Explosion }
+  | { type: 'UPDATE_EXPLOSIONS' }
+  | { type: 'SPAWN_POWERUP'; payload: PowerUp }
+  | { type: 'COLLECT_POWERUP'; payload: { powerUpId: string; playerId: string } };
 
 export interface InputState {
   up: boolean;
