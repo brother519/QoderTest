@@ -42,7 +42,8 @@
         </div>
         <canvas id="gameCanvas" width="624" height="624"></canvas>
         <div class="controls">
-            方向键移动 | 空格键发射 | R键重新开始
+            方向键移动 | 空格键发射 | R键重新开始<br>
+            道具: ★火力 ◆护盾 ●炸弹 ◎冻结 ▲生命 ■铲子
         </div>
     </div>
 
@@ -77,6 +78,154 @@
         let enemyCount = 0;
         let maxEnemies = 4;
         let totalEnemies = 10;
+        let powerUps = [];
+        let powerUpSpawnTimer = 0;
+
+        const POWERUP_STAR = 0;
+        const POWERUP_SHIELD = 1;
+        const POWERUP_BOMB = 2;
+        const POWERUP_CLOCK = 3;
+        const POWERUP_TANK = 4;
+        const POWERUP_SHOVEL = 5;
+
+        const POWERUP_COLORS = {
+            [POWERUP_STAR]: '#FFD700',
+            [POWERUP_SHIELD]: '#00BFFF',
+            [POWERUP_BOMB]: '#FF4500',
+            [POWERUP_CLOCK]: '#9370DB',
+            [POWERUP_TANK]: '#32CD32',
+            [POWERUP_SHOVEL]: '#CD853F'
+        };
+
+        const POWERUP_NAMES = {
+            [POWERUP_STAR]: '★',
+            [POWERUP_SHIELD]: '◆',
+            [POWERUP_BOMB]: '●',
+            [POWERUP_CLOCK]: '◎',
+            [POWERUP_TANK]: '▲',
+            [POWERUP_SHOVEL]: '■'
+        };
+
+        const LEVEL_MAPS = [
+            {
+                bricks: [
+                    { x: 2, y: 2, w: 2, h: 4 }, { x: 6, y: 2, w: 2, h: 4 },
+                    { x: 10, y: 2, w: 2, h: 4 }, { x: 14, y: 2, w: 2, h: 4 },
+                    { x: 18, y: 2, w: 2, h: 4 }, { x: 22, y: 2, w: 2, h: 4 },
+                    { x: 2, y: 8, w: 4, h: 2 }, { x: 10, y: 8, w: 6, h: 2 },
+                    { x: 20, y: 8, w: 4, h: 2 }, { x: 4, y: 12, w: 2, h: 4 },
+                    { x: 11, y: 11, w: 4, h: 4 }, { x: 20, y: 12, w: 2, h: 4 },
+                    { x: 2, y: 18, w: 3, h: 2 }, { x: 8, y: 18, w: 2, h: 4 },
+                    { x: 16, y: 18, w: 2, h: 4 }, { x: 21, y: 18, w: 3, h: 2 }
+                ],
+                steels: [
+                    { x: 12, y: 12, w: 2, h: 2 },
+                    { x: 0, y: 12, w: 1, h: 2 },
+                    { x: 25, y: 12, w: 1, h: 2 }
+                ],
+                waters: [],
+                grasses: []
+            },
+            {
+                bricks: [
+                    { x: 4, y: 2, w: 4, h: 2 }, { x: 18, y: 2, w: 4, h: 2 },
+                    { x: 2, y: 6, w: 2, h: 6 }, { x: 22, y: 6, w: 2, h: 6 },
+                    { x: 6, y: 8, w: 2, h: 4 }, { x: 18, y: 8, w: 2, h: 4 },
+                    { x: 10, y: 6, w: 6, h: 2 }, { x: 10, y: 14, w: 6, h: 2 },
+                    { x: 4, y: 16, w: 3, h: 3 }, { x: 19, y: 16, w: 3, h: 3 },
+                    { x: 8, y: 20, w: 2, h: 3 }, { x: 16, y: 20, w: 2, h: 3 }
+                ],
+                steels: [
+                    { x: 11, y: 10, w: 4, h: 2 },
+                    { x: 0, y: 0, w: 2, h: 2 },
+                    { x: 24, y: 0, w: 2, h: 2 }
+                ],
+                waters: [
+                    { x: 12, y: 18, w: 2, h: 4 }
+                ],
+                grasses: [
+                    { x: 10, y: 2, w: 6, h: 2 }
+                ]
+            },
+            {
+                bricks: [
+                    { x: 1, y: 1, w: 2, h: 8 }, { x: 23, y: 1, w: 2, h: 8 },
+                    { x: 5, y: 3, w: 2, h: 6 }, { x: 19, y: 3, w: 2, h: 6 },
+                    { x: 9, y: 1, w: 2, h: 4 }, { x: 15, y: 1, w: 2, h: 4 },
+                    { x: 11, y: 3, w: 4, h: 2 },
+                    { x: 3, y: 12, w: 4, h: 2 }, { x: 19, y: 12, w: 4, h: 2 },
+                    { x: 8, y: 10, w: 2, h: 6 }, { x: 16, y: 10, w: 2, h: 6 },
+                    { x: 11, y: 8, w: 4, h: 2 }, { x: 11, y: 14, w: 4, h: 2 },
+                    { x: 2, y: 18, w: 3, h: 4 }, { x: 21, y: 18, w: 3, h: 4 },
+                    { x: 7, y: 20, w: 2, h: 3 }, { x: 17, y: 20, w: 2, h: 3 }
+                ],
+                steels: [
+                    { x: 12, y: 11, w: 2, h: 2 },
+                    { x: 0, y: 18, w: 1, h: 4 },
+                    { x: 25, y: 18, w: 1, h: 4 }
+                ],
+                waters: [
+                    { x: 5, y: 11, w: 2, h: 4 },
+                    { x: 19, y: 11, w: 2, h: 4 }
+                ],
+                grasses: [
+                    { x: 11, y: 18, w: 4, h: 4 }
+                ]
+            },
+            {
+                bricks: [
+                    { x: 0, y: 4, w: 6, h: 2 }, { x: 20, y: 4, w: 6, h: 2 },
+                    { x: 8, y: 2, w: 2, h: 4 }, { x: 16, y: 2, w: 2, h: 4 },
+                    { x: 11, y: 0, w: 4, h: 3 },
+                    { x: 2, y: 8, w: 4, h: 4 }, { x: 20, y: 8, w: 4, h: 4 },
+                    { x: 8, y: 8, w: 2, h: 4 }, { x: 16, y: 8, w: 2, h: 4 },
+                    { x: 11, y: 6, w: 4, h: 2 },
+                    { x: 4, y: 14, w: 2, h: 4 }, { x: 20, y: 14, w: 2, h: 4 },
+                    { x: 8, y: 14, w: 4, h: 2 }, { x: 14, y: 14, w: 4, h: 2 },
+                    { x: 0, y: 18, w: 4, h: 2 }, { x: 22, y: 18, w: 4, h: 2 },
+                    { x: 6, y: 20, w: 3, h: 3 }, { x: 17, y: 20, w: 3, h: 3 }
+                ],
+                steels: [
+                    { x: 11, y: 10, w: 4, h: 4 },
+                    { x: 12, y: 6, w: 2, h: 1 }
+                ],
+                waters: [
+                    { x: 6, y: 8, w: 2, h: 4 },
+                    { x: 18, y: 8, w: 2, h: 4 }
+                ],
+                grasses: [
+                    { x: 10, y: 18, w: 6, h: 4 }
+                ]
+            },
+            {
+                bricks: [
+                    { x: 2, y: 2, w: 3, h: 3 }, { x: 21, y: 2, w: 3, h: 3 },
+                    { x: 10, y: 2, w: 6, h: 2 },
+                    { x: 6, y: 6, w: 2, h: 6 }, { x: 18, y: 6, w: 2, h: 6 },
+                    { x: 10, y: 6, w: 2, h: 2 }, { x: 14, y: 6, w: 2, h: 2 },
+                    { x: 11, y: 9, w: 4, h: 3 },
+                    { x: 2, y: 10, w: 2, h: 4 }, { x: 22, y: 10, w: 2, h: 4 },
+                    { x: 4, y: 14, w: 4, h: 2 }, { x: 18, y: 14, w: 4, h: 2 },
+                    { x: 10, y: 14, w: 2, h: 4 }, { x: 14, y: 14, w: 2, h: 4 },
+                    { x: 0, y: 18, w: 3, h: 2 }, { x: 23, y: 18, w: 3, h: 2 },
+                    { x: 6, y: 18, w: 2, h: 4 }, { x: 18, y: 18, w: 2, h: 4 }
+                ],
+                steels: [
+                    { x: 12, y: 10, w: 2, h: 2 },
+                    { x: 9, y: 4, w: 1, h: 2 },
+                    { x: 16, y: 4, w: 1, h: 2 },
+                    { x: 0, y: 6, w: 2, h: 2 },
+                    { x: 24, y: 6, w: 2, h: 2 }
+                ],
+                waters: [
+                    { x: 8, y: 10, w: 2, h: 4 },
+                    { x: 16, y: 10, w: 2, h: 4 }
+                ],
+                grasses: [
+                    { x: 9, y: 18, w: 8, h: 4 }
+                ]
+            }
+        ];
 
         const TILE_EMPTY = 0;
         const TILE_BRICK = 1;
@@ -94,26 +243,10 @@
                 }
             }
 
-            const patterns = [
-                { x: 2, y: 2, w: 2, h: 4 },
-                { x: 6, y: 2, w: 2, h: 4 },
-                { x: 10, y: 2, w: 2, h: 4 },
-                { x: 14, y: 2, w: 2, h: 4 },
-                { x: 18, y: 2, w: 2, h: 4 },
-                { x: 22, y: 2, w: 2, h: 4 },
-                { x: 2, y: 8, w: 4, h: 2 },
-                { x: 10, y: 8, w: 6, h: 2 },
-                { x: 20, y: 8, w: 4, h: 2 },
-                { x: 4, y: 12, w: 2, h: 4 },
-                { x: 11, y: 11, w: 4, h: 4 },
-                { x: 20, y: 12, w: 2, h: 4 },
-                { x: 2, y: 18, w: 3, h: 2 },
-                { x: 8, y: 18, w: 2, h: 4 },
-                { x: 16, y: 18, w: 2, h: 4 },
-                { x: 21, y: 18, w: 3, h: 2 },
-            ];
+            const levelIndex = (game.level - 1) % LEVEL_MAPS.length;
+            const levelData = LEVEL_MAPS[levelIndex];
 
-            patterns.forEach(p => {
+            levelData.bricks.forEach(p => {
                 for (let dy = 0; dy < p.h; dy++) {
                     for (let dx = 0; dx < p.w; dx++) {
                         if (p.y + dy < ROWS && p.x + dx < COLS) {
@@ -123,17 +256,31 @@
                 }
             });
 
-            const steelPatterns = [
-                { x: 12, y: 12, w: 2, h: 2 },
-                { x: 0, y: 12, w: 1, h: 2 },
-                { x: 25, y: 12, w: 1, h: 2 },
-            ];
-
-            steelPatterns.forEach(p => {
+            levelData.steels.forEach(p => {
                 for (let dy = 0; dy < p.h; dy++) {
                     for (let dx = 0; dx < p.w; dx++) {
                         if (p.y + dy < ROWS && p.x + dx < COLS) {
                             map[p.y + dy][p.x + dx] = TILE_STEEL;
+                        }
+                    }
+                }
+            });
+
+            levelData.waters.forEach(p => {
+                for (let dy = 0; dy < p.h; dy++) {
+                    for (let dx = 0; dx < p.w; dx++) {
+                        if (p.y + dy < ROWS && p.x + dx < COLS) {
+                            map[p.y + dy][p.x + dx] = TILE_WATER;
+                        }
+                    }
+                }
+            });
+
+            levelData.grasses.forEach(p => {
+                for (let dy = 0; dy < p.h; dy++) {
+                    for (let dx = 0; dx < p.w; dx++) {
+                        if (p.y + dy < ROWS && p.x + dx < COLS) {
+                            map[p.y + dy][p.x + dx] = TILE_GRASS;
                         }
                     }
                 }
@@ -167,6 +314,8 @@
                 this.cooldown = 0;
                 this.moveTimer = 0;
                 this.aiTimer = 0;
+                this.shieldTimer = 0;
+                this.bulletPower = 1;
             }
 
             draw() {
@@ -195,6 +344,16 @@
                 ctx.fillRect(this.size / 2 - 6, -this.size / 2, 6, this.size);
 
                 ctx.restore();
+
+                if (this.shieldTimer > 0 && this.isPlayer) {
+                    ctx.save();
+                    ctx.strokeStyle = this.shieldTimer % 10 < 5 ? '#00BFFF' : '#87CEEB';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.size / 2 + 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
             }
 
             move(dir) {
@@ -255,13 +414,15 @@
                 if (this.cooldown <= 0) {
                     const bulletX = this.x + this.size / 2 - 4 + this.direction.x * (this.size / 2);
                     const bulletY = this.y + this.size / 2 - 4 + this.direction.y * (this.size / 2);
-                    bullets.push(new Bullet(bulletX, bulletY, this.direction, this.isPlayer));
-                    this.cooldown = this.isPlayer ? 15 : 30;
+                    const power = this.isPlayer ? (this.bulletPower || 1) : 1;
+                    bullets.push(new Bullet(bulletX, bulletY, this.direction, this.isPlayer, power));
+                    this.cooldown = this.isPlayer ? Math.max(15 - power * 2, 8) : 30;
                 }
             }
 
             update() {
                 if (this.cooldown > 0) this.cooldown--;
+                if (this.shieldTimer > 0) this.shieldTimer--;
             }
 
             ai() {
@@ -280,22 +441,145 @@
             }
         }
 
+        class PowerUp {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.type = type;
+                this.size = TILE_SIZE * 1.5;
+                this.blinkTimer = 0;
+                this.visible = true;
+                this.duration = 600;
+            }
+
+            draw() {
+                this.blinkTimer++;
+                if (this.blinkTimer % 10 < 5) {
+                    this.visible = !this.visible;
+                }
+
+                if (this.visible) {
+                    ctx.fillStyle = POWERUP_COLORS[this.type];
+                    ctx.fillRect(this.x, this.y, this.size, this.size);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(POWERUP_NAMES[this.type], this.x + this.size / 2, this.y + this.size / 2);
+                }
+            }
+
+            update() {
+                this.duration--;
+                return this.duration > 0;
+            }
+
+            checkCollision(tank) {
+                return tank.x < this.x + this.size &&
+                       tank.x + tank.size > this.x &&
+                       tank.y < this.y + this.size &&
+                       tank.y + tank.size > this.y;
+            }
+        }
+
+        function spawnPowerUp() {
+            const types = [POWERUP_STAR, POWERUP_SHIELD, POWERUP_BOMB, POWERUP_CLOCK, POWERUP_TANK, POWERUP_SHOVEL];
+            const type = types[Math.floor(Math.random() * types.length)];
+            
+            let x, y;
+            let attempts = 0;
+            do {
+                x = Math.floor(Math.random() * (COLS - 2)) * TILE_SIZE;
+                y = Math.floor(Math.random() * (ROWS - 4) + 2) * TILE_SIZE;
+                attempts++;
+            } while (attempts < 50 && !isValidPowerUpPosition(x, y));
+            
+            if (attempts < 50) {
+                powerUps.push(new PowerUp(x, y, type));
+            }
+        }
+
+        function isValidPowerUpPosition(x, y) {
+            const tileX = Math.floor(x / TILE_SIZE);
+            const tileY = Math.floor(y / TILE_SIZE);
+            
+            for (let dy = 0; dy < 2; dy++) {
+                for (let dx = 0; dx < 2; dx++) {
+                    const checkY = tileY + dy;
+                    const checkX = tileX + dx;
+                    if (checkY >= 0 && checkY < ROWS && checkX >= 0 && checkX < COLS) {
+                        if (map[checkY][checkX] !== TILE_EMPTY && map[checkY][checkX] !== TILE_GRASS) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        function applyPowerUp(type) {
+            switch (type) {
+                case POWERUP_STAR:
+                    player.bulletPower = Math.min((player.bulletPower || 1) + 1, 3);
+                    player.speed = Math.min(player.speed + 0.5, 4);
+                    break;
+                case POWERUP_SHIELD:
+                    player.shieldTimer = 300;
+                    break;
+                case POWERUP_BOMB:
+                    game.score += enemies.length * 100;
+                    enemies = [];
+                    updateUI();
+                    break;
+                case POWERUP_CLOCK:
+                    game.freezeTimer = 300;
+                    break;
+                case POWERUP_TANK:
+                    game.lives++;
+                    updateUI();
+                    break;
+                case POWERUP_SHOVEL:
+                    game.shovelTimer = 600;
+                    reinforceBase(true);
+                    break;
+            }
+        }
+
+        function reinforceBase(steel) {
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    if (base.y + dy >= 0 && base.y + dy < ROWS && 
+                        base.x + dx >= 0 && base.x + dx < COLS) {
+                        if (dy === -1 || (dy === 0 && dx !== 0)) {
+                            map[base.y + dy][base.x + dx] = steel ? TILE_STEEL : TILE_BRICK;
+                        }
+                    }
+                }
+            }
+        }
+
         class Bullet {
-            constructor(x, y, direction, isPlayerBullet) {
+            constructor(x, y, direction, isPlayerBullet, power = 1) {
                 this.x = x;
                 this.y = y;
                 this.direction = direction;
                 this.isPlayerBullet = isPlayerBullet;
-                this.speed = 6;
+                this.speed = 6 + (power - 1);
                 this.size = 8;
                 this.active = true;
+                this.power = power;
             }
 
             draw() {
-                ctx.fillStyle = this.isPlayerBullet ? '#ff0' : '#f80';
+                ctx.fillStyle = this.isPlayerBullet ? (this.power >= 2 ? '#ff4' : '#ff0') : '#f80';
                 ctx.beginPath();
                 ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.size / 2, 0, Math.PI * 2);
                 ctx.fill();
+                if (this.power >= 3 && this.isPlayerBullet) {
+                    ctx.strokeStyle = '#f00';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
             }
 
             update() {
@@ -315,9 +599,14 @@
                     const tile = map[tileY][tileX];
                     if (tile === TILE_BRICK) {
                         map[tileY][tileX] = TILE_EMPTY;
-                        this.active = false;
+                        if (this.power < 2) {
+                            this.active = false;
+                        }
                         return;
                     } else if (tile === TILE_STEEL) {
+                        if (this.power >= 3 && this.isPlayerBullet) {
+                            map[tileY][tileX] = TILE_EMPTY;
+                        }
                         this.active = false;
                         return;
                     } else if (tile === TILE_BASE) {
@@ -335,20 +624,25 @@
                             enemies.splice(i, 1);
                             game.score += 100;
                             updateUI();
-                            this.active = false;
+                            if (this.power < 2) {
+                                this.active = false;
+                            }
                             return;
                         }
                     }
                 } else {
                     if (player && this.hitTank(player)) {
-                        game.lives--;
-                        updateUI();
-                        if (game.lives <= 0) {
-                            game.gameOver = true;
-                        } else {
-                            player.x = 8 * TILE_SIZE;
-                            player.y = 24 * TILE_SIZE;
-                            player.direction = DIRECTIONS.UP;
+                        if (player.shieldTimer <= 0) {
+                            game.lives--;
+                            updateUI();
+                            if (game.lives <= 0) {
+                                game.gameOver = true;
+                            } else {
+                                player.x = 8 * TILE_SIZE;
+                                player.y = 24 * TILE_SIZE;
+                                player.direction = DIRECTIONS.UP;
+                                player.shieldTimer = 120;
+                            }
                         }
                         this.active = false;
                     }
@@ -519,23 +813,32 @@
                 lives: 3,
                 level: 1,
                 gameOver: false,
-                paused: false
+                paused: false,
+                freezeTimer: 0,
+                shovelTimer: 0
             };
             base.destroyed = false;
             enemies = [];
             bullets = [];
+            powerUps = [];
+            powerUpSpawnTimer = 0;
             enemyCount = 0;
             totalEnemies = 10;
             initMap();
             player = new Tank(8 * TILE_SIZE, 24 * TILE_SIZE, DIRECTIONS.UP, true);
+            player.shieldTimer = 120;
             updateUI();
         }
 
         function nextLevel() {
             game.level++;
+            game.freezeTimer = 0;
+            game.shovelTimer = 0;
             base.destroyed = false;
             enemies = [];
             bullets = [];
+            powerUps = [];
+            powerUpSpawnTimer = 0;
             enemyCount = 0;
             totalEnemies = 10 + game.level * 2;
             maxEnemies = Math.min(4 + game.level, 8);
@@ -543,6 +846,7 @@
             player.x = 8 * TILE_SIZE;
             player.y = 24 * TILE_SIZE;
             player.direction = DIRECTIONS.UP;
+            player.shieldTimer = 120;
             updateUI();
         }
 
@@ -560,16 +864,54 @@
                     player.draw();
                 }
 
+                if (game.freezeTimer > 0) {
+                    game.freezeTimer--;
+                } else {
+                    enemies.forEach(enemy => {
+                        enemy.update();
+                        enemy.ai();
+                    });
+                }
+
                 enemies.forEach(enemy => {
-                    enemy.update();
-                    enemy.ai();
                     enemy.draw();
                 });
+
+                if (game.freezeTimer > 0) {
+                    ctx.fillStyle = 'rgba(0, 100, 200, 0.2)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+
+                if (game.shovelTimer > 0) {
+                    game.shovelTimer--;
+                    if (game.shovelTimer === 0) {
+                        reinforceBase(false);
+                    }
+                }
 
                 bullets = bullets.filter(b => b.active);
                 bullets.forEach(bullet => {
                     bullet.update();
                     if (bullet.active) bullet.draw();
+                });
+
+                powerUpSpawnTimer++;
+                if (powerUpSpawnTimer > 600 && powerUps.length < 2) {
+                    if (Math.random() < 0.02) {
+                        spawnPowerUp();
+                        powerUpSpawnTimer = 0;
+                    }
+                }
+
+                powerUps = powerUps.filter(p => p.update());
+                powerUps.forEach(p => {
+                    p.draw();
+                    if (player && p.checkCollision(player)) {
+                        applyPowerUp(p.type);
+                        game.score += 500;
+                        updateUI();
+                        p.duration = 0;
+                    }
                 });
 
                 enemySpawnTimer++;
@@ -596,7 +938,10 @@
         }
 
         initMap();
+        game.freezeTimer = 0;
+        game.shovelTimer = 0;
         player = new Tank(8 * TILE_SIZE, 24 * TILE_SIZE, DIRECTIONS.UP, true);
+        player.shieldTimer = 120;
         updateUI();
         gameLoop();
     </script>
