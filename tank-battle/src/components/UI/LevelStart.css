@@ -1,0 +1,34 @@
+.level-start-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.level-start-content {
+  text-align: center;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+}
+
+.level-start-content h1 {
+  font-size: 64px;
+  color: #ffa500;
+  animation: pulse 1s ease-in-out infinite;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}

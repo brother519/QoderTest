@@ -1,0 +1,75 @@
+.start-menu {
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Courier New', monospace;
+}
+
+.start-content {
+  text-align: center;
+  color: #fff;
+  padding: 40px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  border: 3px solid #ffa500;
+}
+
+.game-title {
+  font-size: 72px;
+  color: #ffa500;
+  margin-bottom: 40px;
+  text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.8);
+  animation: titleGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+  from {
+    text-shadow: 4px 4px 8px rgba(255, 165, 0, 0.5);
+  }
+  to {
+    text-shadow: 4px 4px 20px rgba(255, 165, 0, 1);
+  }
+}
+
+.instructions {
+  margin-bottom: 40px;
+}
+
+.instructions h2 {
+  font-size: 24px;
+  color: #4CAF50;
+  margin-bottom: 15px;
+}
+
+.instructions p {
+  font-size: 18px;
+  margin: 8px 0;
+  color: #ddd;
+}
+
+.start-button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 20px 40px;
+  text-align: center;
+  font-size: 24px;
+  font-family: 'Courier New', monospace;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.start-button:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.start-button:active {
+  transform: scale(0.98);
+}

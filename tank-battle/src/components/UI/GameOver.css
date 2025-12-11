@@ -1,0 +1,48 @@
+.game-over-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.game-over-content {
+  text-align: center;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+}
+
+.game-over-content h1 {
+  font-size: 48px;
+  color: #ff0000;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.game-over-content .final-score {
+  font-size: 24px;
+  margin-bottom: 30px;
+  color: #ffa500;
+}
+
+.game-over-content button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  font-size: 16px;
+  font-family: 'Courier New', monospace;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.game-over-content button:hover {
+  background-color: #45a049;
+}
