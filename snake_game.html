@@ -84,6 +84,44 @@
             transform: scale(0.95);
         }
 
+        /* 难度选择容器 */
+        .difficulty {
+            margin-bottom: 20px;
+        }
+
+        /* 难度选择标签 */
+        .difficulty label {
+            font-size: 1.1em;
+            color: #555;
+            margin-right: 10px;
+        }
+
+        /* 难度按钮 */
+        .difficulty-btn {
+            padding: 8px 20px;
+            font-size: 1em;
+            margin: 0 5px;
+            cursor: pointer;
+            background: #e0e0e0;
+            color: #333;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        /* 难度按钮悬停效果 */
+        .difficulty-btn:hover {
+            background: #d0d0d0;
+            transform: scale(1.05);
+        }
+
+        /* 选中的难度按钮 */
+        .difficulty-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
         /* 游戏说明文字样式 */
         .instructions {
             margin-top: 20px;
@@ -101,6 +139,14 @@
         <div class="score-board">
             <span>分数: <span id="score">0</span></span>
             <span style="margin-left: 30px;">最高分: <span id="highScore">0</span></span>
+        </div>
+        
+        <!-- 难度选择区域 -->
+        <div class="difficulty">
+            <label>选择难度:</label>
+            <button class="difficulty-btn active" data-speed="150">简单</button>
+            <button class="difficulty-btn" data-speed="100">中等</button>
+            <button class="difficulty-btn" data-speed="50">困难</button>
         </div>
         
         <!-- 游戏画布 -->
@@ -133,12 +179,17 @@
         const startBtn = document.getElementById('startBtn');
         const pauseBtn = document.getElementById('pauseBtn');
         const restartBtn = document.getElementById('restartBtn');
+        
+        // 获取难度按钮元素
+        const difficultyBtns = document.querySelectorAll('.difficulty-btn');
 
         // ==================== 游戏配置常量 ====================
         const gridSize = 20; // 每个格子的大小（像素）
         const tileCount = canvas.width / gridSize; // 画布上格子的数量（400/20=20）
 
         // ==================== 游戏状态变量 ====================
+        // 游戏速度（毫秒），数值越小速度越快
+        let gameSpeed = 150; // 默认简单难度
         // 蛇的身体，由多个坐标点组成的数组，第一个元素是蛇头
         let snake = [
             {x: 10, y: 10}
@@ -346,7 +397,7 @@
          * 开始游戏
          * 1. 如果游戏已在运行且未暂停，直接返回
          * 2. 如果是新游戏，初始化游戏状态
-         * 3. 启动游戏循环（每100毫秒执行一次）
+         * 3. 启动游戏循环（根据当前难度设置速度）
          */
         function startGame() {
             // 如果游戏已经在运行且未暂停，不重复启动
@@ -363,8 +414,8 @@
 
             gameRunning = true;
             gamePaused = false;
-            // 启动游戏循环，每100毫秒执行一次drawGame
-            gameLoop = setInterval(drawGame, 100);
+            // 启动游戏循环，使用当前难度的速度
+            gameLoop = setInterval(drawGame, gameSpeed);
         }
 
         /**
@@ -378,7 +429,7 @@
             if (gamePaused) {
                 // 当前是暂停状态，则继续游戏
                 gamePaused = false;
-                gameLoop = setInterval(drawGame, 100);
+                gameLoop = setInterval(drawGame, gameSpeed);
                 pauseBtn.textContent = '暂停';
             } else {
                 // 当前是运行状态，则暂停游戏
@@ -465,6 +516,30 @@
         startBtn.addEventListener('click', startGame); // 开始游戏按钮
         pauseBtn.addEventListener('click', pauseGame); // 暂停按钮
         restartBtn.addEventListener('click', restartGame); // 重新开始按钮
+
+        // ==================== 难度选择功能 ====================
+        /**
+         * 为每个难度按钮添加点击事件监听器
+         * 点击时切换难度并更新游戏速度
+         */
+        difficultyBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 如果游戏正在运行，不允许切换难度
+                if (gameRunning) {
+                    alert('请先暂停或重新开始游戏再切换难度！');
+                    return;
+                }
+                
+                // 移除所有按钮的active类
+                difficultyBtns.forEach(b => b.classList.remove('active'));
+                
+                // 为当前点击的按钮添加active类
+                this.classList.add('active');
+                
+                // 更新游戏速度（从data-speed属性获取）
+                gameSpeed = parseInt(this.getAttribute('data-speed'));
+            });
+        });
 
         // ==================== 初始化 ====================
         // 页面加载时调用restartGame，绘制初始画面
