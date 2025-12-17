@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
 import Bullet from '@/entities/Bullet';
 import Tank from '@/entities/Tank';
-import BrickWall from '@/terrain/BrickWall';
-import SteelWall from '@/terrain/SteelWall';
+import PlayerTank from '@/entities/PlayerTank';
+import EnemyTank from '@/entities/EnemyTank';
+import Base from '@/entities/Base';
 
 export default class CollisionManager {
   private scene: Phaser.Scene;
@@ -32,6 +33,57 @@ export default class CollisionManager {
       steelWalls,
       (bullet) => {
         bullet.destroy();
+      },
+      undefined,
+      this
+    );
+  }
+
+  setupBulletTankCollisions(
+    bullets: Phaser.GameObjects.Group,
+    playerTanks: Tank[],
+    enemyTanks: Tank[],
+    onPlayerHit: (tank: Tank) => void,
+    onEnemyHit: (tank: Tank) => void
+  ) {
+    enemyTanks.forEach(enemy => {
+      this.scene.physics.add.overlap(
+        bullets,
+        enemy,
+        (bullet, tank) => {
+          bullet.destroy();
+          onEnemyHit(tank as Tank);
+        },
+        undefined,
+        this
+      );
+    });
+
+    playerTanks.forEach(player => {
+      this.scene.physics.add.overlap(
+        bullets,
+        player,
+        (bullet, tank) => {
+          bullet.destroy();
+          onPlayerHit(tank as Tank);
+        },
+        undefined,
+        this
+      );
+    });
+  }
+
+  setupBulletBaseCollision(
+    bullets: Phaser.GameObjects.Group,
+    base: Base,
+    onBaseHit: () => void
+  ) {
+    this.scene.physics.add.overlap(
+      bullets,
+      base,
+      (bullet) => {
+        bullet.destroy();
+        onBaseHit();
       },
       undefined,
       this
