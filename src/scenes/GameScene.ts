@@ -7,6 +7,7 @@ import EnemyTank from '@/entities/EnemyTank';
 import InputManager from '@/managers/InputManager';
 import CollisionManager from '@/managers/CollisionManager';
 import GameStateManager from '@/managers/GameStateManager';
+import LevelManager from '@/managers/LevelManager';
 import SimpleAI from '@/ai/SimpleAI';
 import Bullet from '@/entities/Bullet';
 import HUD from '@/ui/HUD';
@@ -18,6 +19,7 @@ export default class GameScene extends Phaser.Scene {
   private inputManager!: InputManager;
   private collisionManager!: CollisionManager;
   private gameStateManager!: GameStateManager;
+  private levelManager!: LevelManager;
   private hud!: HUD;
   private base!: Base;
   private player1Tank?: PlayerTank;
@@ -41,6 +43,7 @@ export default class GameScene extends Phaser.Scene {
     this.inputManager = new InputManager(this);
     this.collisionManager = new CollisionManager(this);
     this.gameStateManager = new GameStateManager(this, this.gameMode);
+    this.levelManager = new LevelManager(this);
     this.hud = new HUD(this, this.gameMode);
     
     this.bullets = this.add.group({
@@ -89,30 +92,29 @@ export default class GameScene extends Phaser.Scene {
     if (this.gameStateManager.isGameOver()) {
       this.endGame(false);
     } else if (this.gameStateManager.isLevelComplete()) {
-      this.endGame(true);
+      this.nextLevel();
     }
   }
 
   private async loadLevel(levelId: number) {
-    try {
-      const response = await fetch(`/assets/maps/levels/level${levelId}.json`);
-      const levelData: LevelData = await response.json();
-      
-      this.currentLevel = levelData;
-      
-      this.terrainManager.loadLevel(levelData);
-      
-      this.base = new Base(this, levelData.basePosition.x, levelData.basePosition.y);
-      
-      this.spawnPlayers(levelData);
-      
-      this.prepareEnemySpawnQueue(levelData);
-      
-      this.hud.updateLevel(levelId);
-      
-    } catch (error) {
-      console.error('Failed to load level:', error);
+    const levelData = await this.levelManager.loadLevel(levelId);
+    
+    if (!levelData) {
+      console.error('Failed to load level');
+      return;
     }
+    
+    this.currentLevel = levelData;
+      
+    this.terrainManager.loadLevel(levelData);
+    
+    this.base = new Base(this, levelData.basePosition.x, levelData.basePosition.y);
+    
+    this.spawnPlayers(levelData);
+    
+    this.prepareEnemySpawnQueue(levelData);
+    
+    this.hud.updateLevel(levelId);
   }
 
   private spawnPlayers(levelData: LevelData) {
@@ -299,6 +301,45 @@ export default class GameScene extends Phaser.Scene {
       );
       this.player2Tank.setBulletsGroup(this.bullets);
     }
+  }
+
+  private async nextLevel() {
+    const nextLevelId = this.levelManager.getNextLevel();
+    
+    if (nextLevelId) {
+      this.add.text(
+        this.cameras.main.centerX,
+        this.cameras.main.centerY,
+        '关卡完成!',
+        {
+          fontSize: '48px',
+          color: '#00ff00',
+        }
+      ).setOrigin(0.5);
+
+      this.time.delayedCall(2000, async () => {
+        this.cleanupLevel();
+        await this.loadLevel(nextLevelId);
+        this.setupCollisions();
+      });
+    } else {
+      this.endGame(true);
+    }
+  }
+
+  private cleanupLevel() {
+    this.terrainManager.clearTerrain();
+    
+    if (this.base) this.base.destroy();
+    if (this.player1Tank) this.player1Tank.destroy();
+    if (this.player2Tank) this.player2Tank.destroy();
+    
+    this.enemyTanks.forEach(enemy => enemy.destroy());
+    this.enemyTanks = [];
+    
+    this.bullets.clear(true, true);
+    
+    this.enemySpawnQueue = [];
   }
 
   private endGame(victory: boolean) {
