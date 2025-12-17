@@ -8,6 +8,8 @@ npm-debug.log*
 dist/
 build/
 .cache/
+database/*.sqlite
+logs/
 
 .qoder/*
 !.qoder/rules/
