@@ -8,7 +8,6 @@ import {
   twoFactorValidateSchema,
 } from './auth.validators';
 import { createError } from '../../common/middleware/error-handler';
-import type { AuthenticatedRequest } from '../../common/types/express.d';
 
 export class AuthController {
   async register(req: Request, res: Response, next: NextFunction) {
@@ -99,7 +98,7 @@ export class AuthController {
     }
   }
 
-  async logoutAll(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  async logoutAll(req: Request, res: Response, next: NextFunction) {
     try {
       if (!req.user) {
         throw createError('Unauthorized', 401, 'UNAUTHORIZED');
@@ -112,7 +111,7 @@ export class AuthController {
     }
   }
 
-  async setup2FA(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  async setup2FA(req: Request, res: Response, next: NextFunction) {
     try {
       if (!req.user) {
         throw createError('Unauthorized', 401, 'UNAUTHORIZED');
@@ -125,7 +124,7 @@ export class AuthController {
     }
   }
 
-  async verify2FA(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  async verify2FA(req: Request, res: Response, next: NextFunction) {
     try {
       if (!req.user) {
         throw createError('Unauthorized', 401, 'UNAUTHORIZED');
@@ -143,7 +142,7 @@ export class AuthController {
     }
   }
 
-  async disable2FA(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  async disable2FA(req: Request, res: Response, next: NextFunction) {
     try {
       if (!req.user) {
         throw createError('Unauthorized', 401, 'UNAUTHORIZED');
@@ -161,7 +160,7 @@ export class AuthController {
     }
   }
 
-  async regenerateBackupCodes(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  async regenerateBackupCodes(req: Request, res: Response, next: NextFunction) {
     try {
       if (!req.user) {
         throw createError('Unauthorized', 401, 'UNAUTHORIZED');
@@ -179,7 +178,7 @@ export class AuthController {
     }
   }
 
-  async getProfile(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  async getProfile(req: Request, res: Response, next: NextFunction) {
     try {
       if (!req.user) {
         throw createError('Unauthorized', 401, 'UNAUTHORIZED');

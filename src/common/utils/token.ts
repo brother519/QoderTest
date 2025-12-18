@@ -1,12 +1,11 @@
-import jwt, { SignOptions } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { config } from '../../config';
 import { JwtPayload } from '../types/express.d';
 
 export function generateAccessToken(userId: string, email: string): string {
   const payload = { sub: userId, email };
-  const options: SignOptions = { expiresIn: config.jwt.accessExpiresIn as string };
-  return jwt.sign(payload, config.jwt.accessSecret, options);
+  return jwt.sign(payload, config.jwt.accessSecret, { expiresIn: 900 });
 }
 
 export function generateRefreshToken(): string {
@@ -27,8 +26,7 @@ export function verifyAccessToken(token: string): JwtPayload | null {
 
 export function generateTempToken(userId: string): string {
   const payload = { sub: userId, type: 'temp' };
-  const options: SignOptions = { expiresIn: '5m' };
-  return jwt.sign(payload, config.jwt.accessSecret, options);
+  return jwt.sign(payload, config.jwt.accessSecret, { expiresIn: 300 });
 }
 
 export function verifyTempToken(token: string): { sub: string; type: string } | null {

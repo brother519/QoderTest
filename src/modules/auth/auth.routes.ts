@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import passport from 'passport';
 import { authController } from './auth.controller';
 import { authenticate } from './auth.middleware';
@@ -16,7 +16,6 @@ import {
   getRefreshTokenExpiry,
 } from '../../common/utils/token';
 import { prisma } from '../../config/database';
-import type { AuthenticatedRequest } from '../../common/types/express.d';
 
 import './strategies/google.strategy';
 import './strategies/github.strategy';

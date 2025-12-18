@@ -7,13 +7,16 @@ export interface JwtPayload {
   exp: number;
 }
 
-export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-  };
+export interface AuthUser {
+  id: string;
+  email: string;
 }
 
-export interface TempAuthRequest extends Request {
-  tempUserId?: string;
+declare global {
+  namespace Express {
+    interface User {
+      id: string;
+      email: string;
+    }
+  }
 }

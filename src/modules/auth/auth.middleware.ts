@@ -1,10 +1,9 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../../common/utils/token';
 import { createError } from '../../common/middleware/error-handler';
-import type { AuthenticatedRequest } from '../../common/types/express.d';
 
 export function authenticate(
-  req: AuthenticatedRequest,
+  req: Request,
   _res: Response,
   next: NextFunction
 ): void {
@@ -30,7 +29,7 @@ export function authenticate(
 }
 
 export function optionalAuth(
-  req: AuthenticatedRequest,
+  req: Request,
   _res: Response,
   next: NextFunction
 ): void {
