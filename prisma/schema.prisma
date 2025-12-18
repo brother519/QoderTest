@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String?
+  name          String?
+  avatar        String?
+  emailVerified Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  oauthAccounts OAuthAccount[]
+  user2fa       User2FA?
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model OAuthAccount {
+  id                String    @id @default(cuid())
+  userId            String
+  provider          String
+  providerAccountId String
+  accessToken       String?
+  refreshToken      String?
+  tokenExpiresAt    DateTime?
+  scope             String?
+  createdAt         DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("oauth_accounts")
+}
+
+model User2FA {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  secret      String
+  isEnabled   Boolean   @default(false)
+  backupCodes String?
+  verifiedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_2fa")
+}
+
+model RefreshToken {
+  id         String   @id @default(cuid())
+  userId     String
+  token      String   @unique
+  familyId   String
+  expiresAt  DateTime
+  deviceInfo String?
+  ipAddress  String?
+  isRevoked  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
+}
