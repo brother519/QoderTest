@@ -1,0 +1,131 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #1e1e2e 0%, #0a0a1a 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #fff;
+}
+
+#game-container {
+    position: relative;
+    box-shadow: 0 0 30px rgba(0, 123, 255, 0.5);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#gameCanvas {
+    display: block;
+    background: #0a0a1a;
+    cursor: crosshair;
+}
+
+#hud {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    font-size: 14px;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+#score {
+    color: #ffd700;
+}
+
+#level {
+    color: #00ff88;
+}
+
+#lives {
+    color: #ff4444;
+}
+
+#combo {
+    position: absolute;
+    top: 40px;
+    right: 10px;
+    color: #ff8800;
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow: 2px 2px 6px rgba(255, 136, 0, 0.8);
+    animation: pulse 0.5s ease-in-out infinite;
+}
+
+#combo.hidden {
+    display: none;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.menu-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 26, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    pointer-events: all;
+}
+
+.menu-title {
+    font-size: 48px;
+    font-weight: bold;
+    color: #00ff88;
+    text-shadow: 0 0 20px rgba(0, 255, 136, 0.8);
+    margin-bottom: 40px;
+}
+
+.menu-option {
+    font-size: 24px;
+    margin: 10px 0;
+    padding: 10px 30px;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: #fff;
+}
+
+.menu-option:hover,
+.menu-option.selected {
+    color: #ffd700;
+    transform: scale(1.1);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+}
+
+.game-over-stats {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.game-over-stats div {
+    font-size: 20px;
+    margin: 10px 0;
+}
+
+.final-score {
+    font-size: 32px;
+    color: #ffd700;
+    font-weight: bold;
+}
