@@ -5,6 +5,11 @@ import { Bullet } from '../entities/Bullet.js';
 import { EnemyTypes } from '../entities/EnemyTypes.js';
 import { Pool } from '../utils/Pool.js';
 import { CollisionSystem } from '../systems/CollisionSystem.js';
+import { LevelManager } from '../levels/LevelManager.js';
+import { Level1 } from '../levels/Level1.js';
+import { Level2 } from '../levels/Level2.js';
+import { Level3 } from '../levels/Level3.js';
+import { HUD } from './HUD.js';
 
 export class GameScene {
   constructor(game) {
@@ -20,12 +25,19 @@ export class GameScene {
     this.enemies = [];
     
     this.collisionSystem = new CollisionSystem();
+    this.levelManager = new LevelManager();
+    this.hud = new HUD();
     
     this.score = 0;
-    this.enemySpawnTimer = 0;
-    this.enemySpawnInterval = 1500;
-    
     this.currentTime = 0;
+    
+    this.levels = [Level1, Level2, Level3];
+    this.currentLevelIndex = 0;
+    
+    this.spawnQueue = [];
+    this.gameOver = false;
+    this.levelTransition = false;
+    this.levelTransitionTimer = 0;
   }
 
   enter() {
@@ -39,10 +51,41 @@ export class GameScene {
     this.enemies = [];
     this.playerBulletPool.releaseAll();
     this.enemyBulletPool.releaseAll();
+    this.currentTime = 0;
+    this.gameOver = false;
+    this.levelTransition = false;
+    
+    this.currentLevelIndex = 0;
+    this.levelManager.reset();
+    this.levelManager.loadLevel(this.levels[this.currentLevelIndex]);
   }
 
   update(deltaTime) {
-    if (!this.player || !this.player.active) return;
+    if (this.gameOver) return;
+    
+    if (this.levelTransition) {
+      this.levelTransitionTimer += deltaTime;
+      if (this.levelTransitionTimer >= 3000) {
+        this.levelTransition = false;
+        this.levelTransitionTimer = 0;
+        
+        this.currentLevelIndex++;
+        if (this.currentLevelIndex < this.levels.length) {
+          this.levelManager.nextLevel();
+          this.levelManager.loadLevel(this.levels[this.currentLevelIndex]);
+        } else {
+          console.log('Game completed! All levels cleared!');
+          this.gameOver = true;
+        }
+      }
+      return;
+    }
+    
+    if (!this.player || !this.player.active) {
+      this.gameOver = true;
+      console.log('Game Over! Final Score:', this.score);
+      return;
+    }
     
     this.currentTime += deltaTime;
     
@@ -58,7 +101,14 @@ export class GameScene {
     
     this.updateEnemies(deltaTime);
     
-    this.spawnEnemies(deltaTime);
+    const enemiesToSpawn = this.levelManager.update(deltaTime, this.currentTime);
+    if (enemiesToSpawn) {
+      enemiesToSpawn.forEach(enemyData => {
+        setTimeout(() => {
+          this.spawnEnemyByType(enemyData.type);
+        }, enemyData.delay);
+      });
+    }
     
     const collisionResults = this.collisionSystem.handleCollisions(
       this.playerBulletPool.getActiveObjects(),
@@ -68,10 +118,48 @@ export class GameScene {
     );
     
     this.score += collisionResults.score;
+    if (collisionResults.enemiesDestroyed > 0) {
+      for (let i = 0; i < collisionResults.enemiesDestroyed; i++) {
+        this.levelManager.onEnemyKilled();
+      }
+    }
+    
+    if (this.levelManager.isLevelComplete() && this.enemies.length === 0) {
+      console.log('Level complete! Starting transition...');
+      this.levelTransition = true;
+      this.levelTransitionTimer = 0;
+    }
     
     this.backgroundOffset += this.backgroundSpeed;
     if (this.backgroundOffset > CONFIG.CANVAS_HEIGHT) {
       this.backgroundOffset = 0;
+    }
+  }
+
+  spawnEnemyByType(type) {
+    let enemy;
+    switch (type) {
+      case 'small':
+        enemy = EnemyTypes.createSmallEnemy(
+          Math.random() * (CONFIG.CANVAS_WIDTH - 80) + 20,
+          -50
+        );
+        break;
+      case 'medium':
+        enemy = EnemyTypes.createMediumEnemy(
+          Math.random() * (CONFIG.CANVAS_WIDTH - 80) + 20,
+          -50
+        );
+        break;
+      case 'large':
+        enemy = EnemyTypes.createLargeEnemy(
+          Math.random() * (CONFIG.CANVAS_WIDTH - 100) + 20,
+          -50
+        );
+        break;
+    }
+    if (enemy) {
+      this.enemies.push(enemy);
     }
   }
 
@@ -137,17 +225,6 @@ export class GameScene {
     bullet.vy = CONFIG.BULLET.SPEED * 0.7;
   }
 
-  spawnEnemies(deltaTime) {
-    this.enemySpawnTimer += deltaTime;
-    
-    if (this.enemySpawnTimer >= this.enemySpawnInterval) {
-      this.enemySpawnTimer = 0;
-      
-      const enemy = EnemyTypes.createRandomEnemy(CONFIG.CANVAS_WIDTH);
-      this.enemies.push(enemy);
-    }
-  }
-
   render(ctx) {
     this.renderBackground(ctx);
     
@@ -160,7 +237,61 @@ export class GameScene {
       this.player.render(ctx);
     }
     
-    this.renderHUD(ctx);
+    this.hud.render(ctx, {
+      player: this.player,
+      score: this.score,
+      level: this.levelManager.getCurrentLevel(),
+      levelProgress: this.levelManager.getProgress(),
+      enemies: this.enemies.length
+    });
+    
+    if (this.levelTransition) {
+      this.renderLevelTransition(ctx);
+    }
+    
+    if (this.gameOver) {
+      this.renderGameOver(ctx);
+    }
+  }
+
+  renderLevelTransition(ctx) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+    
+    ctx.fillStyle = '#00ff00';
+    ctx.font = '48px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('关卡完成!', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 - 50);
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '24px Arial';
+    ctx.fillText(`得分: ${this.score}`, CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 10);
+    
+    if (this.currentLevelIndex + 1 < this.levels.length) {
+      ctx.fillText('准备下一关...', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 50);
+    } else {
+      ctx.fillStyle = '#ffff00';
+      ctx.font = '36px Arial';
+      ctx.fillText('恭喜通关!', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 50);
+    }
+  }
+
+  renderGameOver(ctx) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+    
+    ctx.fillStyle = '#ff0000';
+    ctx.font = '64px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('游戏结束', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 - 50);
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '32px Arial';
+    ctx.fillText(`最终得分: ${this.score}`, CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 20);
+    
+    ctx.font = '20px Arial';
+    ctx.fillStyle = '#aaaaaa';
+    ctx.fillText('刷新页面重新开始', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 80);
   }
 
   renderBackground(ctx) {
@@ -174,34 +305,6 @@ export class GameScene {
       const size = (i % 3) + 1;
       ctx.fillRect(x, y, size, size);
     }
-  }
-
-  renderHUD(ctx) {
-    if (!this.player) return;
-    
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '18px Arial';
-    ctx.textAlign = 'left';
-    
-    ctx.fillText(`生命: ${this.player.health}/${this.player.maxHealth}`, 10, 30);
-    
-    ctx.fillStyle = '#ff0000';
-    const barWidth = 200;
-    const barHeight = 20;
-    const barX = 10;
-    const barY = 40;
-    
-    ctx.strokeStyle = '#ffffff';
-    ctx.strokeRect(barX, barY, barWidth, barHeight);
-    
-    const healthPercent = this.player.health / this.player.maxHealth;
-    ctx.fillStyle = healthPercent > 0.5 ? '#00ff00' : (healthPercent > 0.25 ? '#ffff00' : '#ff0000');
-    ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
-    
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(`火力等级: ${this.player.firePower}`, 10, 85);
-    ctx.fillText(`分数: ${this.score}`, 10, 110);
-    ctx.fillText(`敌机: ${this.enemies.length}`, 10, 135);
   }
 
   exit() {
