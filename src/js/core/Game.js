@@ -1,5 +1,6 @@
 import { CONFIG } from '../utils/Config.js';
 import { ResourceLoader } from './ResourceLoader.js';
+import { GameScene } from '../ui/GameScene.js';
 
 export class Game {
   constructor(canvasId) {
@@ -31,7 +32,10 @@ export class Game {
     
     if (success) {
       console.log('Resources loaded successfully');
-      this.state = CONFIG.GAME_STATES.MENU;
+      this.state = CONFIG.GAME_STATES.PLAYING;
+      
+      const gameScene = new GameScene(this);
+      this.setScene(gameScene);
     } else {
       console.error('Failed to load resources');
     }
