@@ -13,3 +13,27 @@ build/
 !.qoder/rules/
 
 /Agents.md
+
+### Java/Maven ###
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+*.class
+
+### IDE ###
+.idea
+*.iws
+*.iml
+*.ipr
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+.vscode/
+
+### Upload Directory ###
+photo-uploads/
