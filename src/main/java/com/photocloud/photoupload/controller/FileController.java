@@ -1,22 +1,23 @@
 package com.photocloud.photoupload.controller;
 
+import com.photocloud.photoupload.aspect.RateLimit;
 import com.photocloud.photoupload.model.ApiResponse;
 import com.photocloud.photoupload.model.FileInfo;
-import com.photocloud.photoupload.service.FileStorageService;
+import com.photocloud.photoupload.service.IFileStorageService;
+import com.photocloud.photoupload.validation.ValidFileId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,24 +27,21 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/api/files")
 @RequiredArgsConstructor
 @Tag(name = "File Management", description = "APIs for photo upload, download, and management")
 public class FileController {
 
-    private final FileStorageService fileStorageService;
+    private final IFileStorageService fileStorageService;
 
+    @RateLimit
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Upload a single photo", description = "Upload a single image file to the system")
-    @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "File uploaded successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid file"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "413", description = "File size exceeds limit")
-    })
     public ResponseEntity<ApiResponse<FileInfo>> uploadFile(
             @Parameter(description = "Image file to upload", required = true)
-            @RequestParam("file") MultipartFile file) {
+            @RequestParam("file") @NotNull MultipartFile file) {
         
         log.info("Received file upload request: {}", file.getOriginalFilename());
         
@@ -52,11 +50,12 @@ public class FileController {
         return ResponseEntity.ok(ApiResponse.success("File uploaded successfully", fileInfo));
     }
 
+    @RateLimit
     @PostMapping(value = "/upload/multiple", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Upload multiple photos", description = "Upload multiple image files to the system")
-    public ResponseEntity<ApiResponse<List<FileInfo>>> uploadMultipleFiles(
+    public ResponseEntity<ApiResponse<Map<String, Object>>> uploadMultipleFiles(
             @Parameter(description = "Image files to upload", required = true)
-            @RequestParam("files") MultipartFile[] files) {
+            @RequestParam("files") @NotNull MultipartFile[] files) {
         
         log.info("Received multiple file upload request: {} files", files.length);
         
@@ -133,7 +132,7 @@ public class FileController {
     @Operation(summary = "Get file information", description = "Get metadata of a file by file ID")
     public ResponseEntity<ApiResponse<FileInfo>> getFileInfo(
             @Parameter(description = "File ID", required = true)
-            @PathVariable String fileId) {
+            @PathVariable @ValidFileId String fileId) {
         
         log.info("Received file info request: fileId={}", fileId);
         
@@ -146,7 +145,7 @@ public class FileController {
     @Operation(summary = "Delete a photo", description = "Delete a photo by file ID")
     public ResponseEntity<ApiResponse<Void>> deleteFile(
             @Parameter(description = "File ID", required = true)
-            @PathVariable String fileId) {
+            @PathVariable @ValidFileId String fileId) {
         
         log.info("Received file deletion request: fileId={}", fileId);
         

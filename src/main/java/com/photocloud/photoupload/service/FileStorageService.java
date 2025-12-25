@@ -1,17 +1,18 @@
 package com.photocloud.photoupload.service;
 
 import com.photocloud.photoupload.config.FileStorageProperties;
+import com.photocloud.photoupload.constants.ErrorCode;
+import com.photocloud.photoupload.constants.FileConstants;
 import com.photocloud.photoupload.exception.FileNotFoundException;
 import com.photocloud.photoupload.exception.FileStorageException;
-import com.photocloud.photoupload.exception.InvalidFileException;
 import com.photocloud.photoupload.exception.UnauthorizedAccessException;
 import com.photocloud.photoupload.model.FileInfo;
+import com.photocloud.photoupload.repository.FileMetadataRepository;
 import com.photocloud.photoupload.util.FileValidator;
 import com.photocloud.photoupload.util.ImageCompressor;
 import com.photocloud.photoupload.util.TokenGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -24,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,26 +32,26 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class FileStorageService {
+public class FileStorageService implements IFileStorageService {
 
     private final FileStorageProperties properties;
     private final FileValidator fileValidator;
     private final ImageCompressor imageCompressor;
     private final TokenGenerator tokenGenerator;
+    private final FileMetadataRepository metadataRepository;
 
     private Path fileStorageLocation;
-    private final Map<String, FileInfo> fileMetadataStore = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
         try {
-            this.fileStorageLocation = Paths.get(properties.getPath()).toAbsolutePath().normalize();
+            this.fileStorageLocation = Paths.get(properties.getPath())
+                    .toAbsolutePath()
+                    .normalize();
             Files.createDirectories(this.fileStorageLocation);
             log.info("File storage location initialized: {}", this.fileStorageLocation);
         } catch (IOException ex) {
@@ -59,6 +59,7 @@ public class FileStorageService {
         }
     }
 
+    @Override
     public FileInfo uploadFile(MultipartFile file) {
         fileValidator.validateFile(file);
 
@@ -69,47 +70,21 @@ public class FileStorageService {
 
         try {
             Path targetLocation = this.fileStorageLocation.resolve(savedFilename);
-            
-            File tempFile = File.createTempFile("upload_", "." + extension);
-            file.transferTo(tempFile);
+            File processedFile = processFile(file, extension);
 
-            boolean compressed = false;
-            if (fileValidator.isCompressionNeeded(file.getSize(), properties.getCompressThreshold())) {
-                try {
-                    File compressedFile = File.createTempFile("compressed_", "." + extension);
-                    imageCompressor.compressImage(tempFile, compressedFile);
-                    tempFile.delete();
-                    tempFile = compressedFile;
-                    compressed = true;
-                } catch (Exception e) {
-                    log.warn("Image compression failed, using original file: {}", e.getMessage());
-                }
+            Files.copy(processedFile.toPath(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            boolean deleted = processedFile.delete();
+            if (!deleted) {
+                log.warn("Failed to delete temporary file: {}", processedFile.getAbsolutePath());
             }
 
-            Files.copy(tempFile.toPath(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            tempFile.delete();
+            FileInfo fileInfo = buildFileInfo(fileId, originalFilename, savedFilename, 
+                    file.getContentType(), extension, targetLocation);
 
-            FileInfo fileInfo = FileInfo.builder()
-                    .fileId(fileId)
-                    .originalFilename(originalFilename)
-                    .savedFilename(savedFilename)
-                    .contentType(file.getContentType())
-                    .size(Files.size(targetLocation))
-                    .extension(extension)
-                    .filePath(targetLocation.toString())
-                    .uploadTime(LocalDateTime.now())
-                    .build();
-
-            if (properties.getAccessTokenEnabled()) {
-                String accessToken = tokenGenerator.generateAccessToken(fileId);
-                fileInfo.setAccessToken(accessToken);
-                fileInfo.setTokenExpireTime(LocalDateTime.now().plusSeconds(properties.getAccessTokenExpire()));
-            }
-
-            fileMetadataStore.put(fileId, fileInfo);
+            metadataRepository.save(fileInfo);
             
-            log.info("File uploaded successfully: fileId={}, original={}, saved={}, compressed={}", 
-                    fileId, originalFilename, savedFilename, compressed);
+            log.info("File uploaded successfully: fileId={}, original={}, saved={}", 
+                    fileId, originalFilename, savedFilename);
 
             return fileInfo;
         } catch (IOException ex) {
@@ -118,6 +93,48 @@ public class FileStorageService {
         }
     }
 
+    private File processFile(MultipartFile file, String extension) throws IOException {
+        File tempFile = File.createTempFile(FileConstants.TEMP_FILE_PREFIX, "." + extension);
+        file.transferTo(tempFile);
+
+        if (fileValidator.isCompressionNeeded(file.getSize(), properties.getCompressThreshold())) {
+            try {
+                File compressedFile = File.createTempFile(FileConstants.COMPRESSED_FILE_PREFIX, "." + extension);
+                imageCompressor.compressImage(tempFile, compressedFile);
+                boolean deleted = tempFile.delete();
+                if (!deleted) {
+                    log.warn("Failed to delete original temp file: {}", tempFile.getAbsolutePath());
+                }
+                return compressedFile;
+            } catch (Exception e) {
+                log.warn("Image compression failed, using original file: {}", e.getMessage());
+            }
+        }
+        return tempFile;
+    }
+
+    private FileInfo buildFileInfo(String fileId, String originalFilename, String savedFilename,
+                                    String contentType, String extension, Path targetLocation) throws IOException {
+        FileInfo.FileInfoBuilder builder = FileInfo.builder()
+                .fileId(fileId)
+                .originalFilename(originalFilename)
+                .savedFilename(savedFilename)
+                .contentType(contentType)
+                .size(Files.size(targetLocation))
+                .extension(extension)
+                .filePath(targetLocation.toString())
+                .uploadTime(LocalDateTime.now());
+
+        if (Boolean.TRUE.equals(properties.getAccessTokenEnabled())) {
+            String accessToken = tokenGenerator.generateAccessToken(fileId);
+            builder.accessToken(accessToken)
+                   .tokenExpireTime(LocalDateTime.now().plusSeconds(properties.getAccessTokenExpire()));
+        }
+
+        return builder.build();
+    }
+
+    @Override
     public List<FileInfo> uploadMultipleFiles(MultipartFile[] files) {
         List<FileInfo> uploadedFiles = new ArrayList<>();
         
@@ -133,20 +150,19 @@ public class FileStorageService {
         return uploadedFiles;
     }
 
-    @Cacheable(value = "fileMetadata", key = "#fileId")
+    @Override
+    @Cacheable(value = FileConstants.CACHE_FILE_METADATA, key = "#fileId")
     public FileInfo getFileInfo(String fileId) {
-        FileInfo fileInfo = fileMetadataStore.get(fileId);
-        if (fileInfo == null) {
-            throw new FileNotFoundException("File not found: " + fileId);
-        }
-        return fileInfo;
+        return metadataRepository.findById(fileId)
+                .orElseThrow(() -> new FileNotFoundException(ErrorCode.FILE_NOT_FOUND + ": " + fileId));
     }
 
+    @Override
     public Resource loadFileAsResource(String fileId, String token) {
         try {
             FileInfo fileInfo = getFileInfo(fileId);
             
-            if (properties.getAccessTokenEnabled()) {
+            if (Boolean.TRUE.equals(properties.getAccessTokenEnabled())) {
                 validateAccessToken(fileInfo, token);
             }
 
@@ -156,25 +172,24 @@ public class FileStorageService {
             if (resource.exists() && resource.isReadable()) {
                 return resource;
             } else {
-                throw new FileNotFoundException("File not found or not readable: " + fileId);
+                throw new FileNotFoundException(ErrorCode.FILE_NOT_FOUND + ": " + fileId);
             }
+        } catch (FileNotFoundException ex) {
+            throw ex;
         } catch (Exception ex) {
-            throw new FileNotFoundException("File not found: " + fileId, ex);
+            throw new FileNotFoundException(ErrorCode.FILE_NOT_FOUND + ": " + fileId, ex);
         }
     }
 
-    public Resource loadFileAsResourceWithRange(String fileId, String token, long start, long end) {
-        return loadFileAsResource(fileId, token);
-    }
-
-    @CacheEvict(value = "fileMetadata", key = "#fileId")
+    @Override
+    @CacheEvict(value = FileConstants.CACHE_FILE_METADATA, key = "#fileId")
     public void deleteFile(String fileId) {
         try {
             FileInfo fileInfo = getFileInfo(fileId);
             Path filePath = Paths.get(fileInfo.getFilePath());
             
             Files.deleteIfExists(filePath);
-            fileMetadataStore.remove(fileId);
+            metadataRepository.deleteById(fileId);
             
             log.info("File deleted successfully: fileId={}, filename={}", fileId, fileInfo.getSavedFilename());
         } catch (IOException ex) {
@@ -183,10 +198,12 @@ public class FileStorageService {
         }
     }
 
+    @Override
     public List<FileInfo> listAllFiles() {
-        return new ArrayList<>(fileMetadataStore.values());
+        return metadataRepository.findAll();
     }
 
+    @Override
     public long getStorageUsage() {
         try {
             return Files.walk(fileStorageLocation)
@@ -205,15 +222,15 @@ public class FileStorageService {
         }
     }
 
+    @Override
     public void cleanupExpiredFiles(int daysOld) {
         LocalDateTime threshold = LocalDateTime.now().minusDays(daysOld);
         
-        List<String> expiredFileIds = new ArrayList<>();
-        for (Map.Entry<String, FileInfo> entry : fileMetadataStore.entrySet()) {
-            if (entry.getValue().getUploadTime().isBefore(threshold)) {
-                expiredFileIds.add(entry.getKey());
-            }
-        }
+        List<FileInfo> allFiles = metadataRepository.findAll();
+        List<String> expiredFileIds = allFiles.stream()
+                .filter(fileInfo -> fileInfo.getUploadTime().isBefore(threshold))
+                .map(FileInfo::getFileId)
+                .toList();
 
         for (String fileId : expiredFileIds) {
             try {
@@ -228,24 +245,25 @@ public class FileStorageService {
     }
 
     private void validateAccessToken(FileInfo fileInfo, String token) {
-        if (!properties.getAccessTokenEnabled()) {
+        if (!Boolean.TRUE.equals(properties.getAccessTokenEnabled())) {
             return;
         }
 
         if (token == null || token.trim().isEmpty()) {
-            throw new UnauthorizedAccessException("Access token is required");
+            throw new UnauthorizedAccessException(ErrorCode.TOKEN_REQUIRED);
         }
 
         if (!token.equals(fileInfo.getAccessToken())) {
-            throw new UnauthorizedAccessException("Invalid access token");
+            throw new UnauthorizedAccessException(ErrorCode.TOKEN_INVALID);
         }
 
         if (fileInfo.getTokenExpireTime() != null && 
             LocalDateTime.now().isAfter(fileInfo.getTokenExpireTime())) {
-            throw new UnauthorizedAccessException("Access token has expired");
+            throw new UnauthorizedAccessException(ErrorCode.TOKEN_EXPIRED);
         }
     }
 
+    @Override
     public String refreshAccessToken(String fileId) {
         FileInfo fileInfo = getFileInfo(fileId);
         
@@ -253,7 +271,7 @@ public class FileStorageService {
         fileInfo.setAccessToken(newToken);
         fileInfo.setTokenExpireTime(LocalDateTime.now().plusSeconds(properties.getAccessTokenExpire()));
         
-        fileMetadataStore.put(fileId, fileInfo);
+        metadataRepository.save(fileInfo);
         
         log.info("Access token refreshed for file: {}", fileId);
         return newToken;

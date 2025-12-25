@@ -1,5 +1,7 @@
 package com.photocloud.photoupload.util;
 
+import com.photocloud.photoupload.constants.FileConstants;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +14,7 @@ import java.io.IOException;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class ImageCompressor {
 
     @Value("${file.upload.compress-quality}")
@@ -25,20 +28,14 @@ public class ImageCompressor {
                 throw new IOException("Cannot read image file: " + originalFile.getName());
             }
 
-            int width = originalImage.getWidth();
-            int height = originalImage.getHeight();
-
-            double scale = 1.0;
-            if (width > 1920 || height > 1920) {
-                scale = Math.min(1920.0 / width, 1920.0 / height);
-            }
+            double scale = calculateScale(originalImage.getWidth(), originalImage.getHeight());
 
             Thumbnails.of(originalFile)
                     .scale(scale)
                     .outputQuality(compressQuality)
                     .toFile(outputFile);
 
-            log.info("Image compressed: original size={}, compressed size={}, scale={}", 
+            log.info("Image compressed: original size={} bytes, compressed size={} bytes, scale={}", 
                     originalFile.length(), outputFile.length(), scale);
 
             return outputFile;
@@ -55,11 +52,21 @@ public class ImageCompressor {
                     .outputQuality(0.8)
                     .toFile(thumbnailFile);
 
-            log.info("Thumbnail created: {}", thumbnailFile.getName());
+            log.info("Thumbnail created: {} (size: {} bytes)", thumbnailFile.getName(), thumbnailFile.length());
             return thumbnailFile;
         } catch (IOException e) {
             log.error("Error creating thumbnail: {}", e.getMessage(), e);
             throw e;
         }
+    }
+
+    private double calculateScale(int width, int height) {
+        if (width <= FileConstants.MAX_IMAGE_WIDTH && height <= FileConstants.MAX_IMAGE_HEIGHT) {
+            return 1.0;
+        }
+        return Math.min(
+                (double) FileConstants.MAX_IMAGE_WIDTH / width, 
+                (double) FileConstants.MAX_IMAGE_HEIGHT / height
+        );
     }
 }
