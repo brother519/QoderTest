@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>坦克大战</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #1a1a1a;
+            font-family: Arial, sans-serif;
+        }
+        #gameContainer {
+            text-align: center;
+        }
+        canvas {
+            border: 2px solid #fff;
+            background: #000;
+        }
+        #info {
+            color: #fff;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        #controls {
+            color: #aaa;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="info">
+            <div>生命值: <span id="health">3</span> | 得分: <span id="score">0</span> | 敌方坦克: <span id="enemies">3</span></div>
+        </div>
+        <div id="controls">
+            WASD: 移动 | 空格: 射击 | R: 重新开始
+        </div>
+    </div>
+    <script src="tank_battle.js"></script>
+</body>
+</html>
