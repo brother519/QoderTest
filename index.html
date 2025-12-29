@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超级马里奥</title>
+    <link rel="stylesheet" href="styles/game.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="480"></canvas>
+        <div id="loading">加载中...</div>
+    </div>
+
+    <script type="module" src="src/utils/Constants.js"></script>
+    <script type="module" src="src/utils/Vector2D.js"></script>
+    <script type="module" src="src/physics/AABB.js"></script>
+    <script type="module" src="src/physics/Collision.js"></script>
+    <script type="module" src="src/physics/PhysicsEngine.js"></script>
+    <script type="module" src="src/InputHandler.js"></script>
+    <script type="module" src="src/Camera.js"></script>
+    <script type="module" src="src/entities/Entity.js"></script>
+    <script type="module" src="src/entities/Player.js"></script>
+    <script type="module" src="src/entities/Enemy.js"></script>
+    <script type="module" src="src/entities/Goomba.js"></script>
+    <script type="module" src="src/entities/Koopa.js"></script>
+    <script type="module" src="src/entities/PiranhaPlant.js"></script>
+    <script type="module" src="src/entities/Item.js"></script>
+    <script type="module" src="src/entities/Coin.js"></script>
+    <script type="module" src="src/entities/Mushroom.js"></script>
+    <script type="module" src="src/entities/FireFlower.js"></script>
+    <script type="module" src="src/entities/Star.js"></script>
+    <script type="module" src="src/entities/Fireball.js"></script>
+    <script type="module" src="src/level/Tile.js"></script>
+    <script type="module" src="src/level/Block.js"></script>
+    <script type="module" src="src/level/Pipe.js"></script>
+    <script type="module" src="src/level/Flagpole.js"></script>
+    <script type="module" src="src/level/LevelLoader.js"></script>
+    <script type="module" src="src/level/Level.js"></script>
+    <script type="module" src="src/animation/SpriteSheet.js"></script>
+    <script type="module" src="src/animation/Animation.js"></script>
+    <script type="module" src="src/animation/AnimationController.js"></script>
+    <script type="module" src="src/ui/HUD.js"></script>
+    <script type="module" src="src/ui/Menu.js"></script>
+    <script type="module" src="src/ui/GameOver.js"></script>
+    <script type="module" src="src/audio/AudioManager.js"></script>
+    <script type="module" src="src/utils/AssetLoader.js"></script>
+    <script type="module" src="src/Game.js"></script>
+    <script type="module" src="src/Engine.js"></script>
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
