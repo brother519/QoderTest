@@ -1,7 +1,19 @@
+/**
+ * @file 认证中间件
+ * @description 处理用户身份验证和访问令牌验证
+ */
 const User = require('../models/User');
 const tokenService = require('../services/tokenService');
 const { ERROR_CODES } = require('../utils/constants');
 
+/**
+ * 强制认证中间件
+ * @async
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ * @param {Function} next - 下一个中间件函数
+ * @returns {Promise<void>}
+ */
 const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -79,6 +91,14 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+/**
+ * 可选认证中间件 - 如果提供了有效令牌则设置用户信息
+ * @async
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ * @param {Function} next - 下一个中间件函数
+ * @returns {Promise<void>}
+ */
 const optionalAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   

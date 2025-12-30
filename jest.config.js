@@ -1,3 +1,7 @@
+/**
+ * @file Jest测试配置
+ * @description Jest测试框架配置
+ */
 module.exports = {
   testEnvironment: 'node',
   testMatch: ['**/tests/**/*.test.js'],

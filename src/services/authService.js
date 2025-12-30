@@ -1,3 +1,7 @@
+/**
+ * @file 认证服务
+ * @description 处理用户注册、登录、登出和令牌刷新
+ */
 const User = require('../models/User');
 const Role = require('../models/Role');
 const RefreshToken = require('../models/RefreshToken');
@@ -5,7 +9,18 @@ const tokenService = require('./tokenService');
 const { sanitizeUser } = require('../utils/validators');
 const { ERROR_CODES, ROLES } = require('../utils/constants');
 
+/**
+ * 认证服务类
+ * @class AuthService
+ */
 class AuthService {
+  /**
+   * 用户注册
+   * @async
+   * @param {Object} userData - 用户数据
+   * @param {string} ip - 客户端IP
+   * @returns {Promise<Object>} 用户信息和令牌
+   */
   async register(userData, ip) {
     const { email, username, password, securityQuestions } = userData;
     
@@ -46,6 +61,14 @@ class AuthService {
     };
   }
   
+  /**
+   * 用户登录
+   * @async
+   * @param {string} email - 邮箱
+   * @param {string} password - 密码
+   * @param {string} ip - 客户端IP
+   * @returns {Promise<Object>} 用户信息和令牌
+   */
   async login(email, password, ip) {
     const user = await User.findOne({ email })
       .select('+password')
@@ -96,6 +119,13 @@ class AuthService {
     };
   }
   
+  /**
+   * 用户登出
+   * @async
+   * @param {string} refreshToken - 刷新令牌
+   * @param {string} ip - 客户端IP
+   * @returns {Promise<Object>} 操作结果
+   */
   async logout(refreshToken, ip) {
     if (!refreshToken) {
       return { success: true };
@@ -105,6 +135,13 @@ class AuthService {
     return { success: true };
   }
   
+  /**
+   * 刷新访问令牌
+   * @async
+   * @param {string} oldRefreshToken - 旧刷新令牌
+   * @param {string} ip - 客户端IP
+   * @returns {Promise<Object>} 新的访问令牌和刷新令牌
+   */
   async refreshTokens(oldRefreshToken, ip) {
     const tokenDoc = await RefreshToken.findByToken(oldRefreshToken);
     
@@ -150,6 +187,13 @@ class AuthService {
     };
   }
   
+  /**
+   * 撤销用户的所有会话
+   * @async
+   * @param {string} userId - 用户ID
+   * @param {string} ip - 客户端IP
+   * @returns {Promise<Object>} 操作结果
+   */
   async revokeAllSessions(userId, ip) {
     await RefreshToken.revokeAllUserTokens(userId, ip);
     return { success: true };

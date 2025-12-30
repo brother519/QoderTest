@@ -1,7 +1,18 @@
+/**
+ * @file 用户控制器
+ * @description 处理用户相关的HTTP请求
+ */
 const User = require('../models/User');
 const { sanitizeUser } = require('../utils/validators');
 const { ERROR_CODES } = require('../utils/constants');
 
+/**
+ * 获取当前登录用户信息
+ * @async
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ * @param {Function} next - 下一个中间件
+ */
 const getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id).populate('roles');
@@ -15,6 +26,13 @@ const getMe = async (req, res, next) => {
   }
 };
 
+/**
+ * 更新当前用户信息
+ * @async
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ * @param {Function} next - 下一个中间件
+ */
 const updateMe = async (req, res, next) => {
   try {
     const { email, username } = req.body;
@@ -59,6 +77,13 @@ const updateMe = async (req, res, next) => {
   }
 };
 
+/**
+ * 获取用户列表(分页)
+ * @async
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ * @param {Function} next - 下一个中间件
+ */
 const getUsers = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -96,6 +121,13 @@ const getUsers = async (req, res, next) => {
   }
 };
 
+/**
+ * 根据ID获取用户
+ * @async
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ * @param {Function} next - 下一个中间件
+ */
 const getUserById = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id).populate('roles');
@@ -116,6 +148,13 @@ const getUserById = async (req, res, next) => {
   }
 };
 
+/**
+ * 删除用户
+ * @async
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ * @param {Function} next - 下一个中间件
+ */
 const deleteUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);

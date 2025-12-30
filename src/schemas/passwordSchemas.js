@@ -1,6 +1,11 @@
+/**
+ * @file 密码验证模式
+ * @description 定义密码相关请求的验证规则
+ */
 const { body } = require('express-validator');
 const { PASSWORD_REGEX } = require('../utils/constants');
 
+/** 设置安全问题验证规则 */
 const setSecurityQuestionsSchema = [
   body('questions')
     .isArray({ min: 2 })
@@ -17,6 +22,7 @@ const setSecurityQuestionsSchema = [
     .withMessage('Security answer cannot be empty')
 ];
 
+/** 验证安全问题答案验证规则 */
 const verifySecurityQuestionsSchema = [
   body('email')
     .trim()
@@ -39,6 +45,7 @@ const verifySecurityQuestionsSchema = [
     .withMessage('Answer cannot be empty')
 ];
 
+/** 重置密码验证规则 */
 const resetPasswordSchema = [
   body('resetToken')
     .notEmpty()
@@ -59,6 +66,7 @@ const resetPasswordSchema = [
     })
 ];
 
+/** 修改密码验证规则 */
 const changePasswordSchema = [
   body('currentPassword')
     .notEmpty()

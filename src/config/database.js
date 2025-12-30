@@ -1,5 +1,16 @@
+/**
+ * @file 数据库配置模块
+ * @description MongoDB数据库连接配置和管理
+ */
 const mongoose = require('mongoose');
 
+/**
+ * 连接MongoDB数据库
+ * @async
+ * @function connectDB
+ * @returns {Promise<mongoose.Connection>} MongoDB连接实例
+ * @throws {Error} 连接失败时退出进程
+ */
 const connectDB = async () => {
   try {
     const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/auth-system';

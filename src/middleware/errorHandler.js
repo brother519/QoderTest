@@ -1,6 +1,17 @@
+/**
+ * @file 错误处理中间件
+ * @description 统一处理应用程序错误
+ */
 const { ERROR_CODES } = require('../utils/constants');
 const appConfig = require('../config/app');
 
+/**
+ * 全局错误处理中间件
+ * @param {Error} err - 错误对象
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ * @param {Function} next - 下一个中间件函数
+ */
 const errorHandler = (err, req, res, next) => {
   let statusCode = err.status || err.statusCode || 500;
   let errorCode = err.code || ERROR_CODES.INTERNAL_ERROR;
@@ -68,6 +79,11 @@ const errorHandler = (err, req, res, next) => {
   res.status(statusCode).json(response);
 };
 
+/**
+ * 404路由未找到处理中间件
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ */
 const notFoundHandler = (req, res) => {
   res.status(404).json({
     success: false,
