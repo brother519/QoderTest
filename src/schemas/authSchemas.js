@@ -1,6 +1,11 @@
+/**
+ * @file 认证验证模式
+ * @description 定义认证相关请求的验证规则
+ */
 const { body } = require('express-validator');
 const { PASSWORD_REGEX } = require('../utils/constants');
 
+/** 用户注册验证规则 */
 const registerSchema = [
   body('email')
     .trim()
@@ -47,6 +52,7 @@ const registerSchema = [
     .withMessage('Security answer cannot be empty')
 ];
 
+/** 用户登录验证规则 */
 const loginSchema = [
   body('email')
     .trim()
@@ -59,12 +65,14 @@ const loginSchema = [
     .withMessage('Password is required')
 ];
 
+/** 刷新令牌验证规则 */
 const refreshTokenSchema = [
   body('refreshToken')
     .notEmpty()
     .withMessage('Refresh token is required')
 ];
 
+/** 登出验证规则 */
 const logoutSchema = [
   body('refreshToken')
     .optional()

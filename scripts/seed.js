@@ -1,3 +1,7 @@
+/**
+ * @file 数据库种子脚本
+ * @description 初始化数据库权限、角色和管理员用户
+ */
 require('dotenv').config();
 
 const mongoose = require('mongoose');
@@ -6,6 +10,7 @@ const Role = require('../src/models/Role');
 const User = require('../src/models/User');
 const { hashPassword } = require('../src/utils/crypto');
 
+/** 默认权限列表 */
 const permissions = [
   { resource: 'users', action: 'create', description: 'Create users' },
   { resource: 'users', action: 'read', description: 'Read users' },
@@ -19,6 +24,7 @@ const permissions = [
   { resource: '*', action: '*', description: 'Super admin - all permissions' }
 ];
 
+/** 默认角色列表 */
 const roles = [
   {
     name: 'admin',
@@ -37,6 +43,10 @@ const roles = [
   }
 ];
 
+/**
+ * 执行数据库种子
+ * @async
+ */
 const seedDatabase = async () => {
   try {
     const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/auth-system';

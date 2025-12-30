@@ -1,5 +1,15 @@
+/**
+ * @file 授权中间件
+ * @description 处理用户权限和角色验证
+ */
 const { ERROR_CODES } = require('../utils/constants');
 
+/**
+ * 检查用户是否拥有指定权限
+ * @param {string[]} userPermissions - 用户权限列表
+ * @param {string} requiredPermission - 所需权限
+ * @returns {boolean} 是否拥有权限
+ */
 const checkPermission = (userPermissions, requiredPermission) => {
   if (userPermissions.includes('*:*')) {
     return true;
@@ -22,7 +32,16 @@ const checkPermission = (userPermissions, requiredPermission) => {
   return false;
 };
 
+/**
+ * 授权中间件工厂对象
+ * @type {Object}
+ */
 const authorize = {
+  /**
+   * 验证用户是否拥有指定角色
+   * @param {string[]} allowedRoles - 允许的角色列表
+   * @returns {Function} Express中间件函数
+   */
   roles: (allowedRoles) => {
     return (req, res, next) => {
       if (!req.user) {
@@ -52,6 +71,11 @@ const authorize = {
     };
   },
   
+  /**
+   * 验证用户是否拥有指定权限
+   * @param {string[]} requiredPermissions - 所需权限列表
+   * @returns {Function} Express中间件函数
+   */
   permissions: (requiredPermissions) => {
     return (req, res, next) => {
       if (!req.user) {
@@ -84,6 +108,11 @@ const authorize = {
     };
   },
   
+  /**
+   * 验证用户是否为资源所有者
+   * @param {string} [paramName='id'] - 路由参数名
+   * @returns {Function} Express中间件函数
+   */
   isOwner: (paramName = 'id') => {
     return (req, res, next) => {
       if (!req.user) {
@@ -116,6 +145,12 @@ const authorize = {
     };
   },
   
+  /**
+   * 验证用户是资源所有者或拥有指定权限
+   * @param {string} paramName - 路由参数名
+   * @param {string[]} requiredPermissions - 所需权限列表
+   * @returns {Function} Express中间件函数
+   */
   isOwnerOrHasPermission: (paramName, requiredPermissions) => {
     return (req, res, next) => {
       if (!req.user) {

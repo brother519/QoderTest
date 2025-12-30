@@ -1,9 +1,25 @@
+/**
+ * @file 密码控制器
+ * @description 处理密码相关的HTTP请求
+ */
 const passwordService = require('../services/passwordService');
 
+/**
+ * 获取客户端IP地址
+ * @param {Object} req - Express请求对象
+ * @returns {string} IP地址
+ */
 const getClientIp = (req) => {
   return req.ip || req.connection.remoteAddress || 'unknown';
 };
 
+/**
+ * 设置安全问题
+ * @async
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ * @param {Function} next - 下一个中间件
+ */
 const setSecurityQuestions = async (req, res, next) => {
   try {
     const { questions } = req.body;
@@ -19,6 +35,13 @@ const setSecurityQuestions = async (req, res, next) => {
   }
 };
 
+/**
+ * 验证安全问题答案
+ * @async
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ * @param {Function} next - 下一个中间件
+ */
 const verifySecurityQuestions = async (req, res, next) => {
   try {
     const { email, answers } = req.body;
@@ -34,6 +57,13 @@ const verifySecurityQuestions = async (req, res, next) => {
   }
 };
 
+/**
+ * 重置密码
+ * @async
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ * @param {Function} next - 下一个中间件
+ */
 const resetPassword = async (req, res, next) => {
   try {
     const { resetToken, newPassword } = req.body;
@@ -50,6 +80,13 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
+/**
+ * 修改密码
+ * @async
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ * @param {Function} next - 下一个中间件
+ */
 const changePassword = async (req, res, next) => {
   try {
     const { currentPassword, newPassword } = req.body;

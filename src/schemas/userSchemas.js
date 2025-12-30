@@ -1,5 +1,10 @@
+/**
+ * @file 用户验证模式
+ * @description 定义用户相关请求的验证规则
+ */
 const { body, param, query } = require('express-validator');
 
+/** 更新用户信息验证规则 */
 const updateUserSchema = [
   body('email')
     .optional()
@@ -17,12 +22,14 @@ const updateUserSchema = [
     .withMessage('Username can only contain letters, numbers, and underscores')
 ];
 
+/** 用户ID参数验证规则 */
 const userIdSchema = [
   param('id')
     .isMongoId()
     .withMessage('Invalid user ID')
 ];
 
+/** 用户列表查询参数验证规则 */
 const userListSchema = [
   query('page')
     .optional()

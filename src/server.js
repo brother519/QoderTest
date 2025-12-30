@@ -1,9 +1,17 @@
+/**
+ * @file 服务器入口
+ * @description 启动HTTP服务器并处理进程信号
+ */
 require('dotenv').config();
 
 const app = require('./app');
 const connectDB = require('./config/database');
 const appConfig = require('./config/app');
 
+/**
+ * 启动服务器
+ * @async
+ */
 const startServer = async () => {
   try {
     await connectDB();
@@ -13,6 +21,10 @@ const startServer = async () => {
       console.log(`Health check: http://localhost:${appConfig.port}/health`);
     });
     
+    /**
+     * 优雅关闭处理
+     * @param {string} signal - 信号名称
+     */
     const gracefulShutdown = (signal) => {
       console.log(`\n${signal} received. Shutting down gracefully...`);
       server.close(() => {

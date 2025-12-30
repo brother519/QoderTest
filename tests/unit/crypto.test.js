@@ -1,3 +1,7 @@
+/**
+ * @file 加密工具单元测试
+ * @description 测试密码哈希、安全问题和令牌生成功能
+ */
 const { hashPassword, comparePassword, hashSecurityAnswer, verifySecurityAnswer, hashToken, generateRandomToken } = require('../../src/utils/crypto');
 
 describe('Crypto Utils', () => {

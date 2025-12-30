@@ -1,3 +1,7 @@
+/**
+ * @file 密码路由
+ * @description 处理密码相关的API路由
+ */
 const express = require('express');
 const router = express.Router();
 const passwordController = require('../controllers/passwordController');
@@ -11,6 +15,7 @@ const {
   changePasswordSchema
 } = require('../schemas/passwordSchemas');
 
+/** POST /password/security-questions/set - 设置安全问题 */
 router.post(
   '/security-questions/set',
   authenticate,
@@ -18,6 +23,7 @@ router.post(
   passwordController.setSecurityQuestions
 );
 
+/** POST /password/reset/verify - 验证安全问题 */
 router.post(
   '/reset/verify',
   passwordResetLimiter,
@@ -25,12 +31,14 @@ router.post(
   passwordController.verifySecurityQuestions
 );
 
+/** POST /password/reset/confirm - 确认重置密码 */
 router.post(
   '/reset/confirm',
   validate(resetPasswordSchema),
   passwordController.resetPassword
 );
 
+/** POST /password/change - 修改密码 */
 router.post(
   '/change',
   authenticate,

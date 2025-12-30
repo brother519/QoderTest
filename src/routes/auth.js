@@ -1,3 +1,7 @@
+/**
+ * @file 认证路由
+ * @description 处理用户认证相关的API路由
+ */
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
@@ -11,6 +15,7 @@ const {
   logoutSchema
 } = require('../schemas/authSchemas');
 
+/** POST /auth/register - 用户注册 */
 router.post(
   '/register',
   registerLimiter,
@@ -18,6 +23,7 @@ router.post(
   authController.register
 );
 
+/** POST /auth/login - 用户登录 */
 router.post(
   '/login',
   loginLimiter,
@@ -25,6 +31,7 @@ router.post(
   authController.login
 );
 
+/** POST /auth/logout - 用户登出 */
 router.post(
   '/logout',
   authenticate,
@@ -32,12 +39,14 @@ router.post(
   authController.logout
 );
 
+/** POST /auth/refresh - 刷新访问令牌 */
 router.post(
   '/refresh',
   validate(refreshTokenSchema),
   authController.refresh
 );
 
+/** POST /auth/revoke-all - 撤销所有会话 */
 router.post(
   '/revoke-all',
   authenticate,

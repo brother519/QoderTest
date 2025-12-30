@@ -1,3 +1,7 @@
+/**
+ * @file 令牌服务单元测试
+ * @description 测试JWT令牌的生成和验证功能
+ */
 const tokenService = require('../../src/services/tokenService');
 
 describe('Token Service', () => {

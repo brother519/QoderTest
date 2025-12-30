@@ -1,6 +1,15 @@
+/**
+ * @file 请求验证中间件
+ * @description 使用express-validator进行请求数据验证
+ */
 const { validationResult } = require('express-validator');
 const { ERROR_CODES } = require('../utils/constants');
 
+/**
+ * 创建验证中间件
+ * @param {Array} validations - express-validator验证规则数组
+ * @returns {Function} Express中间件函数
+ */
 const validate = (validations) => {
   return async (req, res, next) => {
     for (const validation of validations) {
