@@ -1,6 +1,21 @@
+/**
+ * Role Controller
+ * 
+ * HTTP request handlers for role and permission management endpoints.
+ * Delegates business logic to RoleService.
+ */
+
 const roleService = require('../services/roleService');
 const { sanitizeUser } = require('../utils/validators');
 
+/**
+ * Get all roles with permissions
+ * GET /api/roles
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware
+ */
 const getAllRoles = async (req, res, next) => {
   try {
     const roles = await roleService.getAllRoles();
@@ -14,6 +29,14 @@ const getAllRoles = async (req, res, next) => {
   }
 };
 
+/**
+ * Get a specific role by ID
+ * GET /api/roles/:id
+ * 
+ * @param {Object} req - Express request with role ID in params
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware
+ */
 const getRoleById = async (req, res, next) => {
   try {
     const role = await roleService.getRoleById(req.params.id);
@@ -27,6 +50,14 @@ const getRoleById = async (req, res, next) => {
   }
 };
 
+/**
+ * Create a new role
+ * POST /api/roles
+ * 
+ * @param {Object} req - Express request with role data in body
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware
+ */
 const createRole = async (req, res, next) => {
   try {
     const role = await roleService.createRole(req.body);
@@ -40,6 +71,14 @@ const createRole = async (req, res, next) => {
   }
 };
 
+/**
+ * Update an existing role
+ * PATCH /api/roles/:id
+ * 
+ * @param {Object} req - Express request with role ID in params and updates in body
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware
+ */
 const updateRole = async (req, res, next) => {
   try {
     const role = await roleService.updateRole(req.params.id, req.body);
@@ -53,6 +92,14 @@ const updateRole = async (req, res, next) => {
   }
 };
 
+/**
+ * Delete a role
+ * DELETE /api/roles/:id
+ * 
+ * @param {Object} req - Express request with role ID in params
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware
+ */
 const deleteRole = async (req, res, next) => {
   try {
     await roleService.deleteRole(req.params.id);
@@ -66,6 +113,14 @@ const deleteRole = async (req, res, next) => {
   }
 };
 
+/**
+ * Assign roles to a user
+ * PATCH /api/roles/users/:id/roles
+ * 
+ * @param {Object} req - Express request with user ID in params and roles array in body
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware
+ */
 const assignRoles = async (req, res, next) => {
   try {
     const { roles } = req.body;
@@ -80,6 +135,14 @@ const assignRoles = async (req, res, next) => {
   }
 };
 
+/**
+ * Get all defined permissions
+ * GET /api/roles/permissions/all
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware
+ */
 const getAllPermissions = async (req, res, next) => {
   try {
     const permissions = await roleService.getAllPermissions();
@@ -93,6 +156,14 @@ const getAllPermissions = async (req, res, next) => {
   }
 };
 
+/**
+ * Create a new permission
+ * POST /api/roles/permissions
+ * 
+ * @param {Object} req - Express request with permission data in body
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware
+ */
 const createPermission = async (req, res, next) => {
   try {
     const permission = await roleService.createPermission(req.body);

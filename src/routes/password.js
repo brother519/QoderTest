@@ -1,3 +1,10 @@
+/**
+ * Password Routes
+ * 
+ * Defines API endpoints for password management operations.
+ * All routes are prefixed with /api/password
+ */
+
 const express = require('express');
 const router = express.Router();
 const passwordController = require('../controllers/passwordController');
@@ -11,6 +18,11 @@ const {
   changePasswordSchema
 } = require('../schemas/passwordSchemas');
 
+/**
+ * POST /api/password/security-questions/set
+ * Set or update security questions for password recovery
+ * Requires authentication
+ */
 router.post(
   '/security-questions/set',
   authenticate,
@@ -18,6 +30,11 @@ router.post(
   passwordController.setSecurityQuestions
 );
 
+/**
+ * POST /api/password/reset/verify
+ * Verify security question answers to get reset token
+ * Rate limited to prevent enumeration attacks
+ */
 router.post(
   '/reset/verify',
   passwordResetLimiter,
@@ -25,12 +42,22 @@ router.post(
   passwordController.verifySecurityQuestions
 );
 
+/**
+ * POST /api/password/reset/confirm
+ * Reset password using reset token from verify step
+ * No authentication required (uses reset token)
+ */
 router.post(
   '/reset/confirm',
   validate(resetPasswordSchema),
   passwordController.resetPassword
 );
 
+/**
+ * POST /api/password/change
+ * Change password for authenticated user
+ * Requires current password verification
+ */
 router.post(
   '/change',
   authenticate,

@@ -1,7 +1,22 @@
+/**
+ * User Controller
+ * 
+ * HTTP request handlers for user management endpoints.
+ * Handles profile retrieval, updates, and admin operations.
+ */
+
 const User = require('../models/User');
 const { sanitizeUser } = require('../utils/validators');
 const { ERROR_CODES } = require('../utils/constants');
 
+/**
+ * Get current authenticated user's profile
+ * GET /api/users/me
+ * 
+ * @param {Object} req - Express request with authenticated user
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware
+ */
 const getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id).populate('roles');
@@ -15,11 +30,20 @@ const getMe = async (req, res, next) => {
   }
 };
 
+/**
+ * Update current authenticated user's profile
+ * PATCH /api/users/me
+ * 
+ * @param {Object} req - Express request with update data in body
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware
+ */
 const updateMe = async (req, res, next) => {
   try {
     const { email, username } = req.body;
     const userId = req.user._id;
     
+    // Check email uniqueness if being updated
     if (email) {
       const existingUser = await User.findOne({ email, _id: { $ne: userId } });
       if (existingUser) {
@@ -30,6 +54,7 @@ const updateMe = async (req, res, next) => {
       }
     }
     
+    // Check username uniqueness if being updated
     if (username) {
       const existingUser = await User.findOne({ username, _id: { $ne: userId } });
       if (existingUser) {
@@ -40,6 +65,7 @@ const updateMe = async (req, res, next) => {
       }
     }
     
+    // Build update object with only provided fields
     const updates = {};
     if (email) updates.email = email;
     if (username) updates.username = username;
@@ -59,12 +85,26 @@ const updateMe = async (req, res, next) => {
   }
 };
 
+/**
+ * Get paginated list of all users (admin only)
+ * GET /api/users
+ * 
+ * Query params:
+ * - page: Page number (default: 1)
+ * - limit: Items per page (default: 20)
+ * - search: Search term for email/username
+ * 
+ * @param {Object} req - Express request with query params
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware
+ */
 const getUsers = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 20;
     const search = req.query.search || '';
     
+    // Build query with optional search filter
     const query = {};
     
     if (search) {
@@ -74,6 +114,7 @@ const getUsers = async (req, res, next) => {
       ];
     }
     
+    // Get total count and paginated results
     const total = await User.countDocuments(query);
     const users = await User.find(query)
       .populate('roles')
@@ -96,6 +137,14 @@ const getUsers = async (req, res, next) => {
   }
 };
 
+/**
+ * Get a specific user by ID
+ * GET /api/users/:id
+ * 
+ * @param {Object} req - Express request with user ID in params
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware
+ */
 const getUserById = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id).populate('roles');
@@ -116,6 +165,14 @@ const getUserById = async (req, res, next) => {
   }
 };
 
+/**
+ * Delete a user by ID (admin only)
+ * DELETE /api/users/:id
+ * 
+ * @param {Object} req - Express request with user ID in params
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware
+ */
 const deleteUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
