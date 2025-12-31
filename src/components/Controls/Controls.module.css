@@ -1,0 +1,18 @@
+.controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.newGameButton {
+  background-color: #8f7a66;
+  color: #f9f6f2;
+  padding: 12px 30px;
+  border-radius: var(--border-radius);
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.newGameButton:hover {
+  background-color: #9f8a76;
+}

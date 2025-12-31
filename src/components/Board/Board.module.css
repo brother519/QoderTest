@@ -1,0 +1,33 @@
+.board {
+  width: var(--board-size);
+  height: var(--board-size);
+  background-color: var(--board-bg);
+  border-radius: var(--border-radius);
+  padding: var(--grid-gap);
+  position: relative;
+  touch-action: none;
+  user-select: none;
+}
+
+.gridBackground {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: var(--grid-gap);
+  width: 100%;
+  height: 100%;
+}
+
+.gridCell {
+  background-color: var(--empty-cell-bg);
+  border-radius: var(--border-radius);
+}
+
+.tileContainer {
+  position: absolute;
+  top: var(--grid-gap);
+  left: var(--grid-gap);
+  width: calc(100% - var(--grid-gap) * 2);
+  height: calc(100% - var(--grid-gap) * 2);
+  pointer-events: none;
+}
