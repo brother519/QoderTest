@@ -1,0 +1,29 @@
+.game-board-container {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.game-board-container.victory {
+  animation: none;
+}
+
+.game-board-container.victory .game-board {
+  animation: none;
+}
+
+.game-board-container.defeat {
+  animation: shake 0.5s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .game-board-container {
+    padding: 10px;
+    border-radius: 8px;
+  }
+}

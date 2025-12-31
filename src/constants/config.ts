@@ -1,0 +1,5 @@
+export const CONFIG = {
+  CELL_SIZE: 32,
+  ANIMATION_DURATION: 200,
+  TIMER_INTERVAL: 1000
+};
