@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}标签管理 - 博客系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>标签管理</h2>
+    <a href="{{ url_for('admin.tag_create') }}" class="btn btn-primary">创建标签</a>
+</div>
+
+{% if tags %}
+<div class="card">
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>名称</th>
+                    <th>URL别名</th>
+                    <th>文章数</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tag in tags %}
+                <tr>
+                    <td>{{ tag.id }}</td>
+                    <td>{{ tag.name }}</td>
+                    <td>{{ tag.slug }}</td>
+                    <td>{{ tag.posts.count() }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.tag_edit', id=tag.id) }}" class="btn btn-sm btn-warning">编辑</a>
+                        <form method="POST" action="{{ url_for('admin.tag_delete', id=tag.id) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除这个标签吗？')">删除</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<p class="text-muted">暂无标签</p>
+{% endif %}
+{% endblock %}
