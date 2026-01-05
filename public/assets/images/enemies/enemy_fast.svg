@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="25" height="35" viewBox="0 0 25 35" xmlns="http://www.w3.org/2000/svg">
+  <!-- 快速敌机 - 橙色椭圆 -->
+  <ellipse cx="12.5" cy="17.5" rx="10" ry="15" fill="#ff6600" stroke="#993300" stroke-width="2"/>
+  <!-- 尾翼 -->
+  <polygon points="5,10 2,20 5,30" fill="#ff8833"/>
+  <polygon points="20,10 23,20 20,30" fill="#ff8833"/>
+</svg>

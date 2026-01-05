@@ -1,0 +1,19 @@
+{
+  "name": "plane-war-game",
+  "version": "1.0.0",
+  "description": "飞机大战游戏 - 基于Phaser 3和TypeScript",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "phaser": "^3.70.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.0"
+  }
+}

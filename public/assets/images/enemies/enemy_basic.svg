@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
+  <!-- 基础敌机 - 红色圆形 -->
+  <circle cx="15" cy="20" r="12" fill="#cc0000" stroke="#660000" stroke-width="2"/>
+  <!-- 敌机标识 -->
+  <rect x="8" y="15" width="14" height="10" fill="#ff6666"/>
+</svg>
