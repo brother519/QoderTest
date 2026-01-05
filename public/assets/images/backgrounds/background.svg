@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- 深蓝色星空背景 -->
+  <rect width="800" height="600" fill="#000033"/>
+  <!-- 随机分布的星星 -->
+  <circle cx="50" cy="100" r="1.5" fill="#ffffff"/>
+  <circle cx="120" cy="80" r="1" fill="#ffffff"/>
+  <circle cx="200" cy="150" r="1.2" fill="#ffffff"/>
+  <circle cx="300" cy="50" r="1" fill="#ffffff"/>
+  <circle cx="400" cy="200" r="1.5" fill="#ffffff"/>
+  <circle cx="500" cy="120" r="1" fill="#ffffff"/>
+  <circle cx="600" cy="300" r="1.2" fill="#ffffff"/>
+  <circle cx="700" cy="180" r="1" fill="#ffffff"/>
+  <circle cx="750" cy="250" r="1.5" fill="#ffffff"/>
+  <circle cx="100" cy="400" r="1" fill="#ffffff"/>
+  <circle cx="250" cy="450" r="1.2" fill="#ffffff"/>
+  <circle cx="350" cy="380" r="1" fill="#ffffff"/>
+  <circle cx="450" cy="500" r="1.5" fill="#ffffff"/>
+  <circle cx="550" cy="420" r="1" fill="#ffffff"/>
+  <circle cx="650" cy="550" r="1.2" fill="#ffffff"/>
+  <circle cx="720" cy="350" r="1" fill="#ffffff"/>
+  <circle cx="80" cy="520" r="1.5" fill="#ffffff"/>
+  <circle cx="180" cy="580" r="1" fill="#ffffff"/>
+  <circle cx="280" cy="320" r="1.2" fill="#ffffff"/>
+  <circle cx="380" cy="280" r="1" fill="#ffffff"/>
+</svg>
