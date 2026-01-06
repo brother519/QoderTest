@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超级坦克大战</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>超级坦克大战</h1>
+        <canvas id="gameCanvas" width="624" height="624"></canvas>
+        <div class="game-info">
+            <div class="info-item">
+                <span>生命值: </span>
+                <span id="playerHealth">3</span>
+            </div>
+            <div class="info-item">
+                <span>敌方坦克: </span>
+                <span id="enemyCount">5</span>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="startBtn">开始游戏</button>
+            <button id="restartBtn" style="display: none;">重新开始</button>
+        </div>
+        <div class="instructions">
+            <p>控制说明：</p>
+            <ul>
+                <li>移动：方向键 ↑↓←→ 或 WASD</li>
+                <li>射击：空格键 或 鼠标左键</li>
+                <li>暂停：ESC 键</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 工具类 -->
+    <script src="js/utils/Vector2D.js"></script>
+    <script src="js/utils/helpers.js"></script>
+    
+    <!-- 配置 -->
+    <script src="js/config.js"></script>
+    
+    <!-- 地图系统 -->
+    <script src="js/map/Tile.js"></script>
+    <script src="js/map/mapData.js"></script>
+    <script src="js/map/Map.js"></script>
+    
+    <!-- 实体 -->
+    <script src="js/entities/Tank.js"></script>
+    <script src="js/entities/PlayerTank.js"></script>
+    <script src="js/entities/EnemyTank.js"></script>
+    <script src="js/entities/Bullet.js"></script>
+    <script src="js/entities/Base.js"></script>
+    
+    <!-- 系统 -->
+    <script src="js/systems/InputHandler.js"></script>
+    <script src="js/systems/CollisionDetector.js"></script>
+    <script src="js/systems/Renderer.js"></script>
+    <script src="js/systems/AIController.js"></script>
+    
+    <!-- 游戏管理 -->
+    <script src="js/Game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
