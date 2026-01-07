@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>羊了个羊游戏</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1>羊了个羊</h1>
+            <div class="game-info">
+                <div class="score">得分: <span id="score">0</span></div>
+                <div class="level">关卡: <span id="level">1</span></div>
+                <div class="moves">步数: <span id="moves">0</span></div>
+            </div>
+        </header>
+        
+        <div class="game-area">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+        </div>
+        
+        <div class="slot-area">
+            <h3>卡槽区域</h3>
+            <div class="slot-container" id="slotContainer">
+                <!-- 卡槽将在这里动态生成 -->
+            </div>
+        </div>
+        
+        <div class="game-controls">
+            <button id="restartBtn">重新开始</button>
+            <button id="hintBtn">提示</button>
+        </div>
+        
+        <div class="game-over" id="gameOver" style="display: none;">
+            <div class="game-over-content">
+                <h2 id="gameResult">恭喜过关！</h2>
+                <p>得分: <span id="finalScore">0</span></p>
+                <button id="nextLevelBtn">下一关</button>
+                <button id="playAgainBtn">再玩一次</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config/constants.js"></script>
+    <script src="js/config/levels.js"></script>
+    <script src="js/utils/Animation.js"></script>
+    <script src="js/utils/Collision.js"></script>
+    <script src="js/core/Canvas.js"></script>
+    <script src="js/entities/Card.js"></script>
+    <script src="js/entities/Slot.js"></script>
+    <script src="js/managers/StateManager.js"></script>
+    <script src="js/managers/LevelManager.js"></script>
+    <script src="js/managers/LayoutManager.js"></script>
+    <script src="js/core/EventManager.js"></script>
+    <script src="js/core/Game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
