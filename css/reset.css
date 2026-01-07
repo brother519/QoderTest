@@ -1,0 +1,22 @@
+/* reset.css - 样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    overflow: hidden;
+}
+
+button {
+    cursor: pointer;
+    outline: none;
+}
+
+/* 隐藏默认滚动条 */
+html, body {
+    overflow: hidden;
+}
