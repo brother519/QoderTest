@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>连连看游戏</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 主菜单界面 -->
+    <div id="main-menu" class="screen">
+        <h1 class="game-title">连连看</h1>
+        <div class="menu-buttons">
+            <button id="btn-start" class="menu-btn">开始游戏</button>
+            <button id="btn-level-select" class="menu-btn">选择关卡</button>
+        </div>
+    </div>
+
+    <!-- 关卡选择界面 -->
+    <div id="level-select" class="screen hidden">
+        <h2>选择关卡</h2>
+        <div id="level-list" class="level-list"></div>
+        <button id="btn-back-menu" class="btn-back">返回主菜单</button>
+    </div>
+
+    <!-- 游戏主界面 -->
+    <div id="game-screen" class="screen hidden">
+        <!-- 顶部信息栏 -->
+        <div class="info-panel">
+            <div class="info-item">
+                <span>关卡:</span>
+                <span id="current-level">1</span>
+            </div>
+            <div class="info-item">
+                <span>分数:</span>
+                <span id="current-score">0</span>
+            </div>
+            <div class="info-item">
+                <span>时间:</span>
+                <span id="remaining-time">120</span>
+            </div>
+            <div class="info-item">
+                <span>连击:</span>
+                <span id="combo-count">0</span>
+            </div>
+        </div>
+
+        <!-- 游戏棋盘区域 -->
+        <div id="game-board-container">
+            <canvas id="game-board"></canvas>
+        </div>
+
+        <!-- 底部控制栏 -->
+        <div class="control-panel">
+            <button id="btn-pause" class="control-btn">暂停</button>
+            <button id="btn-restart" class="control-btn">重新开始</button>
+            <button id="btn-quit" class="control-btn">退出</button>
+        </div>
+    </div>
+
+    <!-- 暂停弹窗 -->
+    <div id="modal-pause" class="modal hidden">
+        <div class="modal-content">
+            <h2>游戏暂停</h2>
+            <div class="modal-buttons">
+                <button id="btn-resume" class="modal-btn">继续游戏</button>
+                <button id="btn-restart-pause" class="modal-btn">重新开始</button>
+                <button id="btn-menu-pause" class="modal-btn">返回菜单</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 胜利弹窗 -->
+    <div id="modal-victory" class="modal hidden">
+        <div class="modal-content">
+            <h2>关卡完成!</h2>
+            <p>本关得分: <span id="victory-score">0</span></p>
+            <p>时间奖励: <span id="victory-time-bonus">0</span></p>
+            <p>总分: <span id="victory-total-score">0</span></p>
+            <div class="modal-buttons">
+                <button id="btn-next-level" class="modal-btn">下一关</button>
+                <button id="btn-menu-victory" class="modal-btn">返回菜单</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 失败弹窗 -->
+    <div id="modal-failure" class="modal hidden">
+        <div class="modal-content">
+            <h2>游戏失败</h2>
+            <p>本关得分: <span id="failure-score">0</span></p>
+            <div class="modal-buttons">
+                <button id="btn-restart-failure" class="modal-btn">重新开始</button>
+                <button id="btn-menu-failure" class="modal-btn">返回菜单</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通关弹窗 -->
+    <div id="modal-complete" class="modal hidden">
+        <div class="modal-content">
+            <h2>恭喜通关!</h2>
+            <p>总分: <span id="complete-total-score">0</span></p>
+            <div class="modal-buttons">
+                <button id="btn-menu-complete" class="modal-btn">返回菜单</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/models.js"></script>
+    <script src="js/levelManager.js"></script>
+    <script src="js/pathAlgorithm.js"></script>
+    <script src="js/boardManager.js"></script>
+    <script src="js/scoreManager.js"></script>
+    <script src="js/gameController.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
