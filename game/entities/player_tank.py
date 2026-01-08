@@ -37,16 +37,16 @@ class PlayerTank(Tank):
             keys: pygame.key.get_pressed() 返回的按键状态
         """
         # 方向键移动
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
             self.rotate(Direction.UP)
             self.move(0, -self.speed)
-        elif keys[pygame.K_DOWN]:
+        elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
             self.rotate(Direction.DOWN)
             self.move(0, self.speed)
-        elif keys[pygame.K_LEFT]:
+        elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.rotate(Direction.LEFT)
             self.move(-self.speed, 0)
-        elif keys[pygame.K_RIGHT]:
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.rotate(Direction.RIGHT)
             self.move(self.speed, 0)
     

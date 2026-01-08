@@ -109,6 +109,13 @@ class Game:
                         if bullet:
                             self.bullets.add(bullet)
                             self.all_sprites.add(bullet)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                # 处理鼠标点击
+                if not self.game_manager.is_game_over():
+                    bullet = self.input_handler.handle_mouse_button(event)
+                    if bullet:
+                        self.bullets.add(bullet)
+                        self.all_sprites.add(bullet)
         
         # 处理持续按键（移动）
         if not self.game_manager.is_game_over():
