@@ -1,0 +1,18 @@
+{
+  "level": 1,
+  "player_spawn": {
+    "x": 384,
+    "y": 768
+  },
+  "enemy_spawns": [
+    {"x": 0, "y": 0},
+    {"x": 384, "y": 0},
+    {"x": 768, "y": 0}
+  ],
+  "base": {
+    "x": 384,
+    "y": 800
+  },
+  "enemy_total": 20,
+  "enemy_max_active": 4
+}
