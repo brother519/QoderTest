@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>推箱子游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #game-container {
+            background-color: #f5f5f5;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #info-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .info-item {
+            font-size: 1.1em;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .info-item span {
+            color: #1976d2;
+        }
+
+        #canvas-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        #gameCanvas {
+            border: 3px solid #333;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            background-color: white;
+        }
+
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: bold;
+            color: white;
+            background-color: #1976d2;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            background-color: #1565c0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #level-select-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #level-select-content {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #level-select-content h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        #level-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .level-card {
+            padding: 20px;
+            background-color: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .level-card:hover {
+            background-color: #e3f2fd;
+            border-color: #1976d2;
+            transform: scale(1.05);
+        }
+
+        .level-card.completed {
+            background-color: #c8e6c9;
+            border-color: #4caf50;
+        }
+
+        .level-card .level-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .level-card .level-name {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .level-card .completed-mark {
+            color: #4caf50;
+            font-size: 1.2em;
+            margin-top: 5px;
+        }
+
+        #close-level-select {
+            width: 100%;
+            background-color: #666;
+        }
+
+        #close-level-select:hover {
+            background-color: #555;
+        }
+
+        #victory-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #victory-content {
+            background-color: white;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            animation: victoryPop 0.5s ease;
+        }
+
+        @keyframes victoryPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        #victory-content h2 {
+            color: #4caf50;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        #victory-content p {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        #victory-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        #help-text {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>推箱子游戏</h1>
+        
+        <div id="info-panel">
+            <div class="info-item">关卡: <span id="current-level">1</span></div>
+            <div class="info-item">步数: <span id="move-count">0</span></div>
+            <button id="reset-btn">重置关卡 (R)</button>
+        </div>
+
+        <div id="canvas-container">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <div id="controls">
+            <button id="level-select-btn">选择关卡</button>
+        </div>
+
+        <div id="help-text">
+            使用方向键或WASD控制移动 | R键重置关卡
+        </div>
+    </div>
+
+    <!-- 关卡选择模态框 -->
+    <div id="level-select-modal">
+        <div id="level-select-content">
+            <h2>选择关卡</h2>
+            <div id="level-grid"></div>
+            <button id="close-level-select">关闭</button>
+        </div>
+    </div>
+
+    <!-- 胜利模态框 -->
+    <div id="victory-modal">
+        <div id="victory-content">
+            <h2>🎉 恭喜过关！</h2>
+            <p>完成步数: <span id="victory-moves">0</span></p>
+            <div id="victory-buttons">
+                <button id="next-level-btn">下一关</button>
+                <button id="back-to-select-btn">关卡选择</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 常量定义 ====================
+        const TILE_SIZE = 40;
+        const EMPTY = 0;
+        const WALL = 1;
+        const TARGET = 2;
+        const BOX = 3;
+        const PLAYER = 4;
+
+        // ==================== 关卡数据 ====================
+        const LEVELS = [
+            {
+                id: 1,
+                name: "初识推箱",
+                map: [
+                    [1,1,1,1,1,1,1],
+                    [1,0,0,0,0,0,1],
+                    [1,0,4,3,2,0,1],
+                    [1,0,0,0,0,0,1],
+                    [1,1,1,1,1,1,1]
+                ]
+            },
+            {
+                id: 2,
+                name: "转个弯",
+                map: [
+                    [1,1,1,1,1,1,1,1],
+                    [1,0,0,0,0,0,0,1],
+                    [1,0,4,0,3,0,0,1],
+                    [1,0,0,0,0,0,0,1],
+                    [1,0,0,0,2,0,0,1],
+                    [1,1,1,1,1,1,1,1]
+                ]
+            },
+            {
+                id: 3,
+                name: "双箱难题",
+                map: [
+                    [1,1,1,1,1,1,1,1],
+                    [1,2,0,0,0,0,2,1],
+                    [1,0,0,0,0,0,0,1],
+                    [1,0,0,4,3,0,0,1],
+                    [1,0,0,3,0,0,0,1],
+                    [1,0,0,0,0,0,0,1],
+                    [1,1,1,1,1,1,1,1]
+                ]
+            },
+            {
+                id: 4,
+                name: "迷宫",
+                map: [
+                    [1,1,1,1,1,1,1,1,1],
+                    [1,4,0,1,0,0,0,2,1],
+                    [1,0,3,1,0,1,0,0,1],
+                    [1,0,0,0,0,1,3,0,1],
+                    [1,0,1,1,0,0,0,2,1],
+                    [1,0,0,0,0,1,0,0,1],
+                    [1,1,1,1,1,1,1,1,1]
+                ]
+            },
+            {
+                id: 5,
+                name: "四方阵",
+                map: [
+                    [1,1,1,1,1,1,1,1,1],
+                    [1,2,2,0,0,0,0,0,1],
+                    [1,2,2,0,0,0,0,0,1],
+                    [1,0,0,0,3,3,0,0,1],
+                    [1,0,0,0,3,3,0,0,1],
+                    [1,0,0,0,0,4,0,0,1],
+                    [1,0,0,0,0,0,0,0,1],
+                    [1,1,1,1,1,1,1,1,1]
+                ]
+            },
+            {
+                id: 6,
+                name: "狭路相逢",
+                map: [
+                    [1,1,1,1,1,1,1,1,1,1],
+                    [1,0,0,0,1,1,0,0,0,1],
+                    [1,0,3,0,0,0,0,3,0,1],
+                    [1,0,0,0,1,1,0,0,0,1],
+                    [1,1,1,0,4,0,0,1,1,1],
+                    [1,2,0,0,0,0,0,0,2,1],
+                    [1,1,1,1,1,1,1,1,1,1]
+                ]
+            },
+            {
+                id: 7,
+                name: "步步为营",
+                map: [
+                    [1,1,1,1,1,1,1,1,1],
+                    [1,0,0,0,0,0,0,0,1],
+                    [1,0,3,0,3,0,3,0,1],
+                    [1,0,0,0,4,0,0,0,1],
+                    [1,0,3,0,3,0,3,0,1],
+                    [1,0,0,0,0,0,0,0,1],
+                    [1,2,2,2,0,2,2,2,1],
+                    [1,1,1,1,1,1,1,1,1]
+                ]
+            },
+            {
+                id: 8,
+                name: "螺旋迷宫",
+                map: [
+                    [1,1,1,1,1,1,1,1,1,1],
+                    [1,4,0,0,0,0,0,0,0,1],
+                    [1,0,1,1,1,1,1,1,0,1],
+                    [1,0,1,2,2,2,0,1,0,1],
+                    [1,0,1,0,1,0,0,1,0,1],
+                    [1,0,1,0,0,3,3,1,0,1],
+                    [1,0,1,1,3,1,1,1,0,1],
+                    [1,0,0,0,3,0,0,0,0,1],
+                    [1,1,1,1,1,1,1,1,1,1]
+                ]
+            },
+            {
+                id: 9,
+                name: "十字路口",
+                map: [
+                    [1,1,1,1,1,1,1,1,1,1,1],
+                    [1,0,0,0,1,0,1,0,0,0,1],
+                    [1,0,3,0,1,0,1,0,3,0,1],
+                    [1,0,0,0,0,0,0,0,0,0,1],
+                    [1,1,1,0,0,4,0,0,1,1,1],
+                    [1,0,0,0,0,0,0,0,0,0,1],
+                    [1,0,3,0,1,0,1,0,3,0,1],
+                    [1,0,0,0,1,0,1,0,0,0,1],
+                    [1,2,2,0,0,0,0,0,2,2,1],
+                    [1,1,1,1,1,1,1,1,1,1,1]
+                ]
+            },
+            {
+                id: 10,
+                name: "终极挑战",
+                map: [
+                    [1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,0,0,0,0,1,1,0,0,0,0,1],
+                    [1,0,3,3,0,0,0,0,3,3,0,1],
+                    [1,0,0,0,0,1,1,0,0,0,0,1],
+                    [1,1,1,0,0,0,0,0,0,1,1,1],
+                    [1,0,0,0,0,4,0,0,0,0,0,1],
+                    [1,1,1,0,0,0,0,0,0,1,1,1],
+                    [1,0,0,0,0,1,1,0,0,0,0,1],
+                    [1,0,3,3,0,0,0,0,3,3,0,1],
+                    [1,0,0,0,0,1,1,0,0,0,0,1],
+                    [1,2,2,2,2,0,0,2,2,2,2,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1]
+                ]
+            }
+        ];
+
+        // ==================== 游戏状态 ====================
+        let gameState = {
+            currentLevel: 0,
+            map: [],
+            playerPos: {x: 0, y: 0},
+            boxes: [],
+            targets: [],
+            moveCount: 0,
+            isMoving: false
+        };
+
+        // ==================== DOM 元素 ====================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const currentLevelSpan = document.getElementById('current-level');
+        const moveCountSpan = document.getElementById('move-count');
+        const resetBtn = document.getElementById('reset-btn');
+        const levelSelectBtn = document.getElementById('level-select-btn');
+        const levelSelectModal = document.getElementById('level-select-modal');
+        const closeLevelSelectBtn = document.getElementById('close-level-select');
+        const levelGrid = document.getElementById('level-grid');
+        const victoryModal = document.getElementById('victory-modal');
+        const victoryMovesSpan = document.getElementById('victory-moves');
+        const nextLevelBtn = document.getElementById('next-level-btn');
+        const backToSelectBtn = document.getElementById('back-to-select-btn');
+
+        // ==================== 渲染引擎 ====================
+        function initCanvas(width, height) {
+            canvas.width = width * TILE_SIZE;
+            canvas.height = height * TILE_SIZE;
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawTile(x, y, type) {
+            const pixelX = x * TILE_SIZE;
+            const pixelY = y * TILE_SIZE;
+
+            switch(type) {
+                case WALL:
+                    ctx.fillStyle = '#333333';
+                    ctx.fillRect(pixelX, pixelY, TILE_SIZE, TILE_SIZE);
+                    ctx.strokeStyle = '#222222';
+                    ctx.strokeRect(pixelX, pixelY, TILE_SIZE, TILE_SIZE);
+                    break;
+                case EMPTY:
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(pixelX, pixelY, TILE_SIZE, TILE_SIZE);
+                    ctx.strokeStyle = '#eeeeee';
+                    ctx.strokeRect(pixelX, pixelY, TILE_SIZE, TILE_SIZE);
+                    break;
+            }
+        }
+
+        function drawTarget(x, y) {
+            const centerX = x * TILE_SIZE + TILE_SIZE / 2;
+            const centerY = y * TILE_SIZE + TILE_SIZE / 2;
+            const radius = TILE_SIZE / 4;
+
+            ctx.fillStyle = '#ffeb3b';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#fbc02d';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function drawBox(x, y, isOnTarget) {
+            const pixelX = x * TILE_SIZE;
+            const pixelY = y * TILE_SIZE;
+            const padding = 5;
+
+            ctx.fillStyle = '#8d6e63';
+            ctx.fillRect(pixelX + padding, pixelY + padding, TILE_SIZE - padding * 2, TILE_SIZE - padding * 2);
+            
+            if (isOnTarget) {
+                ctx.strokeStyle = '#4caf50';
+                ctx.lineWidth = 4;
+            } else {
+                ctx.strokeStyle = '#5d4037';
+                ctx.lineWidth = 2;
+            }
+            ctx.strokeRect(pixelX + padding, pixelY + padding, TILE_SIZE - padding * 2, TILE_SIZE - padding * 2);
+        }
+
+        function drawPlayer(x, y) {
+            const centerX = x * TILE_SIZE + TILE_SIZE / 2;
+            const centerY = y * TILE_SIZE + TILE_SIZE / 2;
+            const radius = TILE_SIZE / 3;
+
+            ctx.fillStyle = '#2196f3';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#1976d2';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        function drawMap() {
+            clearCanvas();
+
+            // 绘制地板和墙壁
+            for (let y = 0; y < gameState.map.length; y++) {
+                for (let x = 0; x < gameState.map[y].length; x++) {
+                    drawTile(x, y, gameState.map[y][x]);
+                }
+            }
+
+            // 绘制目标点
+            gameState.targets.forEach(target => {
+                drawTarget(target.x, target.y);
+            });
+
+            // 绘制箱子
+            gameState.boxes.forEach(box => {
+                const isOnTarget = gameState.targets.some(t => t.x === box.x && t.y === box.y);
+                drawBox(box.x, box.y, isOnTarget);
+            });
+
+            // 绘制玩家
+            drawPlayer(gameState.playerPos.x, gameState.playerPos.y);
+        }
+
+        // ==================== 关卡管理 ====================
+        function loadLevel(levelIndex) {
+            if (levelIndex < 0 || levelIndex >= LEVELS.length) {
+                return;
+            }
+
+            const level = LEVELS[levelIndex];
+            gameState.currentLevel = levelIndex;
+            gameState.moveCount = 0;
+            gameState.boxes = [];
+            gameState.targets = [];
+            
+            // 深拷贝地图
+            gameState.map = level.map.map(row => [...row]);
+
+            // 解析地图，提取元素位置
+            for (let y = 0; y < gameState.map.length; y++) {
+                for (let x = 0; x < gameState.map[y].length; x++) {
+                    const tile = gameState.map[y][x];
+                    
+                    if (tile === PLAYER) {
+                        gameState.playerPos = {x, y};
+                        gameState.map[y][x] = EMPTY;
+                    } else if (tile === BOX) {
+                        gameState.boxes.push({x, y});
+                        gameState.map[y][x] = EMPTY;
+                    } else if (tile === TARGET) {
+                        gameState.targets.push({x, y});
+                        gameState.map[y][x] = EMPTY;
+                    }
+                }
+            }
+
+            // 初始化Canvas大小
+            const mapWidth = gameState.map[0].length;
+            const mapHeight = gameState.map.length;
+            initCanvas(mapWidth, mapHeight);
+
+            // 更新UI
+            currentLevelSpan.textContent = levelIndex + 1;
+            moveCountSpan.textContent = gameState.moveCount;
+
+            drawMap();
+        }
+
+        function resetLevel() {
+            loadLevel(gameState.currentLevel);
+        }
+
+        function nextLevel() {
+            if (gameState.currentLevel < LEVELS.length - 1) {
+                loadLevel(gameState.currentLevel + 1);
+            }
+        }
+
+        // ==================== 游戏逻辑 ====================
+        function canMove(x, y) {
+            if (y < 0 || y >= gameState.map.length || x < 0 || x >= gameState.map[0].length) {
+                return false;
+            }
+            return gameState.map[y][x] !== WALL;
+        }
+
+        function getBoxAt(x, y) {
+            return gameState.boxes.find(box => box.x === x && box.y === y);
+        }
+
+        function pushBox(box, dx, dy) {
+            const newX = box.x + dx;
+            const newY = box.y + dy;
+
+            // 检查箱子目标位置是否可通行
+            if (!canMove(newX, newY)) {
+                return false;
+            }
+
+            // 检查箱子目标位置是否有其他箱子
+            if (getBoxAt(newX, newY)) {
+                return false;
+            }
+
+            // 移动箱子
+            box.x = newX;
+            box.y = newY;
+            return true;
+        }
+
+        function movePlayer(dx, dy) {
+            if (gameState.isMoving) {
+                return;
+            }
+
+            const newX = gameState.playerPos.x + dx;
+            const newY = gameState.playerPos.y + dy;
+
+            // 检查目标位置是否可通行
+            if (!canMove(newX, newY)) {
+                return;
+            }
+
+            // 检查是否有箱子
+            const box = getBoxAt(newX, newY);
+            if (box) {
+                // 尝试推箱子
+                if (!pushBox(box, dx, dy)) {
+                    return;
+                }
+            }
+
+            // 移动玩家
+            gameState.playerPos.x = newX;
+            gameState.playerPos.y = newY;
+            gameState.moveCount++;
+            moveCountSpan.textContent = gameState.moveCount;
+
+            drawMap();
+
+            // 检查胜利
+            if (checkVictory()) {
+                setTimeout(() => {
+                    showVictory();
+                }, 300);
+            }
+        }
+
+        function checkVictory() {
+            return gameState.boxes.every(box => 
+                gameState.targets.some(target => target.x === box.x && target.y === box.y)
+            );
+        }
+
+        // ==================== 输入处理 ====================
+        function handleKeyDown(event) {
+            let dx = 0, dy = 0;
+
+            switch(event.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    dy = -1;
+                    event.preventDefault();
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    dy = 1;
+                    event.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    dx = -1;
+                    event.preventDefault();
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    dx = 1;
+                    event.preventDefault();
+                    break;
+                case 'r':
+                case 'R':
+                    resetLevel();
+                    event.preventDefault();
+                    return;
+                default:
+                    return;
+            }
+
+            if (dx !== 0 || dy !== 0) {
+                movePlayer(dx, dy);
+            }
+        }
+
+        // ==================== UI 控制 ====================
+        function showLevelSelect() {
+            levelGrid.innerHTML = '';
+            
+            const completedLevels = loadProgress().completedLevels;
+
+            LEVELS.forEach((level, index) => {
+                const card = document.createElement('div');
+                card.className = 'level-card';
+                
+                if (completedLevels.includes(index)) {
+                    card.classList.add('completed');
+                }
+
+                card.innerHTML = `
+                    <div class="level-number">${level.id}</div>
+                    <div class="level-name">${level.name}</div>
+                    ${completedLevels.includes(index) ? '<div class="completed-mark">✓</div>' : ''}
+                `;
+
+                card.addEventListener('click', () => {
+                    loadLevel(index);
+                    hideLevelSelect();
+                });
+
+                levelGrid.appendChild(card);
+            });
+
+            levelSelectModal.style.display = 'flex';
+        }
+
+        function hideLevelSelect() {
+            levelSelectModal.style.display = 'none';
+        }
+
+        function showVictory() {
+            victoryMovesSpan.textContent = gameState.moveCount;
+            victoryModal.style.display = 'flex';
+            
+            // 保存进度
+            saveProgress();
+        }
+
+        function hideVictory() {
+            victoryModal.style.display = 'none';
+        }
+
+        // ==================== 进度保存 ====================
+        function saveProgress() {
+            const progress = loadProgress();
+            
+            if (!progress.completedLevels.includes(gameState.currentLevel)) {
+                progress.completedLevels.push(gameState.currentLevel);
+            }
+            
+            progress.currentLevel = gameState.currentLevel;
+
+            try {
+                localStorage.setItem('sokoban_progress', JSON.stringify(progress));
+            } catch (e) {
+                console.error('保存进度失败:', e);
+            }
+        }
+
+        function loadProgress() {
+            try {
+                const saved = localStorage.getItem('sokoban_progress');
+                if (saved) {
+                    return JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error('加载进度失败:', e);
+            }
+
+            return {
+                currentLevel: 0,
+                completedLevels: []
+            };
+        }
+
+        // ==================== 事件绑定 ====================
+        document.addEventListener('keydown', handleKeyDown);
+        resetBtn.addEventListener('click', resetLevel);
+        levelSelectBtn.addEventListener('click', showLevelSelect);
+        closeLevelSelectBtn.addEventListener('click', hideLevelSelect);
+        nextLevelBtn.addEventListener('click', () => {
+            hideVictory();
+            nextLevel();
+        });
+        backToSelectBtn.addEventListener('click', () => {
+            hideVictory();
+            showLevelSelect();
+        });
+
+        // ==================== 初始化 ====================
+        window.addEventListener('load', () => {
+            const progress = loadProgress();
+            loadLevel(progress.currentLevel);
+        });
+    </script>
+</body>
+</html>
