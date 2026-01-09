@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消消乐游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #game-container {
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            font-size: 2.8em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #info-panel {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .info-item {
+            font-size: 1em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .info-item span {
+            display: block;
+            font-size: 1.8em;
+            margin-top: 5px;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            grid-template-rows: repeat(8, 60px);
+            gap: 3px;
+            margin: 20px auto;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .candy {
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            user-select: none;
+            position: relative;
+        }
+
+        .candy:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+        }
+
+        .candy.selected {
+            transform: scale(1.15);
+            box-shadow: 0 5px 25px rgba(255, 215, 0, 0.8);
+            border: 3px solid #ffd700;
+        }
+
+        .candy.matched {
+            animation: matchPop 0.4s ease;
+        }
+
+        @keyframes matchPop {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3) rotate(180deg); opacity: 0.8; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        .candy.falling {
+            animation: fall 0.5s ease;
+        }
+
+        @keyframes fall {
+            from { transform: translateY(-300px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.menu-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        #progress-bar {
+            width: 100%;
+            height: 30px;
+            background-color: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        #progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50 0%, #8bc34a 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        #victory-modal, #gameover-modal, #levelup-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            color: white;
+            animation: modalPop 0.5s ease;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.3); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-content h2 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .modal-content p {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-buttons button {
+            background-color: white;
+            color: #764ba2;
+            font-weight: bold;
+        }
+
+        .modal-buttons button:hover {
+            background-color: #f5f5f5;
+        }
+
+        #combo-display {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 999;
+        }
+
+        #combo-display.show {
+            animation: comboShow 1s ease;
+        }
+
+        @keyframes comboShow {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.5); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .level-info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .level-info strong {
+            color: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>🍬 消消乐游戏</h1>
+
+        <div class="level-info">
+            当前关卡: <strong id="current-level">1</strong> | 
+            目标分数: <strong id="target-score">1000</strong>
+        </div>
+
+        <div id="progress-bar">
+            <div id="progress-fill">0%</div>
+        </div>
+
+        <div id="info-panel">
+            <div class="info-item">
+                得分
+                <span id="score">0</span>
+            </div>
+            <div class="info-item">
+                移动次数
+                <span id="moves">30</span>
+            </div>
+            <div class="info-item">
+                连击
+                <span id="combo">×1</span>
+            </div>
+        </div>
+
+        <div id="game-board"></div>
+
+        <div id="controls">
+            <button id="new-game-btn">新游戏</button>
+            <button id="menu-btn" class="menu-btn">返回主菜单</button>
+        </div>
+    </div>
+
+    <!-- 连击显示 -->
+    <div id="combo-display"></div>
+
+    <!-- 升级模态框 -->
+    <div id="levelup-modal">
+        <div class="modal-content">
+            <h2>🎊 恭喜过关！</h2>
+            <p>关卡 <span id="completed-level">1</span> 完成！</p>
+            <p>获得奖励移动次数: +5</p>
+            <div class="modal-buttons">
+                <button id="next-level-btn">下一关</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 胜利模态框 -->
+    <div id="victory-modal">
+        <div class="modal-content">
+            <h2>🏆 全部通关！</h2>
+            <p>恭喜你完成了所有关卡！</p>
+            <p>最终得分: <span id="final-score">0</span></p>
+            <div class="modal-buttons">
+                <button id="play-again-btn">重新开始</button>
+                <button id="back-menu-btn">返回主菜单</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏失败模态框 -->
+    <div id="gameover-modal">
+        <div class="modal-content">
+            <h2>💔 游戏结束</h2>
+            <p>移动次数用完了！</p>
+            <p>当前得分: <span id="gameover-score">0</span></p>
+            <div class="modal-buttons">
+                <button id="retry-btn">重试</button>
+                <button id="gameover-menu-btn">返回主菜单</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 常量定义 ====================
+        const BOARD_SIZE = 8;
+        const CANDY_TYPES = ['🍎', '🍊', '🍋', '🍇', '🍓', '🍒'];
+        const LEVELS = [
+            { level: 1, targetScore: 1000, moves: 30 },
+            { level: 2, targetScore: 2000, moves: 30 },
+            { level: 3, targetScore: 3500, moves: 30 },
+            { level: 4, targetScore: 5000, moves: 30 },
+            { level: 5, targetScore: 7000, moves: 30 }
+        ];
+
+        // ==================== 游戏状态 ====================
+        let gameState = {
+            board: [],
+            selectedCandy: null,
+            score: 0,
+            moves: 30,
+            combo: 1,
+            isProcessing: false,
+            currentLevel: 0,
+            targetScore: 1000
+        };
+
+        // ==================== DOM 元素 ====================
+        const gameBoard = document.getElementById('game-board');
+        const scoreSpan = document.getElementById('score');
+        const movesSpan = document.getElementById('moves');
+        const comboSpan = document.getElementById('combo');
+        const currentLevelSpan = document.getElementById('current-level');
+        const targetScoreSpan = document.getElementById('target-score');
+        const progressFill = document.getElementById('progress-fill');
+        const comboDisplay = document.getElementById('combo-display');
+        const newGameBtn = document.getElementById('new-game-btn');
+        const menuBtn = document.getElementById('menu-btn');
+        const levelupModal = document.getElementById('levelup-modal');
+        const victoryModal = document.getElementById('victory-modal');
+        const gameoverModal = document.getElementById('gameover-modal');
+
+        // ==================== 游戏初始化 ====================
+        function initGame() {
+            const level = LEVELS[gameState.currentLevel];
+            gameState.score = 0;
+            gameState.moves = level.moves;
+            gameState.combo = 1;
+            gameState.targetScore = level.targetScore;
+            gameState.selectedCandy = null;
+            gameState.isProcessing = false;
+
+            generateBoard();
+            renderBoard();
+            updateUI();
+        }
+
+        function generateBoard() {
+            gameState.board = [];
+            
+            // 生成初始棋盘
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                gameState.board[row] = [];
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    gameState.board[row][col] = getRandomCandy();
+                }
+            }
+
+            // 确保初始状态没有匹配
+            while (hasMatches()) {
+                removeMatches();
+                fillEmptySpaces();
+            }
+        }
+
+        function getRandomCandy() {
+            return CANDY_TYPES[Math.floor(Math.random() * CANDY_TYPES.length)];
+        }
+
+        function renderBoard() {
+            gameBoard.innerHTML = '';
+            
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    const candy = document.createElement('div');
+                    candy.className = 'candy';
+                    candy.textContent = gameState.board[row][col];
+                    candy.dataset.row = row;
+                    candy.dataset.col = col;
+                    candy.addEventListener('click', handleCandyClick);
+                    gameBoard.appendChild(candy);
+                }
+            }
+        }
+
+        // ==================== 游戏逻辑 ====================
+        function handleCandyClick(event) {
+            if (gameState.isProcessing || gameState.moves <= 0) return;
+
+            const candy = event.currentTarget;
+            const row = parseInt(candy.dataset.row);
+            const col = parseInt(candy.dataset.col);
+
+            if (!gameState.selectedCandy) {
+                // 选择第一个糖果
+                gameState.selectedCandy = { row, col, element: candy };
+                candy.classList.add('selected');
+            } else {
+                // 选择第二个糖果
+                const first = gameState.selectedCandy;
+                
+                // 检查是否是相邻的糖果
+                if (isAdjacent(first.row, first.col, row, col)) {
+                    swapCandies(first.row, first.col, row, col);
+                } else {
+                    // 取消之前的选择，选择新的
+                    first.element.classList.remove('selected');
+                    gameState.selectedCandy = { row, col, element: candy };
+                    candy.classList.add('selected');
+                }
+            }
+        }
+
+        function isAdjacent(row1, col1, row2, col2) {
+            const rowDiff = Math.abs(row1 - row2);
+            const colDiff = Math.abs(col1 - col2);
+            return (rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1);
+        }
+
+        function swapCandies(row1, col1, row2, col2) {
+            gameState.isProcessing = true;
+
+            // 交换棋盘数据
+            const temp = gameState.board[row1][col1];
+            gameState.board[row1][col1] = gameState.board[row2][col2];
+            gameState.board[row2][col2] = temp;
+
+            // 重新渲染
+            renderBoard();
+
+            // 检查是否有匹配
+            if (hasMatches()) {
+                gameState.moves--;
+                gameState.combo = 1;
+                updateUI();
+                processMatches();
+            } else {
+                // 没有匹配，交换回来
+                setTimeout(() => {
+                    const temp = gameState.board[row1][col1];
+                    gameState.board[row1][col1] = gameState.board[row2][col2];
+                    gameState.board[row2][col2] = temp;
+                    renderBoard();
+                    gameState.isProcessing = false;
+                }, 300);
+            }
+
+            gameState.selectedCandy = null;
+        }
+
+        function hasMatches() {
+            // 检查横向匹配
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE - 2; col++) {
+                    const candy = gameState.board[row][col];
+                    if (candy === gameState.board[row][col + 1] && 
+                        candy === gameState.board[row][col + 2]) {
+                        return true;
+                    }
+                }
+            }
+
+            // 检查纵向匹配
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                for (let row = 0; row < BOARD_SIZE - 2; row++) {
+                    const candy = gameState.board[row][col];
+                    if (candy === gameState.board[row + 1][col] && 
+                        candy === gameState.board[row + 2][col]) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        function processMatches() {
+            const matches = findMatches();
+            
+            if (matches.length > 0) {
+                // 标记匹配的糖果
+                animateMatches(matches);
+                
+                setTimeout(() => {
+                    // 计算分数
+                    const baseScore = matches.length * 10;
+                    const comboScore = baseScore * gameState.combo;
+                    gameState.score += comboScore;
+                    
+                    // 显示连击
+                    if (gameState.combo > 1) {
+                        showCombo();
+                    }
+                    
+                    // 移除匹配的糖果
+                    removeMatches();
+                    
+                    // 填充空位
+                    fillEmptySpaces();
+                    
+                    // 重新渲染
+                    renderBoard();
+                    
+                    updateUI();
+                    
+                    // 增加连击数
+                    gameState.combo++;
+                    
+                    // 继续检查新的匹配
+                    setTimeout(() => {
+                        if (hasMatches()) {
+                            processMatches();
+                        } else {
+                            gameState.combo = 1;
+                            gameState.isProcessing = false;
+                            checkGameState();
+                        }
+                    }, 500);
+                }, 400);
+            } else {
+                gameState.combo = 1;
+                gameState.isProcessing = false;
+                checkGameState();
+            }
+        }
+
+        function findMatches() {
+            const matches = new Set();
+
+            // 查找横向匹配
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE - 2; col++) {
+                    const candy = gameState.board[row][col];
+                    if (candy === gameState.board[row][col + 1] && 
+                        candy === gameState.board[row][col + 2]) {
+                        matches.add(`${row},${col}`);
+                        matches.add(`${row},${col + 1}`);
+                        matches.add(`${row},${col + 2}`);
+                    }
+                }
+            }
+
+            // 查找纵向匹配
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                for (let row = 0; row < BOARD_SIZE - 2; row++) {
+                    const candy = gameState.board[row][col];
+                    if (candy === gameState.board[row + 1][col] && 
+                        candy === gameState.board[row + 2][col]) {
+                        matches.add(`${row},${col}`);
+                        matches.add(`${row + 1},${col}`);
+                        matches.add(`${row + 2},${col}`);
+                    }
+                }
+            }
+
+            return Array.from(matches).map(pos => {
+                const [row, col] = pos.split(',').map(Number);
+                return { row, col };
+            });
+        }
+
+        function animateMatches(matches) {
+            matches.forEach(match => {
+                const index = match.row * BOARD_SIZE + match.col;
+                const candy = gameBoard.children[index];
+                if (candy) {
+                    candy.classList.add('matched');
+                }
+            });
+        }
+
+        function removeMatches() {
+            const matches = findMatches();
+            matches.forEach(match => {
+                gameState.board[match.row][match.col] = null;
+            });
+        }
+
+        function fillEmptySpaces() {
+            // 让糖果下落
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                let emptyRow = BOARD_SIZE - 1;
+                for (let row = BOARD_SIZE - 1; row >= 0; row--) {
+                    if (gameState.board[row][col] !== null) {
+                        if (row !== emptyRow) {
+                            gameState.board[emptyRow][col] = gameState.board[row][col];
+                            gameState.board[row][col] = null;
+                        }
+                        emptyRow--;
+                    }
+                }
+            }
+
+            // 填充顶部空位
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    if (gameState.board[row][col] === null) {
+                        gameState.board[row][col] = getRandomCandy();
+                    }
+                }
+            }
+        }
+
+        function showCombo() {
+            comboDisplay.textContent = `COMBO ×${gameState.combo}`;
+            comboDisplay.classList.remove('show');
+            void comboDisplay.offsetWidth; // 触发重排
+            comboDisplay.classList.add('show');
+        }
+
+        // ==================== UI 更新 ====================
+        function updateUI() {
+            scoreSpan.textContent = gameState.score;
+            movesSpan.textContent = gameState.moves;
+            comboSpan.textContent = `×${gameState.combo}`;
+            currentLevelSpan.textContent = gameState.currentLevel + 1;
+            targetScoreSpan.textContent = gameState.targetScore;
+
+            // 更新进度条
+            const progress = Math.min(100, (gameState.score / gameState.targetScore) * 100);
+            progressFill.style.width = `${progress}%`;
+            progressFill.textContent = `${Math.round(progress)}%`;
+        }
+
+        function checkGameState() {
+            // 检查是否达到目标分数
+            if (gameState.score >= gameState.targetScore) {
+                if (gameState.currentLevel < LEVELS.length - 1) {
+                    showLevelUp();
+                } else {
+                    showVictory();
+                }
+            } else if (gameState.moves <= 0) {
+                showGameOver();
+            }
+        }
+
+        // ==================== 模态框 ====================
+        function showLevelUp() {
+            document.getElementById('completed-level').textContent = gameState.currentLevel + 1;
+            levelupModal.style.display = 'flex';
+        }
+
+        function showVictory() {
+            document.getElementById('final-score').textContent = gameState.score;
+            victoryModal.style.display = 'flex';
+        }
+
+        function showGameOver() {
+            document.getElementById('gameover-score').textContent = gameState.score;
+            gameoverModal.style.display = 'flex';
+        }
+
+        function hideModals() {
+            levelupModal.style.display = 'none';
+            victoryModal.style.display = 'none';
+            gameoverModal.style.display = 'none';
+        }
+
+        // ==================== 事件绑定 ====================
+        newGameBtn.addEventListener('click', () => {
+            gameState.currentLevel = 0;
+            initGame();
+        });
+
+        menuBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+
+        document.getElementById('next-level-btn').addEventListener('click', () => {
+            hideModals();
+            gameState.currentLevel++;
+            gameState.moves += 5; // 奖励移动次数
+            initGame();
+        });
+
+        document.getElementById('play-again-btn').addEventListener('click', () => {
+            hideModals();
+            gameState.currentLevel = 0;
+            initGame();
+        });
+
+        document.getElementById('back-menu-btn').addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+
+        document.getElementById('retry-btn').addEventListener('click', () => {
+            hideModals();
+            initGame();
+        });
+
+        document.getElementById('gameover-menu-btn').addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+
+        // ==================== 初始化 ====================
+        window.addEventListener('load', () => {
+            initGame();
+        });
+    </script>
+</body>
+</html>
