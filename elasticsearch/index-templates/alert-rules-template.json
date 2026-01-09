@@ -1,0 +1,54 @@
+{
+  "index_patterns": ["alert-rules"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1
+    },
+    "mappings": {
+      "properties": {
+        "rule_id": {
+          "type": "keyword"
+        },
+        "name": {
+          "type": "text"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "conditions": {
+          "properties": {
+            "level": {
+              "type": "keyword"
+            },
+            "pattern": {
+              "type": "text"
+            },
+            "service": {
+              "type": "keyword"
+            },
+            "threshold": {
+              "type": "integer"
+            },
+            "window": {
+              "type": "keyword"
+            }
+          }
+        },
+        "actions": {
+          "properties": {
+            "email": {
+              "type": "keyword"
+            }
+          }
+        },
+        "created_at": {
+          "type": "date"
+        },
+        "updated_at": {
+          "type": "date"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "index_patterns": ["logs-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "index.lifecycle.name": "logs-retention-policy",
+      "index.lifecycle.rollover_alias": "logs-write"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "log_id": {
+          "type": "keyword"
+        },
+        "service": {
+          "type": "keyword"
+        },
+        "level": {
+          "type": "keyword"
+        },
+        "message": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "dynamic": true,
+          "properties": {
+            "host": {
+              "type": "keyword"
+            },
+            "env": {
+              "type": "keyword"
+            },
+            "trace_id": {
+              "type": "keyword"
+            },
+            "user_id": {
+              "type": "keyword"
+            }
+          }
+        },
+        "source": {
+          "type": "keyword"
+        },
+        "parsed": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
