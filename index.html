@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超级坦克大战</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>超级坦克大战</h1>
+        <canvas id="gameCanvas" width="416" height="416"></canvas>
+        <div class="controls-info">
+            <p>方向键：移动 | 空格：射击 | Enter：开始/暂停</p>
+        </div>
+    </div>
+
+    <!-- 工具模块 -->
+    <script src="src/utils/Constants.js"></script>
+    <script src="src/utils/Helpers.js"></script>
+
+    <!-- 核心引擎 -->
+    <script src="src/core/Renderer.js"></script>
+    <script src="src/core/InputManager.js"></script>
+    <script src="src/core/CollisionDetector.js"></script>
+    <script src="src/core/Game.js"></script>
+
+    <!-- 游戏实体 -->
+    <script src="src/entities/Entity.js"></script>
+    <script src="src/entities/Tank.js"></script>
+    <script src="src/entities/PlayerTank.js"></script>
+    <script src="src/entities/EnemyTank.js"></script>
+    <script src="src/entities/Bullet.js"></script>
+    <script src="src/entities/Base.js"></script>
+
+    <!-- 地图系统 -->
+    <script src="src/map/Tile.js"></script>
+    <script src="src/map/Map.js"></script>
+    <script src="src/map/MapData.js"></script>
+
+    <!-- AI系统 -->
+    <script src="src/ai/EnemyAI.js"></script>
+
+    <!-- 游戏管理器 -->
+    <script src="src/managers/GameStateManager.js"></script>
+    <script src="src/managers/SpawnManager.js"></script>
+    <script src="src/managers/ScoreManager.js"></script>
+
+    <!-- UI系统 -->
+    <script src="src/ui/HUD.js"></script>
+    <script src="src/ui/MenuScreen.js"></script>
+
+    <!-- 游戏入口 -->
+    <script src="src/main.js"></script>
+</body>
+</html>
