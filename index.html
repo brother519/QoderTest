@@ -147,6 +147,10 @@
             animation-delay: 0.3s;
         }
 
+        .game-card:nth-child(3) .game-icon {
+            animation-delay: 0.6s;
+        }
+
         .game-title {
             font-size: 2em;
             font-weight: bold;
@@ -198,6 +202,15 @@
 
         .game-card:nth-child(2) .play-btn:hover {
             box-shadow: 0 8px 30px rgba(245, 87, 108, 0.6);
+        }
+
+        .game-card:nth-child(3) .play-btn {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            box-shadow: 0 5px 20px rgba(252, 182, 159, 0.4);
+        }
+
+        .game-card:nth-child(3) .play-btn:hover {
+            box-shadow: 0 8px 30px rgba(252, 182, 159, 0.6);
         }
 
         .features {
@@ -298,6 +311,24 @@
                     </ul>
                 </div>
                 <a href="lianliankan.html" class="play-btn">开始游戏</a>
+            </div>
+
+            <!-- 消消乐游戏卡片 -->
+            <div class="game-card">
+                <span class="game-icon">🍬</span>
+                <h2 class="game-title">消消乐</h2>
+                <p class="game-description">
+                    经典的三消游戏，通过交换相邻糖果来消除
+                </p>
+                <div class="features">
+                    <ul>
+                        <li>5个关卡挑战</li>
+                        <li>连击系统</li>
+                        <li>关卡目标分数</li>
+                        <li>移动次数限制</li>
+                    </ul>
+                </div>
+                <a href="match3.html" class="play-btn">开始游戏</a>
             </div>
         </div>
 
