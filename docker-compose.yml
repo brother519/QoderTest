@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: file-storage-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: file_storage
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - file-storage-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: file-storage-redis
+    ports:
+      - '6379:6379'
+    networks:
+      - file-storage-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: file-storage-app
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/file_storage?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - file-storage-network
+    volumes:
+      - ./.env:/app/.env
+
+volumes:
+  postgres_data:
+
+networks:
+  file-storage-network:
+    driver: bridge
