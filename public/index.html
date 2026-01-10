@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短链接服务 - 仪表板</title>
+    <link rel="stylesheet" href="/dashboard/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.2/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>短链接服务仪表板</h1>
+            <p class="subtitle">实时监控和统计分析</p>
+        </header>
+
+        <main>
+            <!-- 概览卡片 -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <h3>总链接数</h3>
+                    <p class="stat-value" id="totalUrls">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>活跃链接</h3>
+                    <p class="stat-value" id="activeUrls">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>总点击数</h3>
+                    <p class="stat-value" id="totalClicks">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>今日点击</h3>
+                    <p class="stat-value" id="clicksToday">-</p>
+                </div>
+            </section>
+
+            <!-- 创建短链接 -->
+            <section class="create-section">
+                <h2>创建短链接</h2>
+                <form id="createForm">
+                    <div class="form-group">
+                        <input type="url" id="urlInput" placeholder="输入长链接 (例如: https://example.com)" required>
+                        <input type="text" id="customCodeInput" placeholder="自定义短代码（可选）" maxlength="10">
+                        <button type="submit">生成短链接</button>
+                    </div>
+                </form>
+                <div id="result" class="result" style="display: none;">
+                    <p><strong>短链接:</strong> <a id="shortUrl" target="_blank"></a></p>
+                    <button onclick="copyToClipboard()">复制链接</button>
+                    <div class="qrcode-container">
+                        <img id="qrCode" alt="二维码">
+                    </div>
+                </div>
+            </section>
+
+            <!-- 点击趋势图表 -->
+            <section class="chart-section">
+                <h2>点击趋势（最近30天）</h2>
+                <canvas id="clickTrendChart"></canvas>
+            </section>
+
+            <!-- 热门链接列表 -->
+            <section class="table-section">
+                <h2>热门链接 Top 10</h2>
+                <table id="topUrlsTable">
+                    <thead>
+                        <tr>
+                            <th>排名</th>
+                            <th>短代码</th>
+                            <th>原始链接</th>
+                            <th>点击数</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+        </main>
+
+        <footer>
+            <p>© 2026 短链接服务 | 由小白开发</p>
+        </footer>
+    </div>
+
+    <script src="/dashboard/js/dashboard.js"></script>
+</body>
+</html>
