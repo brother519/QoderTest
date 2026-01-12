@@ -1,0 +1,303 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 邮件任务状态
+enum EmailStatus {
+  PENDING
+  QUEUED
+  SENDING
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
+  CANCELLED
+}
+
+// 邮件事件类型
+enum EmailEventType {
+  QUEUED
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  BOUNCED
+  COMPLAINED
+  UNSUBSCRIBED
+  FAILED
+}
+
+// 退信类型
+enum BounceType {
+  HARD
+  SOFT
+  TRANSIENT
+}
+
+// 退订来源
+enum UnsubscribeSource {
+  MANUAL
+  COMPLAINT
+  LINK
+  BOUNCE
+}
+
+// 邮件提供商类型
+enum ProviderType {
+  SENDGRID
+  AWS_SES
+}
+
+// 邮件类型
+enum EmailType {
+  TRANSACTIONAL
+  MARKETING
+}
+
+// 邮件模板
+model EmailTemplate {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  subject     String
+  htmlBody    String      @db.Text
+  textBody    String?     @db.Text
+  variables   Json        @default("[]") // 模板变量列表
+  category    String?
+  emailType   EmailType   @default(TRANSACTIONAL)
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  emailJobs   EmailJob[]
+  batches     EmailBatch[]
+
+  @@index([category])
+  @@index([isActive])
+}
+
+// 邮件任务
+model EmailJob {
+  id              String        @id @default(uuid())
+  templateId      String?
+  template        EmailTemplate? @relation(fields: [templateId], references: [id])
+  
+  recipientEmail  String
+  recipientName   String?
+  fromEmail       String?
+  fromName        String?
+  subject         String
+  htmlBody        String        @db.Text
+  textBody        String?       @db.Text
+  variables       Json          @default("{}")
+  
+  emailType       EmailType     @default(TRANSACTIONAL)
+  priority        Int           @default(3) // 1=紧急, 2=高, 3=标准, 4=低
+  scheduledAt     DateTime?
+  
+  status          EmailStatus   @default(PENDING)
+  providerUsed    ProviderType?
+  messageId       String?       // 提供商返回的消息ID
+  
+  attempts        Int           @default(0)
+  maxAttempts     Int           @default(5)
+  lastError       String?       @db.Text
+  
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  
+  batchId         String?
+  batch           EmailBatch?   @relation(fields: [batchId], references: [id])
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  tracking        EmailTracking?
+  events          EmailEvent[]
+  bounces         Bounce[]
+
+  @@index([status, createdAt])
+  @@index([recipientEmail])
+  @@index([templateId])
+  @@index([batchId])
+  @@index([scheduledAt])
+  @@index([messageId])
+}
+
+// 批量邮件
+model EmailBatch {
+  id              String        @id @default(uuid())
+  name            String?
+  templateId      String?
+  template        EmailTemplate? @relation(fields: [templateId], references: [id])
+  
+  totalRecipients Int           @default(0)
+  sentCount       Int           @default(0)
+  failedCount     Int           @default(0)
+  
+  status          EmailStatus   @default(PENDING)
+  startedAt       DateTime?
+  completedAt     DateTime?
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  jobs            EmailJob[]
+
+  @@index([status])
+}
+
+// 邮件追踪
+model EmailTracking {
+  id          String    @id @default(uuid())
+  emailJobId  String    @unique
+  emailJob    EmailJob  @relation(fields: [emailJobId], references: [id], onDelete: Cascade)
+  
+  trackingId  String    @unique @default(uuid())
+  
+  opened      Boolean   @default(false)
+  openedAt    DateTime?
+  openCount   Int       @default(0)
+  
+  clicked     Boolean   @default(false)
+  clickedAt   DateTime?
+  clickCount  Int       @default(0)
+  
+  lastUserAgent   String?
+  lastIpAddress   String?
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([trackingId])
+}
+
+// 邮件事件日志
+model EmailEvent {
+  id              String          @id @default(uuid())
+  emailJobId      String
+  emailJob        EmailJob        @relation(fields: [emailJobId], references: [id], onDelete: Cascade)
+  
+  eventType       EmailEventType
+  eventData       Json            @default("{}")
+  provider        ProviderType?
+  
+  timestamp       DateTime        @default(now())
+  webhookPayload  Json?
+  
+  createdAt       DateTime        @default(now())
+
+  @@index([emailJobId, eventType, timestamp])
+  @@index([eventType, timestamp])
+}
+
+// 退信记录
+model Bounce {
+  id              String      @id @default(uuid())
+  emailJobId      String?
+  emailJob        EmailJob?   @relation(fields: [emailJobId], references: [id], onDelete: SetNull)
+  
+  email           String
+  bounceType      BounceType
+  bounceSubType   String?
+  diagnosticCode  String?     @db.Text
+  
+  provider        ProviderType?
+  timestamp       DateTime    @default(now())
+  
+  createdAt       DateTime    @default(now())
+
+  @@index([email, bounceType])
+  @@index([timestamp])
+}
+
+// 投诉记录
+model Complaint {
+  id              String        @id @default(uuid())
+  email           String
+  emailJobId      String?
+  
+  complaintType   String?
+  feedbackId      String?
+  
+  provider        ProviderType?
+  timestamp       DateTime      @default(now())
+  
+  createdAt       DateTime      @default(now())
+
+  @@index([email])
+  @@index([timestamp])
+}
+
+// 退订列表
+model UnsubscribeList {
+  id              String            @id @default(uuid())
+  email           String            @unique
+  
+  reason          String?
+  source          UnsubscribeSource @default(LINK)
+  
+  unsubscribedAt  DateTime          @default(now())
+  resubscribedAt  DateTime?
+  isActive        Boolean           @default(true)
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([email, isActive])
+}
+
+// 邮件提供商配置
+model EmailProvider {
+  id                String        @id @default(uuid())
+  name              String        @unique
+  type              ProviderType
+  
+  isActive          Boolean       @default(true)
+  isPrimary         Boolean       @default(false)
+  priority          Int           @default(1) // 优先级，数字越小优先级越高
+  
+  dailyLimit        Int?
+  currentDailyCount Int           @default(0)
+  lastResetAt       DateTime      @default(now())
+  
+  // 健康检查状态
+  isHealthy         Boolean       @default(true)
+  lastHealthCheck   DateTime?
+  consecutiveFailures Int         @default(0)
+  
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([isActive, isPrimary])
+  @@index([type])
+}
+
+// 每日统计
+model DailyStatistics {
+  id              String    @id @default(uuid())
+  date            DateTime  @db.Date @unique
+  
+  totalSent       Int       @default(0)
+  totalDelivered  Int       @default(0)
+  totalBounced    Int       @default(0)
+  totalComplaints Int       @default(0)
+  totalOpened     Int       @default(0)
+  totalClicked    Int       @default(0)
+  totalFailed     Int       @default(0)
+  
+  // 计算后的比率 (存储为百分比)
+  deliveryRate    Float     @default(0)
+  openRate        Float     @default(0)
+  clickRate       Float     @default(0)
+  bounceRate      Float     @default(0)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([date])
+}
