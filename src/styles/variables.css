@@ -1,0 +1,14 @@
+:root {
+  --board-size: min(90vw, 500px);
+  --grid-gap: 15px;
+  --cell-size: calc((var(--board-size) - var(--grid-gap) * 5) / 4);
+  --border-radius: 6px;
+  
+  --bg-color: #faf8ef;
+  --board-bg: #bbada0;
+  --empty-cell-bg: rgba(238, 228, 218, 0.35);
+  --text-dark: #776e65;
+  --text-light: #f9f6f2;
+  
+  --font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
+}
