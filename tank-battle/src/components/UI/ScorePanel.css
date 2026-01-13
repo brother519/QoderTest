@@ -1,0 +1,26 @@
+.score-panel {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: #1a1a1a;
+  color: #fff;
+  padding: 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  border-bottom: 2px solid #333;
+}
+
+.score-item {
+  display: flex;
+  gap: 10px;
+}
+
+.score-item .label {
+  color: #ffa500;
+  font-weight: bold;
+}
+
+.score-item .value {
+  color: #fff;
+  font-weight: normal;
+}
