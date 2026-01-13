@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - 博客系统{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>{{ title }}</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.csrf_token }}
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control") }}
+                        {% if form.title.errors %}
+                            <div class="text-danger">{{ form.title.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.content.label(class="form-label") }}
+                        {{ form.content(class="form-control", rows="15") }}
+                        {% if form.content.errors %}
+                            <div class="text-danger">{{ form.content.errors[0] }}</div>
+                        {% endif %}
+                        <small class="text-muted">支持Markdown格式</small>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.summary.label(class="form-label") }}
+                        {{ form.summary(class="form-control") }}
+                        {% if form.summary.errors %}
+                            <div class="text-danger">{{ form.summary.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.category.label(class="form-label") }}
+                        {{ form.category(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.tags.label(class="form-label") }}
+                        {{ form.tags(class="form-select", multiple=True) }}
+                        <small class="text-muted">按住Ctrl/Cmd可多选</small>
+                    </div>
+                    <div class="mb-3 form-check">
+                        {{ form.is_published(class="form-check-input") }}
+                        {{ form.is_published.label(class="form-check-label") }}
+                    </div>
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a href="{{ url_for('blog.index') }}" class="btn btn-secondary">取消</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
