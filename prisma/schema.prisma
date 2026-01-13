@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 文件元数据表
+model File {
+  id             String        @id @default(uuid())
+  filename       String        @db.VarChar(255)
+  storageKey     String        @unique @map("storage_key") @db.VarChar(512)
+  fileSize       BigInt        @map("file_size")
+  mimeType       String        @map("mime_type") @db.VarChar(128)
+  hash           String        @db.VarChar(64)
+  ownerId        String        @map("owner_id")
+  accessLevel    AccessLevel   @map("access_level")
+  status         FileStatus
+  expiresAt      DateTime?     @map("expires_at")
+  thumbnails     Json?         // 存储缩略图路径 {100: "...", 300: "...", 800: "..."}
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
+  
+  uploadSessions UploadSession[]
+  signedUrls     SignedUrl[]
+
+  @@index([ownerId])
+  @@index([storageKey])
+  @@index([hash])
+  @@index([expiresAt])
+  @@index([status])
+  @@index([createdAt])
+  @@map("files")
+}
+
+enum AccessLevel {
+  public
+  private
+  signed
+}
+
+enum FileStatus {
+  uploading
+  completed
+  deleted
+}
+
+// 分片上传会话表
+model UploadSession {
+  id              String        @id @default(uuid())
+  fileId          String        @map("file_id")
+  uploadId        String        @map("upload_id") @db.VarChar(255)
+  totalChunks     Int           @map("total_chunks")
+  chunkSize       BigInt        @map("chunk_size")
+  uploadedChunks  Json          @default("[]") @map("uploaded_chunks")
+  status          SessionStatus
+  expiresAt       DateTime      @map("expires_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  
+  file File @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([fileId])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("upload_sessions")
+}
+
+enum SessionStatus {
+  active
+  completed
+  aborted
+  expired
+}
+
+// 用量统计表
+model UsageStat {
+  id                 BigInt   @id @default(autoincrement())
+  userId             String   @map("user_id")
+  date               DateTime @db.Date
+  storageUsed        BigInt   @default(0) @map("storage_used")
+  bandwidthUpload    BigInt   @default(0) @map("bandwidth_upload")
+  bandwidthDownload  BigInt   @default(0) @map("bandwidth_download")
+  fileCount          Int      @default(0) @map("file_count")
+  apiRequests        Int      @default(0) @map("api_requests")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, date])
+  @@index([date])
+  @@map("usage_stats")
+}
+
+// 签名URL表
+model SignedUrl {
+  id         String    @id @default(uuid())
+  fileId     String    @map("file_id")
+  token      String    @unique @db.VarChar(128)
+  operation  Operation
+  maxUses    Int?      @map("max_uses")
+  useCount   Int       @default(0) @map("use_count")
+  expiresAt  DateTime  @map("expires_at")
+  createdBy  String    @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  
+  file File @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([fileId])
+  @@index([expiresAt])
+  @@map("signed_urls")
+}
+
+enum Operation {
+  download
+  upload
+}
