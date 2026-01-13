@@ -1,0 +1,41 @@
+.game-footer {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.footer-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.footer-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.footer-button:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .game-footer {
+    gap: 10px;
+    flex-direction: column;
+  }
+
+  .footer-button {
+    width: 100%;
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}

@@ -1,0 +1,159 @@
+@keyframes revealAnimation {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes flagAnimation {
+  0% {
+    transform: rotate(-180deg) scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes mineExplosion {
+  0% {
+    background-color: #ff4444;
+    box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7);
+  }
+  50% {
+    background-color: #ff6666;
+    box-shadow: 0 0 20px 10px rgba(255, 68, 68, 0.3);
+  }
+  100% {
+    background-color: #ff4444;
+    box-shadow: 0 0 0 0 rgba(255, 68, 68, 0);
+  }
+}
+
+@keyframes victoryAnimation {
+  0%, 100% {
+    background-color: #f0fdf4;
+  }
+  50% {
+    background-color: #dcfce7;
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.cell.revealing {
+  animation: revealAnimation 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cell.flagging {
+  animation: flagAnimation 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cell.exploding {
+  animation: mineExplosion 0.6s ease-in-out;
+}
+
+.game-board.victory .cell.revealed:not(.mine) {
+  animation: victoryAnimation 0.8s ease-in-out infinite;
+}
+
+.game-board.defeat {
+  animation: shake 0.5s ease-in-out;
+}
+
+.modal-overlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.level-button {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.level-button:hover {
+  animation: bounceIn 0.5s ease;
+}
