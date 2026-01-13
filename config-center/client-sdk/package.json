@@ -1,0 +1,9 @@
+{
+  "name": "config-center-sdk",
+  "version": "1.0.0",
+  "description": "Config Center Client SDK",
+  "main": "src/index.js",
+  "dependencies": {
+    "ws": "^8.14.2"
+  }
+}
