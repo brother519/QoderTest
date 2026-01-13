@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>连连看游戏</title>
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --bg-color: #f7fafc;
+            --tile-size: 60px;
+            --gap: 5px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #game-board {
+            display: grid;
+            gap: var(--gap);
+            background: var(--bg-color);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .tile {
+            width: var(--tile-size);
+            height: var(--tile-size);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            user-select: none;
+        }
+
+        .tile:hover:not(.removed) {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .tile.selected {
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            transform: scale(1.05);
+        }
+
+        .tile.removed {
+            opacity: 0;
+            transform: scale(0);
+            pointer-events: none;
+        }
+
+        .tile.matching {
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #victory-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px 60px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            display: none;
+            z-index: 1000;
+        }
+
+        #victory-message.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        #victory-message h2 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        .color-0 { background: #ff6b6b; color: white; }
+        .color-1 { background: #4ecdc4; color: white; }
+        .color-2 { background: #45b7d1; color: white; }
+        .color-3 { background: #f9ca24; color: white; }
+        .color-4 { background: #f0932b; color: white; }
+        .color-5 { background: #eb4d4b; color: white; }
+        .color-6 { background: #6ab04c; color: white; }
+        .color-7 { background: #7e57c2; color: white; }
+        .color-8 { background: #26de81; color: white; }
+        .color-9 { background: #fd79a8; color: white; }
+
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .connecting-line {
+            stroke: #ffd700;
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: round;
+            animation: drawLine 0.3s ease-out;
+        }
+
+        @keyframes drawLine {
+            from { stroke-dashoffset: 1000; }
+            to { stroke-dashoffset: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>连连看</h1>
+        <div id="game-board"></div>
+        <div id="controls">
+            <button id="restart-btn">重新开始</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    <div id="victory-message">
+        <h2>恭喜!</h2>
+        <p>你赢了!</p>
+    </div>
+
+    <script>
+        const ROWS = 8;
+        const COLS = 10;
+        const TILE_TYPES = 10;
+        const TILE_SIZE = 60;
+        const GAP = 5;
+
+        let gameState = {
+            board: [],
+            selectedTile: null,
+            tiles: []
+        };
+
+        function initGame() {
+            gameState.selectedTile = null;
+            gameState.tiles = generateTiles();
+            gameState.board = createBoard();
+            renderBoard();
+            hideVictory();
+        }
+
+        function generateTiles() {
+            const tiles = [];
+            const totalTiles = ROWS * COLS;
+            const pairsNeeded = totalTiles / 2;
+
+            for (let i = 0; i < pairsNeeded; i++) {
+                const type = i % TILE_TYPES;
+                tiles.push({ type, removed: false });
+                tiles.push({ type, removed: false });
+            }
+
+            return shuffleArray(tiles);
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function createBoard() {
+            const board = [];
+            let tileIndex = 0;
+            for (let row = 0; row < ROWS; row++) {
+                board[row] = [];
+                for (let col = 0; col < COLS; col++) {
+                    board[row][col] = {
+                        ...gameState.tiles[tileIndex],
+                        row,
+                        col,
+                        id: tileIndex
+                    };
+                    tileIndex++;
+                }
+            }
+            return board;
+        }
+
+        function renderBoard() {
+            const boardElement = document.getElementById('game-board');
+            boardElement.style.gridTemplateColumns = `repeat(${COLS}, ${TILE_SIZE}px)`;
+            boardElement.innerHTML = '<svg></svg>';
+
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    const tile = gameState.board[row][col];
+                    if (!tile.removed) {
+                        const tileElement = createTileElement(tile);
+                        boardElement.appendChild(tileElement);
+                    }
+                }
+            }
+        }
+
+        function createTileElement(tile) {
+            const element = document.createElement('div');
+            element.className = `tile color-${tile.type}`;
+            element.textContent = String.fromCodePoint(0x1F600 + tile.type);
+            element.dataset.row = tile.row;
+            element.dataset.col = tile.col;
+            element.dataset.id = tile.id;
+            element.addEventListener('click', () => handleTileClick(tile));
+            return element;
+        }
+
+        function handleTileClick(tile) {
+            if (tile.removed) return;
+
+            const tileElement = document.querySelector(`[data-id="${tile.id}"]`);
+
+            if (!gameState.selectedTile) {
+                gameState.selectedTile = tile;
+                tileElement.classList.add('selected');
+            } else {
+                if (gameState.selectedTile.id === tile.id) {
+                    tileElement.classList.remove('selected');
+                    gameState.selectedTile = null;
+                    return;
+                }
+
+                const firstElement = document.querySelector(`[data-id="${gameState.selectedTile.id}"]`);
+
+                if (gameState.selectedTile.type === tile.type) {
+                    const path = findPath(gameState.selectedTile, tile);
+                    if (path) {
+                        drawConnectingLine(path);
+                        firstElement.classList.add('matching');
+                        tileElement.classList.add('matching');
+
+                        setTimeout(() => {
+                            removeTiles(gameState.selectedTile, tile);
+                            gameState.selectedTile = null;
+                            checkVictory();
+                        }, 500);
+                    } else {
+                        firstElement.classList.remove('selected');
+                        gameState.selectedTile = null;
+                    }
+                } else {
+                    firstElement.classList.remove('selected');
+                    gameState.selectedTile = null;
+                }
+            }
+        }
+
+        function findPath(tile1, tile2) {
+            if (canConnectDirect(tile1, tile2)) {
+                return [[tile1.row, tile1.col], [tile2.row, tile2.col]];
+            }
+
+            if (canConnectOneCorner(tile1, tile2)) {
+                return canConnectOneCorner(tile1, tile2);
+            }
+
+            if (canConnectTwoCorners(tile1, tile2)) {
+                return canConnectTwoCorners(tile1, tile2);
+            }
+
+            return null;
+        }
+
+        function canConnectDirect(tile1, tile2) {
+            if (tile1.row === tile2.row) {
+                const minCol = Math.min(tile1.col, tile2.col);
+                const maxCol = Math.max(tile1.col, tile2.col);
+                for (let col = minCol + 1; col < maxCol; col++) {
+                    if (!gameState.board[tile1.row][col].removed) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            if (tile1.col === tile2.col) {
+                const minRow = Math.min(tile1.row, tile2.row);
+                const maxRow = Math.max(tile1.row, tile2.row);
+                for (let row = minRow + 1; row < maxRow; row++) {
+                    if (!gameState.board[row][tile1.col].removed) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            return false;
+        }
+
+        function canConnectOneCorner(tile1, tile2) {
+            const corner1 = { row: tile1.row, col: tile2.col };
+            const corner2 = { row: tile2.row, col: tile1.col };
+
+            if (isValidCorner(corner1, tile1, tile2)) {
+                return [[tile1.row, tile1.col], [corner1.row, corner1.col], [tile2.row, tile2.col]];
+            }
+
+            if (isValidCorner(corner2, tile1, tile2)) {
+                return [[tile1.row, tile1.col], [corner2.row, corner2.col], [tile2.row, tile2.col]];
+            }
+
+            return null;
+        }
+
+        function isValidCorner(corner, tile1, tile2) {
+            if (!gameState.board[corner.row][corner.col].removed && 
+                !(corner.row === tile1.row && corner.col === tile1.col) &&
+                !(corner.row === tile2.row && corner.col === tile2.col)) {
+                return false;
+            }
+
+            return canConnectDirect(tile1, corner) && canConnectDirect(corner, tile2);
+        }
+
+        function canConnectTwoCorners(tile1, tile2) {
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    if (!gameState.board[row][col].removed || 
+                        (row === tile1.row && col === tile1.col) ||
+                        (row === tile2.row && col === tile2.col)) {
+                        continue;
+                    }
+
+                    const midPoint = { row, col };
+                    const path1 = canConnectOneCorner(tile1, midPoint);
+                    const path2 = canConnectOneCorner(midPoint, tile2);
+
+                    if (path1 && path2) {
+                        return [...path1, [tile2.row, tile2.col]];
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        function drawConnectingLine(path) {
+            const svg = document.querySelector('svg');
+            const boardElement = document.getElementById('game-board');
+            const rect = boardElement.getBoundingClientRect();
+            
+            let pathString = '';
+            for (let i = 0; i < path.length; i++) {
+                const [row, col] = path[i];
+                const x = col * (TILE_SIZE + GAP) + TILE_SIZE / 2 + 15;
+                const y = row * (TILE_SIZE + GAP) + TILE_SIZE / 2 + 15;
+                pathString += `${i === 0 ? 'M' : 'L'} ${x} ${y} `;
+            }
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            line.setAttribute('d', pathString);
+            line.setAttribute('class', 'connecting-line');
+            line.setAttribute('stroke-dasharray', '1000');
+            line.setAttribute('stroke-dashoffset', '1000');
+            svg.appendChild(line);
+
+            setTimeout(() => {
+                svg.innerHTML = '';
+            }, 500);
+        }
+
+        function removeTiles(tile1, tile2) {
+            gameState.board[tile1.row][tile1.col].removed = true;
+            gameState.board[tile2.row][tile2.col].removed = true;
+
+            const element1 = document.querySelector(`[data-id="${tile1.id}"]`);
+            const element2 = document.querySelector(`[data-id="${tile2.id}"]`);
+
+            if (element1) element1.classList.add('removed');
+            if (element2) element2.classList.add('removed');
+        }
+
+        function checkVictory() {
+            const allRemoved = gameState.board.every(row => 
+                row.every(tile => tile.removed)
+            );
+
+            if (allRemoved) {
+                setTimeout(() => {
+                    showVictory();
+                }, 500);
+            }
+        }
+
+        function showVictory() {
+            document.getElementById('victory-message').classList.add('show');
+            document.getElementById('overlay').classList.add('show');
+        }
+
+        function hideVictory() {
+            document.getElementById('victory-message').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+        }
+
+        document.getElementById('restart-btn').addEventListener('click', initGame);
+        document.getElementById('overlay').addEventListener('click', () => {
+            hideVictory();
+            initGame();
+        });
+
+        initGame();
+    </script>
+</body>
+</html>
