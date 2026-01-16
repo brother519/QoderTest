@@ -1,0 +1,49 @@
+.card {
+  background-color: var(--color-card);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-lg);
+  font-size: 24px;
+}
+
+.iconPrimary {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.iconSecondary {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--color-secondary);
+}
+
+.iconWarning {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.content {
+  flex: 1;
+}
+
+.value {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}

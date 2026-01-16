@@ -1,0 +1,51 @@
+.card {
+  background-color: var(--color-card);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.icon {
+  font-size: 40px;
+  margin-bottom: var(--spacing-sm);
+}
+
+.activeIcon {
+  color: #f59e0b;
+}
+
+.inactiveIcon {
+  color: var(--color-text-muted);
+}
+
+.current {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+.best {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.bestValue {
+  font-weight: 600;
+  color: var(--color-secondary);
+}
+
+.inactive {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-sm);
+}

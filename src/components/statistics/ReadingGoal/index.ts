@@ -1,0 +1,1 @@
+export { ReadingGoal } from './ReadingGoal';
