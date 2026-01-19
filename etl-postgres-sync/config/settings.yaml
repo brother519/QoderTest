@@ -1,0 +1,83 @@
+# Pipeline Settings Configuration
+
+pipeline:
+  # Default batch size for extraction (can be overridden per table)
+  default_batch_size: 5000
+  
+  # Maximum records to process in a single run (0 = unlimited)
+  max_records_per_run: 0
+  
+  # Number of retries for transient failures
+  max_retries: 3
+  
+  # Delay between retries (seconds)
+  retry_delay: 5
+  
+  # Enable dry run mode (no writes to target)
+  dry_run: false
+
+scheduler:
+  # Sync interval in minutes
+  interval_minutes: 60
+  
+  # Maximum concurrent pipeline instances
+  max_instances: 1
+  
+  # Grace time for missed jobs (seconds)
+  misfire_grace_time: 300
+  
+  # Skip missed runs if pipeline is slow
+  coalesce: true
+
+checkpoint:
+  # Directory for checkpoint files
+  directory: checkpoints
+  
+  # Backup old checkpoints before overwriting
+  backup_enabled: true
+  
+  # Number of backup files to keep
+  backup_count: 5
+
+failed_records:
+  # Directory for failed records
+  directory: failed_records
+  
+  # Retention period in days
+  retention_days: 30
+  
+  # Maximum file size before rotation (MB)
+  max_file_size_mb: 100
+
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR
+  level: INFO
+  
+  # Log directory
+  directory: logs
+  
+  # Log file rotation
+  rotation: daily
+  
+  # Number of log files to keep
+  retention_count: 30
+  
+  # Log format: json or text
+  format: json
+  
+  # Include timestamps in console output
+  console_timestamps: true
+
+monitoring:
+  # Enable metrics collection
+  enabled: true
+  
+  # Metrics to track
+  metrics:
+    - records_extracted
+    - records_transformed
+    - records_validated
+    - records_loaded
+    - records_failed
+    - sync_duration_seconds
+    - batch_processing_time
