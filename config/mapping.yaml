@@ -1,0 +1,109 @@
+# Table mapping configuration
+# Define how data should be transformed from source to target
+
+table_mappings:
+  # Example: users table mapping
+  users:
+    source_table: old_users
+    target_table: new_users
+    primary_key: id
+    timestamp_field: updated_at
+    soft_delete_field: deleted_at  # Optional: for soft delete detection
+    
+    field_mappings:
+      - source: user_id
+        target: id
+        type: bigint
+        
+      - source: user_name
+        target: username
+        type: varchar
+        max_length: 100
+        
+      - source: email
+        target: email
+        type: varchar
+        max_length: 255
+        validators:
+          - email_format
+          
+      - source: status
+        target: status
+        type: varchar
+        transform: value_map
+        map:
+          0: inactive
+          1: active
+          2: suspended
+          
+      - source: created_at
+        target: created_at
+        type: timestamp
+        
+      - source: updated_at
+        target: updated_at
+        type: timestamp
+
+    # Custom validation rules
+    validators:
+      - field: email
+        rule: not_null
+      - field: username
+        rule: min_length
+        value: 2
+
+  # Example: orders table mapping
+  orders:
+    source_table: old_orders
+    target_table: new_orders
+    primary_key: id
+    timestamp_field: updated_at
+    
+    field_mappings:
+      - source: order_id
+        target: id
+        type: bigint
+        
+      - source: user_id
+        target: user_id
+        type: bigint
+        
+      - source: total_amount
+        target: total_amount
+        type: decimal
+        precision: 10
+        scale: 2
+        
+      - source: order_status
+        target: status
+        type: varchar
+        transform: value_map
+        map:
+          0: pending
+          1: paid
+          2: shipped
+          3: delivered
+          4: cancelled
+          
+      - source: created_at
+        target: created_at
+        type: timestamp
+        
+      - source: updated_at
+        target: updated_at
+        type: timestamp
+
+# Global transformation settings
+global_settings:
+  # Default timestamp format
+  timestamp_format: "%Y-%m-%d %H:%M:%S"
+  
+  # Timezone conversion (optional)
+  source_timezone: UTC
+  target_timezone: UTC
+  
+  # NULL handling
+  null_string_replacement: ""
+  
+  # Trim whitespace from strings
+  trim_strings: true

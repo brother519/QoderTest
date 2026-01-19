@@ -1,0 +1,30 @@
+app:
+  name: ETL Data Sync Pipeline
+  version: 1.0.0
+  environment: ${APP_ENV:development}
+
+sync:
+  batch_size: 2000
+  max_workers: 4
+  retry_attempts: 3
+  retry_delay: 2
+  timeout: 3600
+
+logging:
+  level: ${LOG_LEVEL:INFO}
+  format: json
+  rotation: daily
+  retention_days: 30
+
+monitoring:
+  dashboard_enabled: true
+  dashboard_host: 0.0.0.0
+  dashboard_port: 5000
+  metrics_retention_days: 90
+
+paths:
+  data_dir: data
+  logs_dir: logs
+  checkpoint_db: data/checkpoint.db
+  failures_db: data/failures.db
+  metrics_db: data/metrics.db
