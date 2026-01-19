@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超级坦克大战</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        <div id="menu" class="overlay">
+            <h1>超级坦克大战</h1>
+            <button id="start-btn">开始游戏</button>
+            <p class="instructions">
+                方向键/WASD: 移动<br>
+                空格键: 射击<br>
+                P键: 暂停
+            </p>
+        </div>
+        <div id="pause-menu" class="overlay hidden">
+            <h2>游戏暂停</h2>
+            <button id="resume-btn">继续游戏</button>
+            <button id="restart-btn">重新开始</button>
+        </div>
+        <div id="game-over" class="overlay hidden">
+            <h2 id="game-over-title">游戏结束</h2>
+            <p>得分: <span id="final-score">0</span></p>
+            <button id="retry-btn">重新开始</button>
+        </div>
+        <div id="hud">
+            <div class="hud-item">关卡: <span id="level-display">1</span></div>
+            <div class="hud-item">生命: <span id="lives-display">3</span></div>
+            <div class="hud-item">得分: <span id="score-display">0</span></div>
+            <div class="hud-item">敌人: <span id="enemies-display">0</span></div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
