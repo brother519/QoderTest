@@ -1,15 +1,33 @@
+# Dependencies
 node_modules/
+
+# Build output
+dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Environment files
 .env
 .env.local
 .env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
 .DS_Store
-*.log
-npm-debug.log*
-dist/
-build/
-.cache/
+Thumbs.db
 
-.qoder/*
-!.qoder/rules/
+# Test coverage
+coverage/
+.nyc_output/
 
-/Agents.md
+# Temporary files
+tmp/
+temp/

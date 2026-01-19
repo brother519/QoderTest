@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sokoban - Push Box Game</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1>Sokoban</h1>
+            <div class="game-info">
+                <span class="level-info">Level: <span id="levelNum">1</span></span>
+                <span class="moves-info">Moves: <span id="moves">0</span></span>
+            </div>
+        </header>
+        
+        <main class="game-main">
+            <canvas id="gameCanvas"></canvas>
+        </main>
+        
+        <footer class="game-controls">
+            <div class="control-buttons">
+                <button id="prevLevel" class="btn">◀ Prev</button>
+                <button id="restart" class="btn">↻ Restart (R)</button>
+                <button id="undo" class="btn">↶ Undo (Z)</button>
+                <button id="nextLevel" class="btn">Next ▶</button>
+            </div>
+            <div class="instructions">
+                <p>Use <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to move</p>
+                <p>Push all boxes <span class="box-icon">📦</span> to targets <span class="target-icon">⭕</span></p>
+            </div>
+        </footer>
+
+        <div id="winModal" class="modal hidden">
+            <div class="modal-content">
+                <h2>🎉 Level Complete!</h2>
+                <p>Moves: <span id="finalMoves">0</span></p>
+                <button id="nextLevelBtn" class="btn btn-primary">Next Level</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/levels.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/input.js"></script>
+    <script>
+        // Initialize game
+        const canvas = document.getElementById('gameCanvas');
+        const game = new Game();
+        const renderer = new Renderer(canvas);
+        const input = new InputHandler(game, renderer);
+        
+        // Initial render
+        renderer.render(game);
+        
+        // UI event listeners
+        document.getElementById('restart').addEventListener('click', () => {
+            game.restart();
+            renderer.render(game);
+            updateUI();
+        });
+        
+        document.getElementById('undo').addEventListener('click', () => {
+            game.undo();
+            renderer.render(game);
+            updateUI();
+        });
+        
+        document.getElementById('prevLevel').addEventListener('click', () => {
+            game.prevLevel();
+            renderer.render(game);
+            updateUI();
+        });
+        
+        document.getElementById('nextLevel').addEventListener('click', () => {
+            game.nextLevel();
+            renderer.render(game);
+            updateUI();
+        });
+        
+        document.getElementById('nextLevelBtn').addEventListener('click', () => {
+            document.getElementById('winModal').classList.add('hidden');
+            game.nextLevel();
+            renderer.render(game);
+            updateUI();
+        });
+        
+        function updateUI() {
+            document.getElementById('levelNum').textContent = game.currentLevel + 1;
+            document.getElementById('moves').textContent = game.moves;
+        }
+        
+        function showWinModal() {
+            document.getElementById('finalMoves').textContent = game.moves;
+            document.getElementById('winModal').classList.remove('hidden');
+        }
+        
+        // Expose functions for input handler
+        window.updateUI = updateUI;
+        window.showWinModal = showWinModal;
+    </script>
+</body>
+</html>
