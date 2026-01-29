@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>连连看 - Lianliankan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #game-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            color: #666;
+            font-size: 16px;
+        }
+
+        .stats span {
+            background: #f0f0f0;
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+            margin-bottom: 20px;
+            background: #e0e0e0;
+            padding: 8px;
+            border-radius: 12px;
+        }
+
+        .tile {
+            aspect-ratio: 1;
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(20px, 5vw, 32px);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .tile:hover:not(.empty):not(.matched) {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .tile.selected {
+            border-color: #4CAF50;
+            background: linear-gradient(145deg, #e8f5e9, #c8e6c9);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+            transform: scale(1.05);
+        }
+
+        .tile.matched {
+            animation: matchFade 0.4s ease forwards;
+        }
+
+        .tile.empty {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .tile.shake {
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes matchFade {
+            0% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-8px); }
+            80% { transform: translateX(8px); }
+        }
+
+        #controls {
+            text-align: center;
+        }
+
+        #new-game-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #new-game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        #victory-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #victory-modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            animation: modalPop 0.3s ease;
+        }
+
+        @keyframes modalPop {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            font-size: 32px;
+            color: #4CAF50;
+            margin-bottom: 16px;
+        }
+
+        .modal-content p {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 24px;
+        }
+
+        .modal-content button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .modal-content button:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 480px) {
+            #game-container {
+                padding: 16px;
+            }
+
+            header h1 {
+                font-size: 22px;
+            }
+
+            .stats {
+                gap: 12px;
+                font-size: 14px;
+            }
+
+            #game-board {
+                gap: 3px;
+                padding: 6px;
+            }
+
+            .tile {
+                border-radius: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>连连看</h1>
+            <div class="stats">
+                <span>步数: <strong id="moves-count">0</strong></span>
+                <span>剩余: <strong id="pairs-left">32</strong> 对</span>
+            </div>
+        </header>
+        <div id="game-board"></div>
+        <div id="controls">
+            <button id="new-game-btn">新游戏</button>
+        </div>
+    </div>
+
+    <div id="victory-modal" class="hidden">
+        <div class="modal-content">
+            <h2>恭喜通关!</h2>
+            <p>你用了 <strong id="final-moves">0</strong> 步完成游戏</p>
+            <button id="play-again-btn">再玩一次</button>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const ROWS = 8;
+        const COLS = 8;
+        const TILE_TYPES = ['🍎', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🥝', '🍑', '🥭', '🍍', '🥥', '🍐', '🫐', '🍈'];
+        const DIRECTIONS = [
+            { dr: -1, dc: 0, name: 'UP' },
+            { dr: 1, dc: 0, name: 'DOWN' },
+            { dr: 0, dc: -1, name: 'LEFT' },
+            { dr: 0, dc: 1, name: 'RIGHT' }
+        ];
+
+        // Game state
+        let board = [];
+        let selectedTiles = [];
+        let matchedCount = 0;
+        let movesCount = 0;
+        let isProcessing = false;
+
+        // DOM elements
+        const gameBoard = document.getElementById('game-board');
+        const movesDisplay = document.getElementById('moves-count');
+        const pairsLeftDisplay = document.getElementById('pairs-left');
+        const victoryModal = document.getElementById('victory-modal');
+        const finalMovesDisplay = document.getElementById('final-moves');
+        const newGameBtn = document.getElementById('new-game-btn');
+        const playAgainBtn = document.getElementById('play-again-btn');
+
+        // Initialize game
+        function initGame() {
+            board = [];
+            selectedTiles = [];
+            matchedCount = 0;
+            movesCount = 0;
+            isProcessing = false;
+            
+            updateStats();
+            generateBoard();
+            renderBoard();
+            victoryModal.classList.add('hidden');
+        }
+
+        // Generate board with paired tiles
+        function generateBoard() {
+            // Create pairs of tiles
+            const tiles = [];
+            for (let i = 0; i < TILE_TYPES.length; i++) {
+                // Each type appears twice to make pairs
+                tiles.push(TILE_TYPES[i], TILE_TYPES[i]);
+                tiles.push(TILE_TYPES[i], TILE_TYPES[i]);
+            }
+
+            // Fisher-Yates shuffle
+            for (let i = tiles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+            }
+
+            // Fill board
+            let index = 0;
+            for (let row = 0; row < ROWS; row++) {
+                board[row] = [];
+                for (let col = 0; col < COLS; col++) {
+                    board[row][col] = {
+                        type: tiles[index++],
+                        isEmpty: false
+                    };
+                }
+            }
+        }
+
+        // Render board to DOM
+        function renderBoard() {
+            gameBoard.innerHTML = '';
+            
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.dataset.row = row;
+                    tile.dataset.col = col;
+                    tile.textContent = board[row][col].type;
+                    
+                    tile.addEventListener('click', () => handleTileClick(row, col));
+                    gameBoard.appendChild(tile);
+                }
+            }
+        }
+
+        // Get tile element by position
+        function getTileElement(row, col) {
+            return gameBoard.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+        }
+
+        // Handle tile click
+        function handleTileClick(row, col) {
+            if (isProcessing) return;
+            if (board[row][col].isEmpty) return;
+
+            const tileElement = getTileElement(row, col);
+            
+            // Check if tile is already selected
+            const selectedIndex = selectedTiles.findIndex(t => t.row === row && t.col === col);
+            if (selectedIndex !== -1) {
+                // Deselect
+                selectedTiles.splice(selectedIndex, 1);
+                tileElement.classList.remove('selected');
+                return;
+            }
+
+            // Select tile
+            selectedTiles.push({ row, col });
+            tileElement.classList.add('selected');
+
+            // If two tiles selected, check for match
+            if (selectedTiles.length === 2) {
+                isProcessing = true;
+                movesCount++;
+                updateStats();
+                checkMatch();
+            }
+        }
+
+        // Check if selected tiles match
+        function checkMatch() {
+            const [tile1, tile2] = selectedTiles;
+            const type1 = board[tile1.row][tile1.col].type;
+            const type2 = board[tile2.row][tile2.col].type;
+
+            if (type1 !== type2) {
+                // Types don't match
+                showMismatch();
+                return;
+            }
+
+            // Check if valid path exists
+            if (findPath(tile1, tile2)) {
+                executeMatch();
+            } else {
+                showMismatch();
+            }
+        }
+
+        // BFS path finding with turn constraint (max 2 turns)
+        function findPath(start, end) {
+            // State: { row, col, direction, turnCount }
+            const queue = [];
+            const visited = new Set();
+
+            // Start from all 4 directions
+            for (const dir of DIRECTIONS) {
+                queue.push({
+                    row: start.row,
+                    col: start.col,
+                    direction: dir.name,
+                    turnCount: 0
+                });
+            }
+
+            while (queue.length > 0) {
+                const current = queue.shift();
+                
+                // Get current direction
+                const dir = DIRECTIONS.find(d => d.name === current.direction);
+                
+                // Traverse in current direction
+                let newRow = current.row + dir.dr;
+                let newCol = current.col + dir.dc;
+
+                while (isValidPosition(newRow, newCol)) {
+                    // Check if reached destination
+                    if (newRow === end.row && newCol === end.col) {
+                        return true;
+                    }
+
+                    // If cell is occupied (not empty), stop this direction
+                    if (!isEmpty(newRow, newCol)) {
+                        break;
+                    }
+
+                    // Create state key for visited check
+                    const stateKey = `${newRow},${newCol},${current.direction}`;
+                    
+                    if (!visited.has(stateKey)) {
+                        visited.add(stateKey);
+
+                        // Try turning to other directions
+                        for (const nextDir of DIRECTIONS) {
+                            // Can't go back the way we came
+                            if (isOppositeDirection(current.direction, nextDir.name)) {
+                                continue;
+                            }
+
+                            // Calculate new turn count
+                            const newTurnCount = nextDir.name === current.direction 
+                                ? current.turnCount 
+                                : current.turnCount + 1;
+
+                            // Skip if too many turns
+                            if (newTurnCount > 2) {
+                                continue;
+                            }
+
+                            queue.push({
+                                row: newRow,
+                                col: newCol,
+                                direction: nextDir.name,
+                                turnCount: newTurnCount
+                            });
+                        }
+                    }
+
+                    // Continue in same direction
+                    newRow += dir.dr;
+                    newCol += dir.dc;
+                }
+
+                // Also check if we can reach destination directly outside the board
+                // (virtual border for edge routing)
+                if (isAtBorder(current.row, current.col, current.direction)) {
+                    // Check if we can route around the edge
+                    if (canReachViaEdge(current, end)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        // Check if position is within extended board (including virtual border)
+        function isValidPosition(row, col) {
+            return row >= -1 && row <= ROWS && col >= -1 && col <= COLS;
+        }
+
+        // Check if cell is empty (or is virtual border)
+        function isEmpty(row, col) {
+            // Virtual border cells are always empty
+            if (row < 0 || row >= ROWS || col < 0 || col >= COLS) {
+                return true;
+            }
+            return board[row][col].isEmpty;
+        }
+
+        // Check if two directions are opposite
+        function isOppositeDirection(dir1, dir2) {
+            return (dir1 === 'UP' && dir2 === 'DOWN') ||
+                   (dir1 === 'DOWN' && dir2 === 'UP') ||
+                   (dir1 === 'LEFT' && dir2 === 'RIGHT') ||
+                   (dir1 === 'RIGHT' && dir2 === 'LEFT');
+        }
+
+        // Check if position is at board border going outward
+        function isAtBorder(row, col, direction) {
+            return (direction === 'UP' && row === 0) ||
+                   (direction === 'DOWN' && row === ROWS - 1) ||
+                   (direction === 'LEFT' && col === 0) ||
+                   (direction === 'RIGHT' && col === COLS - 1);
+        }
+
+        // Check if can reach destination via edge routing
+        function canReachViaEdge(current, end) {
+            const { row, col, direction, turnCount } = current;
+            
+            // We're at the edge, check if we can reach end with remaining turns
+            const remainingTurns = 2 - turnCount;
+            
+            if (remainingTurns < 1) return false;
+
+            // Check based on which edge we're at
+            if (direction === 'UP' || direction === 'DOWN') {
+                // We're exiting top or bottom
+                const edgeRow = direction === 'UP' ? -1 : ROWS;
+                
+                // Can we reach the end's column and then go to end?
+                // Need: go along edge to end.col, turn down/up to end.row
+                if (canTraverseBorder(edgeRow, col, edgeRow, end.col) &&
+                    canEnterFromBorder(edgeRow, end.col, end)) {
+                    return true;
+                }
+            } else {
+                // We're exiting left or right
+                const edgeCol = direction === 'LEFT' ? -1 : COLS;
+                
+                if (canTraverseBorder(row, edgeCol, end.row, edgeCol) &&
+                    canEnterFromBorder(end.row, edgeCol, end)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Check if can traverse along border (always true for virtual border)
+        function canTraverseBorder(r1, c1, r2, c2) {
+            return true; // Virtual border is always empty
+        }
+
+        // Check if can enter board from border to reach destination
+        function canEnterFromBorder(borderRow, borderCol, end) {
+            // Check if there's a clear path from border to destination
+            if (borderRow < 0) {
+                // Coming from top
+                for (let r = 0; r < end.row; r++) {
+                    if (!board[r][end.col].isEmpty) return false;
+                }
+                return true;
+            } else if (borderRow >= ROWS) {
+                // Coming from bottom
+                for (let r = ROWS - 1; r > end.row; r--) {
+                    if (!board[r][end.col].isEmpty) return false;
+                }
+                return true;
+            } else if (borderCol < 0) {
+                // Coming from left
+                for (let c = 0; c < end.col; c++) {
+                    if (!board[end.row][c].isEmpty) return false;
+                }
+                return true;
+            } else if (borderCol >= COLS) {
+                // Coming from right
+                for (let c = COLS - 1; c > end.col; c--) {
+                    if (!board[end.row][c].isEmpty) return false;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        // Execute successful match
+        function executeMatch() {
+            const [tile1, tile2] = selectedTiles;
+            const elem1 = getTileElement(tile1.row, tile1.col);
+            const elem2 = getTileElement(tile2.row, tile2.col);
+
+            elem1.classList.remove('selected');
+            elem2.classList.remove('selected');
+            elem1.classList.add('matched');
+            elem2.classList.add('matched');
+
+            setTimeout(() => {
+                board[tile1.row][tile1.col].isEmpty = true;
+                board[tile2.row][tile2.col].isEmpty = true;
+                elem1.classList.add('empty');
+                elem2.classList.add('empty');
+                
+                matchedCount++;
+                updateStats();
+                
+                if (checkWinCondition()) {
+                    showVictory();
+                }
+
+                selectedTiles = [];
+                isProcessing = false;
+            }, 400);
+        }
+
+        // Show mismatch feedback
+        function showMismatch() {
+            const [tile1, tile2] = selectedTiles;
+            const elem1 = getTileElement(tile1.row, tile1.col);
+            const elem2 = getTileElement(tile2.row, tile2.col);
+
+            elem1.classList.add('shake');
+            elem2.classList.add('shake');
+
+            setTimeout(() => {
+                elem1.classList.remove('selected', 'shake');
+                elem2.classList.remove('selected', 'shake');
+                selectedTiles = [];
+                isProcessing = false;
+            }, 400);
+        }
+
+        // Check win condition
+        function checkWinCondition() {
+            return matchedCount === 32;
+        }
+
+        // Show victory modal
+        function showVictory() {
+            finalMovesDisplay.textContent = movesCount;
+            victoryModal.classList.remove('hidden');
+        }
+
+        // Update stats display
+        function updateStats() {
+            movesDisplay.textContent = movesCount;
+            pairsLeftDisplay.textContent = 32 - matchedCount;
+        }
+
+        // Event listeners
+        newGameBtn.addEventListener('click', initGame);
+        playAgainBtn.addEventListener('click', initGame);
+
+        // Start game on load
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
