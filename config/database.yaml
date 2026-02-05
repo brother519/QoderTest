@@ -1,0 +1,24 @@
+source:
+  type: mysql
+  host: ${MYSQL_HOST:localhost}
+  port: ${MYSQL_PORT:3306}
+  database: ${MYSQL_DATABASE:source_db}
+  user: ${MYSQL_USER:root}
+  password: ${MYSQL_PASSWORD:}
+  charset: utf8mb4
+  pool_size: 10
+  max_overflow: 5
+  pool_timeout: 30
+  echo: false
+
+target:
+  type: postgresql
+  host: ${POSTGRES_HOST:localhost}
+  port: ${POSTGRES_PORT:5432}
+  database: ${POSTGRES_DATABASE:target_db}
+  user: ${POSTGRES_USER:postgres}
+  password: ${POSTGRES_PASSWORD:}
+  pool_size: 20
+  max_overflow: 10
+  pool_timeout: 30
+  echo: false

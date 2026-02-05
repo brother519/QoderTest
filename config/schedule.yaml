@@ -1,0 +1,41 @@
+scheduler:
+  enabled: true
+  timezone: Asia/Shanghai
+  
+  jobs:
+    # Hourly incremental sync
+    - id: hourly_sync
+      trigger: cron
+      expression: "0 * * * *"  # Every hour at minute 0
+      tables: all
+      enabled: true
+      max_instances: 1
+      coalesce: true
+      misfire_grace_time: 300
+      
+    # Nightly full validation
+    - id: nightly_validation
+      trigger: cron
+      expression: "0 3 * * *"  # 3 AM daily
+      tables: all
+      enabled: true
+      full_sync: false
+      validate_only: true
+
+# Concurrency control
+concurrency:
+  # Only one sync job can run at a time
+  max_concurrent_syncs: 1
+  
+  # Use file lock for single instance
+  lock_type: file
+  lock_file: data/sync.lock
+  
+  # Lock timeout in seconds
+  lock_timeout: 10
+
+# Manual trigger settings
+manual_trigger:
+  enabled: true
+  api_enabled: true
+  cli_enabled: true
