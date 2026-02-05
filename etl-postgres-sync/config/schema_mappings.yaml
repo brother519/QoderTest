@@ -1,0 +1,126 @@
+# Schema Mappings Configuration
+# Defines how to transform data from source (old) schema to target (new) schema
+
+tables:
+  # Example: users table mapping
+  users:
+    source_table: old_users
+    target_table: users
+    primary_key: id
+    timestamp_column: updated_at
+    deleted_column: deleted_at  # For soft delete detection
+    batch_size: 5000
+    
+    mappings:
+      - source: user_id
+        target: id
+        transform: none
+      
+      - source: full_name
+        target: name
+        transform: none
+      
+      - source: email_address
+        target: email
+        transform: lowercase
+      
+      - source: created_date
+        target: created_at
+        transform: to_datetime
+      
+      - source: updated_date
+        target: updated_at
+        transform: to_datetime
+      
+      - source: is_deleted
+        target: deleted_at
+        transform: bool_to_timestamp
+    
+    # Validation rules for target schema
+    validation:
+      required_fields:
+        - id
+        - email
+      unique_fields:
+        - email
+      field_types:
+        id: integer
+        name: string
+        email: string
+        created_at: datetime
+        updated_at: datetime
+
+  # Example: orders table mapping
+  orders:
+    source_table: old_orders
+    target_table: orders
+    primary_key: id
+    timestamp_column: modified_at
+    deleted_column: null  # No soft deletes
+    batch_size: 10000
+    
+    mappings:
+      - source: order_id
+        target: id
+        transform: none
+      
+      - source: customer_id
+        target: user_id
+        transform: none
+      
+      - source: order_total
+        target: total_amount
+        transform: to_decimal
+      
+      - source: order_status
+        target: status
+        transform: map_status
+      
+      - source: created_timestamp
+        target: created_at
+        transform: to_datetime
+      
+      - source: modified_timestamp
+        target: updated_at
+        transform: to_datetime
+    
+    validation:
+      required_fields:
+        - id
+        - user_id
+        - total_amount
+      field_types:
+        id: integer
+        user_id: integer
+        total_amount: decimal
+        status: string
+        created_at: datetime
+        updated_at: datetime
+
+# Custom transformation functions
+# These are referenced by name in the mappings above
+transforms:
+  lowercase:
+    type: builtin
+    description: Convert string to lowercase
+  
+  to_datetime:
+    type: builtin
+    description: Parse string/timestamp to datetime
+  
+  to_decimal:
+    type: builtin
+    description: Convert to decimal with 2 decimal places
+  
+  bool_to_timestamp:
+    type: builtin
+    description: Convert boolean true to current timestamp, false to null
+  
+  map_status:
+    type: mapping
+    description: Map old status values to new values
+    values:
+      "P": "pending"
+      "A": "approved"
+      "C": "completed"
+      "X": "cancelled"

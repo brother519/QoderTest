@@ -1,0 +1,24 @@
+# Database Configuration
+# Environment variables are interpolated at runtime using ${VAR_NAME} syntax
+
+source:
+  host: ${SOURCE_DB_HOST}
+  port: ${SOURCE_DB_PORT}
+  database: ${SOURCE_DB_NAME}
+  user: ${SOURCE_DB_USER}
+  password: ${SOURCE_DB_PASSWORD}
+  pool_size: 5
+  max_overflow: 10
+  pool_timeout: 30
+  pool_recycle: 1800
+
+target:
+  host: ${TARGET_DB_HOST}
+  port: ${TARGET_DB_PORT}
+  database: ${TARGET_DB_NAME}
+  user: ${TARGET_DB_USER}
+  password: ${TARGET_DB_PASSWORD}
+  pool_size: 10
+  max_overflow: 20
+  pool_timeout: 30
+  pool_recycle: 1800
