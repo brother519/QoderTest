@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>连连看游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1>连连看</h1>
+            <div class="game-info">
+                <div class="timer">
+                    <span class="timer-label">时间:</span>
+                    <span id="timer-display">00:00</span>
+                </div>
+                <button id="restart-btn" class="restart-btn">重新开始</button>
+            </div>
+        </header>
+        
+        <div class="board-wrapper">
+            <div id="game-board" class="game-board"></div>
+        </div>
+        
+        <div id="game-over-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>恭喜通关!</h2>
+                <p>用时: <span id="final-time">00:00</span></p>
+                <button id="play-again-btn" class="restart-btn">再玩一次</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>

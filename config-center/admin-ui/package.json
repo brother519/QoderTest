@@ -1,0 +1,8 @@
+{
+  "name": "config-center-admin",
+  "version": "1.0.0",
+  "description": "Config Center Admin UI",
+  "scripts": {
+    "dev": "echo 'Open dist/index.html in browser'"
+  }
+}
