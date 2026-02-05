@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>羊了个羊</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- 标题栏 -->
+        <div class="header">
+            <h1>🐑 羊了个羊</h1>
+            <button id="restart-btn" class="btn-restart">重新开始</button>
+        </div>
+
+        <!-- 游戏板 -->
+        <div id="game-board" class="game-board">
+            <!-- 卡片动态生成 -->
+        </div>
+
+        <!-- 槽位栏 -->
+        <div id="slot-bar" class="slot-bar">
+            <div class="slot"></div>
+            <div class="slot"></div>
+            <div class="slot"></div>
+            <div class="slot"></div>
+            <div class="slot"></div>
+            <div class="slot"></div>
+            <div class="slot"></div>
+        </div>
+
+        <!-- 游戏结束弹窗 -->
+        <div id="modal" class="modal hidden">
+            <div class="modal-content">
+                <h2 id="modal-title"></h2>
+                <p id="modal-message"></p>
+                <button id="modal-restart-btn" class="btn-primary">再来一局</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/game.js"></script>
+</body>
+</html>
