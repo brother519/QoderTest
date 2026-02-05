@@ -8,6 +8,8 @@ npm-debug.log*
 dist/
 build/
 .cache/
+logs/
+*.tsbuildinfo
 
 .qoder/*
 !.qoder/rules/
