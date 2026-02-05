@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}管理后台 - 博客系统{% endblock %}
+
+{% block content %}
+<h2>管理后台</h2>
+<div class="row">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">{{ post_count }}</h5>
+                <p class="card-text">文章总数</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">{{ user_count }}</h5>
+                <p class="card-text">用户总数</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">{{ comment_count }}</h5>
+                <p class="card-text">评论总数</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">{{ category_count }}</h5>
+                <p class="card-text">分类总数</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>快捷操作</h5>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('admin.category_list') }}" class="btn btn-primary">管理分类</a>
+                <a href="{{ url_for('admin.tag_list') }}" class="btn btn-primary">管理标签</a>
+                <a href="{{ url_for('blog.post_create') }}" class="btn btn-success">创建文章</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>最新文章</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_posts %}
+                <ul class="list-unstyled">
+                    {% for post in recent_posts %}
+                    <li class="mb-2">
+                        <a href="{{ url_for('blog.post_detail', slug=post.slug) }}">{{ post.title }}</a>
+                        <small class="text-muted">- {{ post.created_at.strftime('%Y-%m-%d') }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">暂无文章</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>最新评论</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_comments %}
+                <ul class="list-unstyled">
+                    {% for comment in recent_comments %}
+                    <li class="mb-2">
+                        <strong>{{ comment.author.username }}</strong> 评论了 
+                        <a href="{{ url_for('blog.post_detail', slug=comment.post.slug) }}">{{ comment.post.title }}</a>
+                        <small class="text-muted">- {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        <p class="text-muted mb-0">{{ comment.content[:50] }}...</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">暂无评论</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
