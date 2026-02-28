@@ -162,6 +162,37 @@
             background: #4ecdc4;
             color: #1a1a2e;
         }
+        .level-select {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            max-width: 400px;
+        }
+        .powerup-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+            max-width: 640px;
+        }
+        .powerup-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #aaa;
+        }
+        .powerup-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
@@ -183,6 +214,14 @@
         <div class="instructions">
             <strong>WASD</strong> 或 <strong>方向键</strong> 移动 | <strong>空格</strong> 或 <strong>J</strong> 发射 | <strong>P</strong> 暂停
         </div>
+        <div class="powerup-info">
+            <div class="powerup-item"><span class="powerup-icon" style="background:#ffd700;"></span>星星:加分</div>
+            <div class="powerup-item"><span class="powerup-icon" style="background:#4ecdc4;"></span>坦克:+1生命</div>
+            <div class="powerup-item"><span class="powerup-icon" style="background:#ff6b6b;"></span>炸弹:消灭敌人</div>
+            <div class="powerup-item"><span class="powerup-icon" style="background:#87ceeb;"></span>护盾:无敌</div>
+            <div class="powerup-item"><span class="powerup-icon" style="background:#9b59b6;"></span>时钟:冻结敌人</div>
+            <div class="powerup-item"><span class="powerup-icon" style="background:#708090;"></span>铁锹:加固基地</div>
+        </div>
     </div>
 
     <!-- 开始菜单 -->
@@ -194,6 +233,9 @@
                 <button class="level-btn active" data-level="1">关卡 1</button>
                 <button class="level-btn" data-level="2">关卡 2</button>
                 <button class="level-btn" data-level="3">关卡 3</button>
+                <button class="level-btn" data-level="4">关卡 4</button>
+                <button class="level-btn" data-level="5">关卡 5</button>
+                <button class="level-btn" data-level="6">关卡 6</button>
             </div>
             <button class="menu-btn" onclick="game.startGame()">开始游戏</button>
         </div>
@@ -660,6 +702,178 @@
             }
         }
 
+        // 道具类型
+        const POWERUP_STAR = 'star';       // 星星 - 加分
+        const POWERUP_TANK = 'tank';       // 坦克 - 额外生命
+        const POWERUP_BOMB = 'bomb';       // 炸弹 - 消灭所有敌人
+        const POWERUP_SHIELD = 'shield';   // 护盾 - 临时无敌
+        const POWERUP_CLOCK = 'clock';     // 时钟 - 冻结敌人
+        const POWERUP_SHOVEL = 'shovel';   // 铁锹 - 基地加固
+
+        // 道具类
+        class PowerUp {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.width = 28;
+                this.height = 28;
+                this.type = type;
+                this.alive = true;
+                this.lifeTime = 600; // 10秒后消失
+                this.blinkTimer = 0;
+                this.visible = true;
+            }
+
+            update() {
+                this.lifeTime--;
+                if (this.lifeTime <= 0) {
+                    this.alive = false;
+                    return;
+                }
+
+                // 最后3秒闪烁
+                if (this.lifeTime < 180) {
+                    this.blinkTimer++;
+                    if (this.blinkTimer > 10) {
+                        this.blinkTimer = 0;
+                        this.visible = !this.visible;
+                    }
+                }
+            }
+
+            draw(ctx) {
+                if (!this.visible) return;
+
+                const centerX = this.x + this.width / 2;
+                const centerY = this.y + this.height / 2;
+
+                // 背景光晕
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 18, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.fill();
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+
+                switch (this.type) {
+                    case POWERUP_STAR:
+                        // 星星
+                        ctx.fillStyle = '#ffd700';
+                        this.drawStar(ctx, 0, 0, 5, 12, 6);
+                        break;
+
+                    case POWERUP_TANK:
+                        // 坦克图标
+                        ctx.fillStyle = '#4ecdc4';
+                        ctx.fillRect(-8, -10, 16, 16);
+                        ctx.fillRect(-3, -14, 6, 4);
+                        ctx.fillStyle = '#2a9d8f';
+                        ctx.fillRect(-10, -8, 4, 12);
+                        ctx.fillRect(6, -8, 4, 12);
+                        break;
+
+                    case POWERUP_BOMB:
+                        // 炸弹
+                        ctx.fillStyle = '#ff6b6b';
+                        ctx.beginPath();
+                        ctx.arc(0, 2, 10, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#c0392b';
+                        ctx.fillRect(-2, -10, 4, 8);
+                        ctx.fillStyle = '#f39c12';
+                        ctx.beginPath();
+                        ctx.arc(0, -12, 4, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+
+                    case POWERUP_SHIELD:
+                        // 护盾
+                        ctx.strokeStyle = '#87ceeb';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.moveTo(0, -12);
+                        ctx.lineTo(10, -6);
+                        ctx.lineTo(10, 4);
+                        ctx.lineTo(0, 12);
+                        ctx.lineTo(-10, 4);
+                        ctx.lineTo(-10, -6);
+                        ctx.closePath();
+                        ctx.stroke();
+                        ctx.fillStyle = 'rgba(135, 206, 235, 0.5)';
+                        ctx.fill();
+                        break;
+
+                    case POWERUP_CLOCK:
+                        // 时钟
+                        ctx.fillStyle = '#9b59b6';
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 11, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#fff';
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.strokeStyle = '#9b59b6';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(0, -5);
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(4, 2);
+                        ctx.stroke();
+                        break;
+
+                    case POWERUP_SHOVEL:
+                        // 铁锹
+                        ctx.fillStyle = '#708090';
+                        ctx.fillRect(-2, -12, 4, 18);
+                        ctx.fillStyle = '#a9a9a9';
+                        ctx.beginPath();
+                        ctx.moveTo(-8, 6);
+                        ctx.lineTo(8, 6);
+                        ctx.lineTo(4, 14);
+                        ctx.lineTo(-4, 14);
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                }
+
+                ctx.restore();
+            }
+
+            drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+                let rot = Math.PI / 2 * 3;
+                let x = cx;
+                let y = cy;
+                const step = Math.PI / spikes;
+
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - outerRadius);
+                for (let i = 0; i < spikes; i++) {
+                    x = cx + Math.cos(rot) * outerRadius;
+                    y = cy + Math.sin(rot) * outerRadius;
+                    ctx.lineTo(x, y);
+                    rot += step;
+
+                    x = cx + Math.cos(rot) * innerRadius;
+                    y = cy + Math.sin(rot) * innerRadius;
+                    ctx.lineTo(x, y);
+                    rot += step;
+                }
+                ctx.lineTo(cx, cy - outerRadius);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            hitTest(obj) {
+                return this.x < obj.x + obj.width &&
+                       this.x + this.width > obj.x &&
+                       this.y < obj.y + obj.height &&
+                       this.y + this.height > obj.y;
+            }
+        }
+
         // 游戏主类
         class Game {
             constructor() {
@@ -669,18 +883,28 @@
                 this.enemies = [];
                 this.bullets = [];
                 this.explosions = [];
+                this.powerUps = [];
                 this.map = [];
                 this.score = 0;
                 this.lives = 3;
                 this.level = 1;
                 this.enemiesRemaining = 0;
                 this.spawnTimer = 0;
+                this.powerUpTimer = 0;
                 this.maxEnemiesOnScreen = 4;
                 this.isRunning = false;
                 this.isPaused = false;
                 this.keys = {};
                 this.baseX = 0;
                 this.baseY = 0;
+
+                // 道具效果状态
+                this.shieldActive = false;
+                this.shieldTimer = 0;
+                this.freezeActive = false;
+                this.freezeTimer = 0;
+                this.baseArmored = false;
+                this.baseArmorTimer = 0;
 
                 this.setupInput();
                 this.setupLevelButtons();
@@ -821,8 +1045,18 @@
                 this.enemies = [];
                 this.bullets = [];
                 this.explosions = [];
+                this.powerUps = [];
                 this.enemiesRemaining = 10 + this.level * 5;
                 this.spawnTimer = 0;
+                this.powerUpTimer = 0;
+
+                // 重置道具效果
+                this.shieldActive = false;
+                this.shieldTimer = 0;
+                this.freezeActive = false;
+                this.freezeTimer = 0;
+                this.baseArmored = false;
+                this.baseArmorTimer = 0;
 
                 // 创建玩家
                 this.spawnPlayer();
@@ -876,7 +1110,123 @@
                 this.explosions.push(new Explosion(x, y, size));
             }
 
+            spawnPowerUp() {
+                // 随机位置
+                const maxAttempts = 20;
+                for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                    const col = Math.floor(Math.random() * (COLS - 2)) + 1;
+                    const row = Math.floor(Math.random() * (ROWS - 4)) + 2;
+                    
+                    // 检查位置是否为空
+                    if (this.map[row][col] === TILE_EMPTY) {
+                        const x = col * TILE_SIZE + 2;
+                        const y = row * TILE_SIZE + 2;
+                        
+                        // 检查是否与其他道具重叠
+                        let overlap = false;
+                        for (const p of this.powerUps) {
+                            if (Math.abs(p.x - x) < TILE_SIZE && Math.abs(p.y - y) < TILE_SIZE) {
+                                overlap = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!overlap) {
+                            // 随机道具类型
+                            const types = [POWERUP_STAR, POWERUP_TANK, POWERUP_BOMB, 
+                                          POWERUP_SHIELD, POWERUP_CLOCK, POWERUP_SHOVEL];
+                            const weights = [30, 10, 15, 15, 15, 15]; // 权重
+                            const totalWeight = weights.reduce((a, b) => a + b, 0);
+                            let rand = Math.random() * totalWeight;
+                            let type = types[0];
+                            
+                            for (let i = 0; i < weights.length; i++) {
+                                rand -= weights[i];
+                                if (rand <= 0) {
+                                    type = types[i];
+                                    break;
+                                }
+                            }
+                            
+                            this.powerUps.push(new PowerUp(x, y, type));
+                            return;
+                        }
+                    }
+                }
+            }
+
+            collectPowerUp(powerUp) {
+                powerUp.alive = false;
+                
+                switch (powerUp.type) {
+                    case POWERUP_STAR:
+                        // 加分
+                        this.score += 500;
+                        break;
+                        
+                    case POWERUP_TANK:
+                        // 额外生命
+                        this.lives++;
+                        break;
+                        
+                    case POWERUP_BOMB:
+                        // 消灭所有敌人
+                        for (const enemy of this.enemies) {
+                            if (enemy.alive) {
+                                this.createExplosion(enemy.x + enemy.width/2, 
+                                                    enemy.y + enemy.height/2, 'large');
+                                this.score += 100;
+                                enemy.alive = false;
+                            }
+                        }
+                        break;
+                        
+                    case POWERUP_SHIELD:
+                        // 护盾 - 10秒无敌
+                        this.shieldActive = true;
+                        this.shieldTimer = 600;
+                        break;
+                        
+                    case POWERUP_CLOCK:
+                        // 时钟 - 冻结敌人10秒
+                        this.freezeActive = true;
+                        this.freezeTimer = 600;
+                        break;
+                        
+                    case POWERUP_SHOVEL:
+                        // 铁锹 - 基地加固20秒
+                        this.armorBase(true);
+                        this.baseArmored = true;
+                        this.baseArmorTimer = 1200;
+                        break;
+                }
+                
+                this.updateUI();
+            }
+
+            armorBase(steel) {
+                const baseCol = Math.floor(COLS / 2);
+                const baseRow = ROWS - 1;
+                const type = steel ? TILE_STEEL : TILE_BRICK;
+                
+                const positions = [
+                    [baseRow - 1, baseCol - 1], [baseRow - 1, baseCol], [baseRow - 1, baseCol + 1],
+                    [baseRow, baseCol - 1], [baseRow, baseCol + 1]
+                ];
+                
+                positions.forEach(([r, c]) => {
+                    if (r >= 0 && r < ROWS && c >= 0 && c < COLS && this.map[r][c] !== TILE_BASE) {
+                        this.map[r][c] = type;
+                    }
+                });
+            }
+
             playerHit() {
+                // 如果护盾激活，不受伤害
+                if (this.shieldActive) {
+                    return;
+                }
+                
                 this.lives--;
                 this.createExplosion(this.player.x + this.player.width/2, 
                                     this.player.y + this.player.height/2, 'large');
@@ -908,7 +1258,7 @@
 
             checkWin() {
                 if (this.enemiesRemaining <= 0 && this.enemies.filter(e => e.alive).length === 0) {
-                    if (this.level < 3) {
+                    if (this.level < 6) {
                         this.level++;
                         this.init();
                     } else {
@@ -974,15 +1324,40 @@
             update() {
                 this.handleInput();
 
+                // 更新道具效果计时器
+                if (this.shieldTimer > 0) {
+                    this.shieldTimer--;
+                    if (this.shieldTimer <= 0) {
+                        this.shieldActive = false;
+                    }
+                }
+                
+                if (this.freezeTimer > 0) {
+                    this.freezeTimer--;
+                    if (this.freezeTimer <= 0) {
+                        this.freezeActive = false;
+                    }
+                }
+                
+                if (this.baseArmorTimer > 0) {
+                    this.baseArmorTimer--;
+                    if (this.baseArmorTimer <= 0) {
+                        this.baseArmored = false;
+                        this.armorBase(false); // 恢复为砖墙
+                    }
+                }
+
                 // 更新玩家
                 if (this.player && this.player.alive) {
                     this.player.update(this);
                 }
 
-                // 更新敌人
-                for (const enemy of this.enemies) {
-                    if (enemy.alive) {
-                        enemy.update(this);
+                // 更新敌人（如果没有被冻结）
+                if (!this.freezeActive) {
+                    for (const enemy of this.enemies) {
+                        if (enemy.alive) {
+                            enemy.update(this);
+                        }
                     }
                 }
 
@@ -1000,15 +1375,37 @@
                     }
                 }
 
+                // 更新道具
+                for (const powerUp of this.powerUps) {
+                    if (powerUp.alive) {
+                        powerUp.update();
+                        
+                        // 检查玩家是否拾取道具
+                        if (this.player && this.player.alive && powerUp.hitTest(this.player)) {
+                            this.collectPowerUp(powerUp);
+                        }
+                    }
+                }
+
                 // 清理死亡对象
                 this.bullets = this.bullets.filter(b => b.alive);
                 this.explosions = this.explosions.filter(e => e.alive);
+                this.powerUps = this.powerUps.filter(p => p.alive);
 
                 // 生成敌人
                 this.spawnTimer++;
                 if (this.spawnTimer > 180) {
                     this.spawnTimer = 0;
                     this.spawnEnemy();
+                }
+
+                // 生成道具
+                this.powerUpTimer++;
+                if (this.powerUpTimer > 600 && this.powerUps.length < 2) { // 每10秒检查一次
+                    this.powerUpTimer = 0;
+                    if (Math.random() < 0.5) { // 50%概率生成
+                        this.spawnPowerUp();
+                    }
                 }
 
                 // 检查胜利
@@ -1140,11 +1537,39 @@
                 // 绘制坦克
                 if (this.player && this.player.alive) {
                     this.player.draw(this.ctx);
+                    
+                    // 绘制护盾效果
+                    if (this.shieldActive) {
+                        const cx = this.player.x + this.player.width / 2;
+                        const cy = this.player.y + this.player.height / 2;
+                        const pulse = Math.sin(Date.now() / 100) * 2;
+                        
+                        this.ctx.strokeStyle = `rgba(135, 206, 235, ${0.5 + Math.sin(Date.now() / 200) * 0.3})`;
+                        this.ctx.lineWidth = 2;
+                        this.ctx.beginPath();
+                        this.ctx.arc(cx, cy, 20 + pulse, 0, Math.PI * 2);
+                        this.ctx.stroke();
+                        
+                        this.ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 + Math.sin(Date.now() / 150) * 0.2})`;
+                        this.ctx.beginPath();
+                        this.ctx.arc(cx, cy, 16 + pulse, 0, Math.PI * 2);
+                        this.ctx.stroke();
+                    }
                 }
 
                 for (const enemy of this.enemies) {
                     if (enemy.alive) {
                         enemy.draw(this.ctx);
+                        
+                        // 如果敌人被冻结，绘制冰冻效果
+                        if (this.freezeActive) {
+                            const cx = enemy.x + enemy.width / 2;
+                            const cy = enemy.y + enemy.height / 2;
+                            this.ctx.fillStyle = 'rgba(135, 206, 235, 0.3)';
+                            this.ctx.beginPath();
+                            this.ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+                            this.ctx.fill();
+                        }
                     }
                 }
 
@@ -1152,6 +1577,13 @@
                 for (const bullet of this.bullets) {
                     if (bullet.alive) {
                         bullet.draw(this.ctx);
+                    }
+                }
+
+                // 绘制道具
+                for (const powerUp of this.powerUps) {
+                    if (powerUp.alive) {
+                        powerUp.draw(this.ctx);
                     }
                 }
 
