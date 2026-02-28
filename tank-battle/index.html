@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超级坦克大战</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        <div id="sidebar">
+            <div class="info-panel">
+                <div class="info-item">
+                    <span class="label">关卡</span>
+                    <span id="level-display" class="value">1</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">生命</span>
+                    <span id="lives-display" class="value">3</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">分数</span>
+                    <span id="score-display" class="value">0</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">敌人</span>
+                    <span id="enemies-display" class="value">20</span>
+                </div>
+            </div>
+            <div class="controls-info">
+                <h3>操作说明</h3>
+                <p>方向键 - 移动</p>
+                <p>空格键 - 射击</p>
+                <p>P键 - 暂停</p>
+                <p>Enter - 开始/重新开始</p>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
