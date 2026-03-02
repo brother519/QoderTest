@@ -8,6 +8,7 @@ npm-debug.log*
 dist/
 build/
 .cache/
+.next/
 
 .qoder/*
 !.qoder/rules/
