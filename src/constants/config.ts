@@ -131,6 +131,22 @@ export const COLORS = {
   hudText: '#FFFFFF',
 };
 
+// Player 2 spawn point (bottom-right area)
+export const PLAYER2_SPAWN = { x: 16 * TILE_SIZE, y: 24 * TILE_SIZE } as const;
+
+/** Per-player color configuration, indexed by PlayerIndex. */
+export interface PlayerColorConfig {
+  readonly body: string;
+  readonly turret: string;
+  readonly track: string;
+}
+
+/** Color sets for each player tank. P1 = green, P2 = blue. */
+export const PLAYER_COLORS: readonly [PlayerColorConfig, PlayerColorConfig] = [
+  { body: '#33AA33', turret: '#55DD55', track: '#225522' },
+  { body: '#2266CC', turret: '#44AAFF', track: '#113366' },
+] as const;
+
 // Boss phases
 export const BOSS_PHASE_2_HEALTH_RATIO = 0.5;
 export const BOSS_PHASE_3_HEALTH_RATIO = 0.25;

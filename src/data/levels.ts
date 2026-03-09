@@ -19,6 +19,7 @@ const ENEMY_SPAWNS = [
 ];
 
 const PLAYER_SPAWN = { x: 8 * TILE_SIZE, y: 24 * TILE_SIZE };
+const PLAYER_SPAWN_P2 = { x: 16 * TILE_SIZE, y: 24 * TILE_SIZE };
 
 // ============ LEVEL 1: Training Ground ============
 const level1Map: number[][] = [
@@ -187,6 +188,7 @@ export const levels: LevelConfig[] = [
     hasBoss: false,
     enemySpawnPoints: ENEMY_SPAWNS,
     playerSpawnPoint: PLAYER_SPAWN,
+    player2SpawnPoint: PLAYER_SPAWN_P2,
   },
   {
     id: 2,
@@ -202,6 +204,7 @@ export const levels: LevelConfig[] = [
     hasBoss: false,
     enemySpawnPoints: ENEMY_SPAWNS,
     playerSpawnPoint: PLAYER_SPAWN,
+    player2SpawnPoint: PLAYER_SPAWN_P2,
   },
   {
     id: 3,
@@ -218,6 +221,7 @@ export const levels: LevelConfig[] = [
     hasBoss: false,
     enemySpawnPoints: ENEMY_SPAWNS,
     playerSpawnPoint: PLAYER_SPAWN,
+    player2SpawnPoint: PLAYER_SPAWN_P2,
   },
   {
     id: 4,
@@ -234,6 +238,7 @@ export const levels: LevelConfig[] = [
     bossType: EnemyType.BOSS,
     enemySpawnPoints: ENEMY_SPAWNS,
     playerSpawnPoint: PLAYER_SPAWN,
+    player2SpawnPoint: PLAYER_SPAWN_P2,
   },
   {
     id: 5,
@@ -252,5 +257,6 @@ export const levels: LevelConfig[] = [
     bossType: EnemyType.BOSS,
     enemySpawnPoints: ENEMY_SPAWNS,
     playerSpawnPoint: PLAYER_SPAWN,
+    player2SpawnPoint: PLAYER_SPAWN_P2,
   },
 ];

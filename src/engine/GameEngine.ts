@@ -1,6 +1,6 @@
 import type {
   GameState, PlayerTank, EnemyTank, Bullet, PowerUp, Explosion, Particle,
-  SpawnEffect, LevelConfig,
+  SpawnEffect, LevelConfig, PlayerIndex, GameMode, Point,
 } from '../types/game';
 import { GamePhase, Direction, TileType, EnemyType, PowerUpType } from '../types/game';
 import { InputManager } from './InputManager';
@@ -17,17 +17,27 @@ import { shouldDropPowerUp, getRandomPowerUpType, getRandomPowerUpPosition } fro
 import * as C from '../constants/config';
 
 let nextId = 0;
+/** Generate a unique entity ID. */
 function uid(): string { return `e${nextId++}`; }
 
-export type UICallback = (state: {
+/** Payload sent from engine to React UI layer via callback. */
+export interface UICallbackData {
   phase: GamePhase;
-  score: number;
-  lives: number;
+  scores: number[];
+  lives: number[];
   currentLevel: number;
   enemiesRemaining: number;
-  playerPowerUps: { hasShield: boolean; speedBoost: boolean; firepowerLevel: number };
-}) => void;
+  gameMode: GameMode;
+  playersInfo: Array<{ hasShield: boolean; speedBoost: boolean; firepowerLevel: number } | null>;
+}
 
+/** Callback type for engine-to-UI state synchronization. */
+export type UICallback = (state: UICallbackData) => void;
+
+/**
+ * Core game engine that manages game state, input processing, entity updates,
+ * collision detection, and game phase transitions. Supports 1P and 2P modes.
+ */
 export class GameEngine {
   state: GameState;
   input: InputManager;
@@ -43,13 +53,17 @@ export class GameEngine {
     this.state = this.createInitialState();
   }
 
+  /**
+   * Create the default initial game state for the start screen.
+   * @returns A fresh GameState with all fields at defaults
+   */
   private createInitialState(): GameState {
     return {
       phase: GamePhase.START_SCREEN,
       currentLevel: 0,
-      score: 0,
-      lives: C.PLAYER_INITIAL_LIVES,
-      player: null,
+      scores: [0],
+      lives: [C.PLAYER_INITIAL_LIVES],
+      players: [],
       enemies: [],
       bullets: [],
       powerUps: [],
@@ -66,46 +80,77 @@ export class GameEngine {
       stageIntroTimer: 0,
       levelCompleteTimer: 0,
       gameOverTimer: 0,
+      gameMode: 1,
+      menuSelection: 1,
     };
   }
 
-  setUICallback(cb: UICallback) {
+  /**
+   * Register the UI callback for state synchronization.
+   * @param cb - Callback invoked on every meaningful state change
+   */
+  setUICallback(cb: UICallback): void {
     this.uiCallback = cb;
   }
 
-  private notifyUI() {
+  /** Send current state snapshot to the UI layer. */
+  private notifyUI(): void {
     if (!this.uiCallback) return;
     const s = this.state;
+    const playersInfo = this.buildPlayersInfo();
     this.uiCallback({
       phase: s.phase,
-      score: s.score,
+      scores: s.scores,
       lives: s.lives,
       currentLevel: s.currentLevel,
       enemiesRemaining: s.enemySpawnQueue.length + s.enemies.length,
-      playerPowerUps: {
-        hasShield: s.player?.hasShield ?? false,
-        speedBoost: (s.player?.speedBoostTimer ?? 0) > 0,
-        firepowerLevel: s.player?.firepowerLevel ?? 0,
-      },
+      gameMode: s.gameMode,
+      playersInfo,
     });
   }
 
-  start() {
+  /**
+   * Build power-up info array for UI, one entry per possible player slot.
+   * @returns Array with info for each player index (null if player is dead/absent)
+   */
+  private buildPlayersInfo(): UICallbackData['playersInfo'] {
+    const s = this.state;
+    const count = s.gameMode === 2 ? 2 : 1;
+    const result: UICallbackData['playersInfo'] = [];
+    for (let i = 0; i < count; i++) {
+      const player = s.players.find(p => p.playerIndex === i);
+      if (player) {
+        result.push({
+          hasShield: player.hasShield,
+          speedBoost: player.speedBoostTimer > 0,
+          firepowerLevel: player.firepowerLevel,
+        });
+      } else {
+        result.push(null);
+      }
+    }
+    return result;
+  }
+
+  /** Start the game engine: attach input and begin the update loop. */
+  start(): void {
     this.input.attach();
     this.running = true;
     this.lastTime = performance.now();
     this.loop(this.lastTime);
   }
 
-  stop() {
+  /** Stop the game engine: detach input and cancel the update loop. */
+  stop(): void {
     this.running = false;
     cancelAnimationFrame(this.animFrameId);
     this.input.detach();
   }
 
-  private loop = (time: number) => {
+  /** Main game loop driven by requestAnimationFrame. */
+  private loop = (time: number): void => {
     if (!this.running) return;
-    const dt = Math.min(time - this.lastTime, 50); // cap at 50ms
+    const dt = Math.min(time - this.lastTime, 50);
     this.lastTime = time;
     this.input.update();
     this.update(dt);
@@ -114,15 +159,16 @@ export class GameEngine {
 
   // ============ UPDATE ============
 
-  private update(dt: number) {
+  /**
+   * Top-level update dispatcher. Routes to phase-specific handlers.
+   * @param dt - Delta time in milliseconds since last frame
+   */
+  private update(dt: number): void {
     const s = this.state;
-    const dtSec = dt / 1000;
 
     switch (s.phase) {
       case GamePhase.START_SCREEN:
-        if (this.input.wasJustPressed('Enter') || this.input.wasJustPressed('Space')) {
-          this.startGame();
-        }
+        this.updateStartScreen();
         break;
 
       case GamePhase.STAGE_INTRO:
@@ -139,7 +185,7 @@ export class GameEngine {
           this.notifyUI();
           break;
         }
-        this.updatePlaying(dtSec, dt);
+        this.updatePlaying(dt / 1000, dt);
         break;
 
       case GamePhase.PAUSED:
@@ -166,205 +212,307 @@ export class GameEngine {
     }
   }
 
-  private updatePlaying(dtSec: number, dtMs: number) {
+  /** Handle start screen input: menu selection and game start. */
+  private updateStartScreen(): void {
+    const s = this.state;
+    if (this.input.wasJustPressed('ArrowUp') || this.input.wasJustPressed('KeyW') ||
+        this.input.wasJustPressed('ArrowDown') || this.input.wasJustPressed('KeyS')) {
+      s.menuSelection = s.menuSelection === 1 ? 2 : 1;
+      this.notifyUI();
+    }
+    if (this.input.wasJustPressed('Enter') || this.input.wasJustPressed('Space')) {
+      this.startGame(s.menuSelection);
+    }
+  }
+
+  /**
+   * Per-frame update during PLAYING phase. Processes all game systems.
+   * @param dtSec - Delta time in seconds
+   * @param dtMs - Delta time in milliseconds
+   */
+  private updatePlaying(dtSec: number, dtMs: number): void {
     const s = this.state;
 
-    // Update freeze timer
     if (s.freezeTimer > 0) {
       s.freezeTimer -= dtMs;
     }
 
-    // Update player
-    if (s.player) {
-      this.updatePlayer(dtSec, dtMs);
+    for (const player of s.players) {
+      this.updatePlayerByIndex(player, dtSec, dtMs);
     }
 
-    // Update enemies (if not frozen)
     if (s.freezeTimer <= 0) {
       this.updateEnemies(dtSec, dtMs);
     }
 
-    // Spawn enemies
     this.updateEnemySpawning(dtMs);
-
-    // Update bullets
     this.updateBullets(dtSec);
-
-    // Update powerups
     this.updatePowerUps(dtMs);
-
-    // Update explosions & particles
     this.updateEffects(dtMs);
-
-    // Update spawn effects
     this.updateSpawnEffects(dtMs);
-
-    // Check win/lose
     this.checkWinLose();
-
     this.notifyUI();
   }
 
   // ============ PLAYER ============
 
-  private updatePlayer(dtSec: number, dtMs: number) {
-    const p = this.state.player!;
-
-    // Handle respawn
-    if (p.isRespawning) {
-      p.respawnTimer -= dtMs;
-      if (p.respawnTimer <= 0) {
-        p.isRespawning = false;
-        p.hasShield = true;
-        p.shieldTimer = 3000;
-      }
+  /**
+   * Update a specific player's movement, shooting, and status timers.
+   * @param player - The player tank to update
+   * @param dtSec - Delta time in seconds
+   * @param dtMs - Delta time in milliseconds
+   */
+  private updatePlayerByIndex(player: PlayerTank, dtSec: number, dtMs: number): void {
+    if (player.isRespawning) {
+      this.updatePlayerRespawn(player, dtMs);
       return;
     }
 
-    // Shield timer
-    if (p.hasShield) {
-      p.shieldTimer -= dtMs;
-      if (p.shieldTimer <= 0) p.hasShield = false;
-    }
+    this.updatePlayerTimers(player, dtMs);
 
-    // Speed boost timer
-    if (p.speedBoostTimer > 0) {
-      p.speedBoostTimer -= dtMs;
-      if (p.speedBoostTimer <= 0) {
-        p.speed = p.baseSpeed;
-      }
-    }
-
-    // Spawn animation
-    if (p.spawnAnimation > 0) {
-      p.spawnAnimation -= dtMs;
+    if (player.spawnAnimation > 0) {
+      player.spawnAnimation -= dtMs;
       return;
     }
 
-    // Movement
-    let newDir: Direction | null = null;
-    if (this.input.isDown('ArrowUp') || this.input.isDown('KeyW')) newDir = Direction.UP;
-    else if (this.input.isDown('ArrowDown') || this.input.isDown('KeyS')) newDir = Direction.DOWN;
-    else if (this.input.isDown('ArrowLeft') || this.input.isDown('KeyA')) newDir = Direction.LEFT;
-    else if (this.input.isDown('ArrowRight') || this.input.isDown('KeyD')) newDir = Direction.RIGHT;
+    this.updatePlayerMovement(player, dtSec);
+    this.updatePlayerShooting(player);
+  }
 
-    p.isMoving = newDir !== null;
+  /**
+   * Handle player respawn countdown.
+   * @param player - The respawning player
+   * @param dtMs - Delta time in milliseconds
+   */
+  private updatePlayerRespawn(player: PlayerTank, dtMs: number): void {
+    player.respawnTimer -= dtMs;
+    if (player.respawnTimer <= 0) {
+      player.isRespawning = false;
+      player.hasShield = true;
+      player.shieldTimer = 3000;
+    }
+  }
 
-    if (newDir !== null) {
-      // Snap perpendicular axis when turning
-      if (newDir !== p.direction) {
-        if (newDir === Direction.UP || newDir === Direction.DOWN) {
-          p.x = snapToGrid(p.x);
-        } else {
-          p.y = snapToGrid(p.y);
-        }
-      }
-      p.direction = newDir;
-
-      const { dx, dy } = directionDelta(newDir);
-      const moveX = dx * p.speed * dtSec;
-      const moveY = dy * p.speed * dtSec;
-
-      // Collision check with map and other tanks
-      const otherTanks = this.state.enemies.filter(e => !e.frozen || this.state.freezeTimer <= 0);
-      if (canMove(p, moveX, moveY, this.state.mapData) &&
-          !tanksCollide(p, moveX, moveY, otherTanks)) {
-        p.x += moveX;
-        p.y += moveY;
+  /**
+   * Tick down shield and speed boost timers for a player.
+   * @param player - The player to update
+   * @param dtMs - Delta time in milliseconds
+   */
+  private updatePlayerTimers(player: PlayerTank, dtMs: number): void {
+    if (player.hasShield) {
+      player.shieldTimer -= dtMs;
+      if (player.shieldTimer <= 0) player.hasShield = false;
+    }
+    if (player.speedBoostTimer > 0) {
+      player.speedBoostTimer -= dtMs;
+      if (player.speedBoostTimer <= 0) {
+        player.speed = player.baseSpeed;
       }
     }
+  }
 
-    // Ice sliding
-    const tiles = getOverlappingTiles(p);
-    const _onIce = tiles.some(t => this.state.mapData[t.row]?.[t.col] === TileType.ICE);
+  /**
+   * Process movement input and apply collision-checked displacement for a player.
+   * @param player - The player tank to move
+   * @param dtSec - Delta time in seconds
+   */
+  private updatePlayerMovement(player: PlayerTank, dtSec: number): void {
+    const newDir = this.input.getPlayerDirection(player.playerIndex);
+    player.isMoving = newDir !== null;
 
-    // Shooting
-    if (this.input.isDown('Space') || this.input.wasJustPressed('Space')) {
-      const now = performance.now();
-      const effectiveFireRate = p.firepowerLevel >= 1 ? p.fireRate * 0.6 : p.fireRate;
-      if (now - p.lastFireTime >= effectiveFireRate) {
-        this.fireBullet(p, true);
-        p.lastFireTime = now;
+    if (newDir === null) return;
+
+    if (newDir !== player.direction) {
+      if (newDir === Direction.UP || newDir === Direction.DOWN) {
+        player.x = snapToGrid(player.x);
+      } else {
+        player.y = snapToGrid(player.y);
       }
+    }
+    player.direction = newDir;
+
+    const { dx, dy } = directionDelta(newDir);
+    const moveX = dx * player.speed * dtSec;
+    const moveY = dy * player.speed * dtSec;
+
+    const otherTanks = this.getOtherTanksForPlayer(player);
+    if (canMove(player, moveX, moveY, this.state.mapData) &&
+        !tanksCollide(player, moveX, moveY, otherTanks)) {
+      player.x += moveX;
+      player.y += moveY;
+    }
+  }
+
+  /**
+   * Get all tanks that should block a player's movement (enemies + other players).
+   * @param player - The player to exclude from the result
+   * @returns Array of blocking tank entities
+   */
+  private getOtherTanksForPlayer(player: PlayerTank): (EnemyTank | PlayerTank)[] {
+    const s = this.state;
+    const activeEnemies = s.enemies.filter(e => !e.frozen || s.freezeTimer <= 0);
+    const otherPlayers = s.players.filter(
+      p => p.playerIndex !== player.playerIndex && !p.isRespawning
+    );
+    return [...activeEnemies, ...otherPlayers];
+  }
+
+  /**
+   * Process fire input and create bullets for a player.
+   * @param player - The player tank to check firing for
+   */
+  private updatePlayerShooting(player: PlayerTank): void {
+    if (!this.input.isPlayerFiring(player.playerIndex)) return;
+
+    const now = performance.now();
+    const effectiveFireRate = player.firepowerLevel >= 1
+      ? player.fireRate * 0.6
+      : player.fireRate;
+
+    if (now - player.lastFireTime >= effectiveFireRate) {
+      this.fireBullet(player, true);
+      player.lastFireTime = now;
     }
   }
 
   // ============ ENEMIES ============
 
-  private updateEnemies(dtSec: number, dtMs: number) {
+  /**
+   * Update all enemy tanks: AI decisions, movement, and shooting.
+   * @param dtSec - Delta time in seconds
+   * @param dtMs - Delta time in milliseconds
+   */
+  private updateEnemies(dtSec: number, dtMs: number): void {
     const s = this.state;
 
     for (const enemy of s.enemies) {
       if (enemy.frozen && s.freezeTimer > 0) continue;
       enemy.frozen = false;
 
-      // AI direction change
-      enemy.aiTimer -= dtMs;
-      if (enemy.aiTimer <= 0) {
-        enemy.direction = decideDirection(
-          enemy,
-          s.player && !s.player.isRespawning ? s.player.x : null,
-          s.player && !s.player.isRespawning ? s.player.y : null,
-        );
-        enemy.aiTimer = getAIDirectionInterval(enemy.enemyType);
-      }
+      this.updateEnemyAI(enemy, dtMs);
+      this.updateEnemyMovement(enemy, dtSec);
+      this.updateEnemyShooting(enemy, dtMs);
 
-      // Boss speed multiplier
-      let speedMult = 1;
-      if (enemy.enemyType === EnemyType.BOSS) {
-        const phase = getBossPhase(enemy);
-        speedMult = getBossSpeedMultiplier(phase);
-      }
-
-      // Move
-      const { dx, dy } = directionDelta(enemy.direction);
-      const moveX = dx * enemy.speed * speedMult * dtSec;
-      const moveY = dy * enemy.speed * speedMult * dtSec;
-
-      const otherTanks = [
-        ...s.enemies.filter(e => e.id !== enemy.id),
-        ...(s.player && !s.player.isRespawning ? [s.player] : []),
-      ];
-
-      if (canMove(enemy, moveX, moveY, s.mapData) &&
-          !tanksCollide(enemy, moveX, moveY, otherTanks)) {
-        enemy.x += moveX;
-        enemy.y += moveY;
-        enemy.isMoving = true;
-      } else {
-        enemy.isMoving = false;
-        // Change direction on collision
-        enemy.direction = decideDirection(enemy, null, null);
-        enemy.aiTimer = getAIDirectionInterval(enemy.enemyType);
-      }
-
-      // Shooting
-      if (shouldShoot(enemy, dtMs)) {
-        let fireRateMult = 1;
-        if (enemy.enemyType === EnemyType.BOSS) {
-          fireRateMult = getBossFireRateMultiplier(getBossPhase(enemy));
-        }
-        enemy.aiShootTimer *= fireRateMult;
-        this.fireBullet(enemy, false);
-
-        // Boss extra directions
-        if (enemy.enemyType === EnemyType.BOSS) {
-          const phase = getBossPhase(enemy);
-          const extraDirs = getBossExtraDirections(phase, enemy.direction);
-          for (const dir of extraDirs) {
-            this.fireBulletInDirection(enemy, false, dir);
-          }
-        }
-      }
-
-      // Spawn animation
       if (enemy.spawnAnimation > 0) {
         enemy.spawnAnimation -= dtMs;
       }
     }
   }
 
-  private updateEnemySpawning(dtMs: number) {
+  /**
+   * Update enemy AI direction decision timer.
+   * @param enemy - The enemy tank
+   * @param dtMs - Delta time in milliseconds
+   */
+  private updateEnemyAI(enemy: EnemyTank, dtMs: number): void {
+    enemy.aiTimer -= dtMs;
+    if (enemy.aiTimer <= 0) {
+      const target = this.findNearestAlivePlayer(enemy);
+      enemy.direction = decideDirection(
+        enemy,
+        target ? target.x : null,
+        target ? target.y : null,
+      );
+      enemy.aiTimer = getAIDirectionInterval(enemy.enemyType);
+    }
+  }
+
+  /**
+   * Find the nearest alive (non-respawning) player to an enemy.
+   * @param enemy - The enemy tank searching for a target
+   * @returns The nearest alive PlayerTank, or null if none exist
+   */
+  private findNearestAlivePlayer(enemy: EnemyTank): PlayerTank | null {
+    const alivePlayers = this.state.players.filter(p => !p.isRespawning);
+    if (alivePlayers.length === 0) return null;
+
+    let nearest: PlayerTank = alivePlayers[0];
+    let nearestDist = this.distanceSq(enemy, nearest);
+
+    for (let i = 1; i < alivePlayers.length; i++) {
+      const dist = this.distanceSq(enemy, alivePlayers[i]);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearest = alivePlayers[i];
+      }
+    }
+    return nearest;
+  }
+
+  /**
+   * Compute squared distance between two entities (avoids sqrt).
+   * @param a - First entity
+   * @param b - Second entity
+   * @returns Squared Euclidean distance between entity centers
+   */
+  private distanceSq(a: { x: number; y: number }, b: { x: number; y: number }): number {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    return dx * dx + dy * dy;
+  }
+
+  /**
+   * Apply movement to an enemy with collision checking.
+   * @param enemy - The enemy tank to move
+   * @param dtSec - Delta time in seconds
+   */
+  private updateEnemyMovement(enemy: EnemyTank, dtSec: number): void {
+    const s = this.state;
+    let speedMult = 1;
+    if (enemy.enemyType === EnemyType.BOSS) {
+      speedMult = getBossSpeedMultiplier(getBossPhase(enemy));
+    }
+
+    const { dx, dy } = directionDelta(enemy.direction);
+    const moveX = dx * enemy.speed * speedMult * dtSec;
+    const moveY = dy * enemy.speed * speedMult * dtSec;
+
+    const otherTanks = [
+      ...s.enemies.filter(e => e.id !== enemy.id),
+      ...s.players.filter(p => !p.isRespawning),
+    ];
+
+    if (canMove(enemy, moveX, moveY, s.mapData) &&
+        !tanksCollide(enemy, moveX, moveY, otherTanks)) {
+      enemy.x += moveX;
+      enemy.y += moveY;
+      enemy.isMoving = true;
+    } else {
+      enemy.isMoving = false;
+      enemy.direction = decideDirection(enemy, null, null);
+      enemy.aiTimer = getAIDirectionInterval(enemy.enemyType);
+    }
+  }
+
+  /**
+   * Handle enemy shooting logic including boss spread shots.
+   * @param enemy - The enemy tank
+   * @param dtMs - Delta time in milliseconds
+   */
+  private updateEnemyShooting(enemy: EnemyTank, dtMs: number): void {
+    if (!shouldShoot(enemy, dtMs)) return;
+
+    let fireRateMult = 1;
+    if (enemy.enemyType === EnemyType.BOSS) {
+      fireRateMult = getBossFireRateMultiplier(getBossPhase(enemy));
+    }
+    enemy.aiShootTimer *= fireRateMult;
+    this.fireBullet(enemy, false);
+
+    if (enemy.enemyType === EnemyType.BOSS) {
+      const phase = getBossPhase(enemy);
+      const extraDirs = getBossExtraDirections(phase, enemy.direction);
+      for (const dir of extraDirs) {
+        this.fireBulletInDirection(enemy, false, dir);
+      }
+    }
+  }
+
+  /**
+   * Spawn queued enemies when conditions allow.
+   * @param dtMs - Delta time in milliseconds
+   */
+  private updateEnemySpawning(dtMs: number): void {
     const s = this.state;
     const level = this.levels[s.currentLevel];
     if (!level) return;
@@ -379,7 +527,8 @@ export class GameEngine {
     }
   }
 
-  private spawnNextEnemy() {
+  /** Attempt to spawn the next enemy from the queue at a clear spawn point. */
+  private spawnNextEnemy(): void {
     const s = this.state;
     const level = this.levels[s.currentLevel];
     if (!level || s.enemySpawnQueue.length === 0) return;
@@ -389,15 +538,17 @@ export class GameEngine {
       Math.floor(Math.random() * level.enemySpawnPoints.length)
     ];
 
-    // Check spawn point is clear
     const spawnBox = {
       x: spawnPoint.x, y: spawnPoint.y,
       width: C.TANK_SIZE, height: C.TANK_SIZE,
     };
-    const allTanks = [...s.enemies, ...(s.player ? [s.player] : [])];
-    if (tanksCollide({ x: spawnBox.x - 1, y: spawnBox.y - 1, width: spawnBox.width, height: spawnBox.height }, 0, 0, allTanks)) {
+    const allTanks = [...s.enemies, ...s.players];
+    if (tanksCollide(
+      { x: spawnBox.x - 1, y: spawnBox.y - 1, width: spawnBox.width, height: spawnBox.height },
+      0, 0, allTanks,
+    )) {
       s.enemySpawnQueue.unshift(type);
-      s.enemySpawnTimer = 500; // retry sooner
+      s.enemySpawnTimer = 500;
       return;
     }
 
@@ -429,8 +580,6 @@ export class GameEngine {
     };
 
     s.enemies.push(enemy);
-
-    // Spawn effect
     s.spawnEffects.push({
       id: uid(),
       x: spawnPoint.x + C.TANK_SIZE / 2,
@@ -442,20 +591,30 @@ export class GameEngine {
 
   // ============ BULLETS ============
 
-  private fireBullet(tank: PlayerTank | EnemyTank, isPlayer: boolean) {
+  /**
+   * Fire a bullet in the tank's current direction.
+   * @param tank - The tank firing the bullet
+   * @param isPlayer - Whether this is a player bullet
+   */
+  private fireBullet(tank: PlayerTank | EnemyTank, isPlayer: boolean): void {
     this.fireBulletInDirection(tank, isPlayer, tank.direction);
   }
 
+  /**
+   * Fire a bullet in a specified direction from a tank.
+   * @param tank - The tank firing
+   * @param isPlayer - Whether this is a player bullet
+   * @param direction - The direction to fire in
+   */
   private fireBulletInDirection(
     tank: PlayerTank | EnemyTank,
     isPlayer: boolean,
     direction: Direction,
-  ) {
+  ): void {
     const s = this.state;
 
-    // Limit bullets on screen per entity
     const existingBullets = s.bullets.filter(b => b.ownerId === tank.id);
-    const maxBullets = isPlayer ? (('firepowerLevel' in tank && tank.firepowerLevel >= 2) ? 2 : 1) : 1;
+    const maxBullets = isPlayer && 'firepowerLevel' in tank && tank.firepowerLevel >= 2 ? 2 : 1;
     if (existingBullets.length >= maxBullets) return;
 
     const { dx, dy } = directionDelta(direction);
@@ -478,7 +637,11 @@ export class GameEngine {
     s.bullets.push(bullet);
   }
 
-  private updateBullets(dtSec: number) {
+  /**
+   * Update all bullets: movement, tile collision, entity collision.
+   * @param dtSec - Delta time in seconds
+   */
+  private updateBullets(dtSec: number): void {
     const s = this.state;
     const toRemove: Set<string> = new Set();
 
@@ -487,84 +650,134 @@ export class GameEngine {
       bullet.x += dx * bullet.speed * dtSec;
       bullet.y += dy * bullet.speed * dtSec;
 
-      // Out of bounds
       if (isOutOfBounds(bullet)) {
         toRemove.add(bullet.id);
         continue;
       }
 
-      // Tile collision
-      const tileHit = bulletTileCollision(bullet, s.mapData);
-      if (tileHit) {
-        toRemove.add(bullet.id);
-        if (tileHit.tileType === TileType.BRICK) {
-          this.destroyBrick(tileHit.row, tileHit.col);
-          this.addExplosion(bullet.x, bullet.y, false);
-        } else if (tileHit.tileType === TileType.STEEL) {
-          // Only power bullets destroy steel
-          if (bullet.power >= 3) {
-            s.mapData[tileHit.row][tileHit.col] = TileType.EMPTY;
-          }
-          this.addExplosion(bullet.x, bullet.y, false);
-        } else if (tileHit.tileType === TileType.BASE) {
-          s.baseDestroyed = true;
-          s.mapData[tileHit.row][tileHit.col] = TileType.EMPTY;
-          this.addExplosion(
-            tileHit.col * C.TILE_SIZE + C.TILE_SIZE / 2,
-            tileHit.row * C.TILE_SIZE + C.TILE_SIZE / 2,
-            true,
-          );
-        }
-        continue;
-      }
+      if (this.handleBulletTileCollision(bullet, toRemove)) continue;
 
-      // Bullet vs tanks
       if (bullet.isPlayerBullet) {
-        // Hit enemies
-        for (const enemy of s.enemies) {
-          if (enemy.spawnAnimation > 0) continue;
-          if (entityOverlap(bullet, enemy)) {
-            toRemove.add(bullet.id);
-            enemy.health -= bullet.power;
-            if (enemy.health <= 0) {
-              this.killEnemy(enemy);
-            } else {
-              this.addExplosion(bullet.x, bullet.y, false);
-            }
-            break;
-          }
-        }
+        this.handlePlayerBulletVsEnemies(bullet, toRemove);
       } else {
-        // Hit player
-        if (s.player && !s.player.isRespawning && s.player.spawnAnimation <= 0) {
-          if (entityOverlap(bullet, s.player)) {
-            toRemove.add(bullet.id);
-            if (!s.player.hasShield) {
-              this.killPlayer();
-            } else {
-              this.addExplosion(bullet.x, bullet.y, false);
-            }
-          }
-        }
+        this.handleEnemyBulletVsPlayers(bullet, toRemove);
       }
 
-      // Bullet vs bullet
-      for (const other of s.bullets) {
-        if (other.id === bullet.id) continue;
-        if (toRemove.has(other.id)) continue;
-        if (bullet.isPlayerBullet !== other.isPlayerBullet && entityOverlap(bullet, other)) {
-          toRemove.add(bullet.id);
-          toRemove.add(other.id);
-          this.addExplosion(bullet.x, bullet.y, false);
-          break;
-        }
-      }
+      this.handleBulletVsBullet(bullet, toRemove);
     }
 
     s.bullets = s.bullets.filter(b => !toRemove.has(b.id));
   }
 
-  private destroyBrick(row: number, col: number) {
+  /**
+   * Check if a bullet hit a map tile and apply damage.
+   * @param bullet - The bullet to check
+   * @param toRemove - Set of bullet IDs to remove this frame
+   * @returns true if the bullet hit a tile and should stop processing
+   */
+  private handleBulletTileCollision(bullet: Bullet, toRemove: Set<string>): boolean {
+    const s = this.state;
+    const tileHit = bulletTileCollision(bullet, s.mapData);
+    if (!tileHit) return false;
+
+    toRemove.add(bullet.id);
+    if (tileHit.tileType === TileType.BRICK) {
+      this.destroyBrick(tileHit.row, tileHit.col);
+      this.addExplosion(bullet.x, bullet.y, false);
+    } else if (tileHit.tileType === TileType.STEEL) {
+      if (bullet.power >= 3) {
+        s.mapData[tileHit.row][tileHit.col] = TileType.EMPTY;
+      }
+      this.addExplosion(bullet.x, bullet.y, false);
+    } else if (tileHit.tileType === TileType.BASE) {
+      s.baseDestroyed = true;
+      s.mapData[tileHit.row][tileHit.col] = TileType.EMPTY;
+      this.addExplosion(
+        tileHit.col * C.TILE_SIZE + C.TILE_SIZE / 2,
+        tileHit.row * C.TILE_SIZE + C.TILE_SIZE / 2,
+        true,
+      );
+    }
+    return true;
+  }
+
+  /**
+   * Check if a player bullet hit any enemy.
+   * @param bullet - The player's bullet
+   * @param toRemove - Set of bullet IDs to remove
+   */
+  private handlePlayerBulletVsEnemies(bullet: Bullet, toRemove: Set<string>): void {
+    const s = this.state;
+    for (const enemy of s.enemies) {
+      if (enemy.spawnAnimation > 0) continue;
+      if (entityOverlap(bullet, enemy)) {
+        toRemove.add(bullet.id);
+        enemy.health -= bullet.power;
+        if (enemy.health <= 0) {
+          const killerIndex = this.findBulletOwnerPlayerIndex(bullet);
+          this.killEnemy(enemy, killerIndex);
+        } else {
+          this.addExplosion(bullet.x, bullet.y, false);
+        }
+        break;
+      }
+    }
+  }
+
+  /**
+   * Determine which player fired a bullet by matching ownerId.
+   * @param bullet - The bullet to trace
+   * @returns The PlayerIndex of the owner, or 0 as fallback
+   */
+  private findBulletOwnerPlayerIndex(bullet: Bullet): PlayerIndex {
+    const owner = this.state.players.find(p => p.id === bullet.ownerId);
+    return owner ? owner.playerIndex : 0;
+  }
+
+  /**
+   * Check if an enemy bullet hit any player.
+   * @param bullet - The enemy's bullet
+   * @param toRemove - Set of bullet IDs to remove
+   */
+  private handleEnemyBulletVsPlayers(bullet: Bullet, toRemove: Set<string>): void {
+    for (const player of this.state.players) {
+      if (player.isRespawning || player.spawnAnimation > 0) continue;
+      if (entityOverlap(bullet, player)) {
+        toRemove.add(bullet.id);
+        if (!player.hasShield) {
+          this.killPlayer(player.playerIndex);
+        } else {
+          this.addExplosion(bullet.x, bullet.y, false);
+        }
+        break;
+      }
+    }
+  }
+
+  /**
+   * Check if a bullet collides with an opposing bullet (player vs enemy).
+   * @param bullet - The bullet to check
+   * @param toRemove - Set of bullet IDs to remove
+   */
+  private handleBulletVsBullet(bullet: Bullet, toRemove: Set<string>): void {
+    for (const other of this.state.bullets) {
+      if (other.id === bullet.id) continue;
+      if (toRemove.has(other.id)) continue;
+      if (bullet.isPlayerBullet !== other.isPlayerBullet && entityOverlap(bullet, other)) {
+        toRemove.add(bullet.id);
+        toRemove.add(other.id);
+        this.addExplosion(bullet.x, bullet.y, false);
+        break;
+      }
+    }
+  }
+
+  /**
+   * Destroy a brick tile and emit debris particles.
+   * @param row - Tile grid row
+   * @param col - Tile grid column
+   */
+  private destroyBrick(row: number, col: number): void {
     this.state.mapData[row][col] = TileType.EMPTY;
     this.addParticles(
       col * C.TILE_SIZE + C.TILE_SIZE / 2,
@@ -576,10 +789,15 @@ export class GameEngine {
 
   // ============ KILLS ============
 
-  private killEnemy(enemy: EnemyTank) {
+  /**
+   * Handle enemy death: award score, spawn effects, and possibly drop power-up.
+   * @param enemy - The enemy that was killed
+   * @param killerPlayerIndex - Which player scored the kill
+   */
+  private killEnemy(enemy: EnemyTank, killerPlayerIndex: PlayerIndex): void {
     const s = this.state;
     const config = C.ENEMY_CONFIG[enemy.enemyType];
-    s.score += config.score;
+    s.scores[killerPlayerIndex] += config.score;
 
     this.addExplosion(
       enemy.x + enemy.width / 2,
@@ -587,107 +805,152 @@ export class GameEngine {
       enemy.enemyType === EnemyType.BOSS,
     );
 
-    // Drop powerup
     if (shouldDropPowerUp(enemy.hasPowerUp)) {
-      const pos = getRandomPowerUpPosition(
-        C.MAP_COLS * C.TILE_SIZE,
-        C.MAP_ROWS * C.TILE_SIZE,
-      );
-      const powerUp: PowerUp = {
-        id: uid(),
-        x: pos.x,
-        y: pos.y,
-        width: C.TILE_SIZE,
-        height: C.TILE_SIZE,
-        type: getRandomPowerUpType(),
-        timer: C.POWERUP_LIFETIME,
-        flashTimer: 0,
-      };
-      s.powerUps.push(powerUp);
+      this.spawnPowerUp();
     }
 
     s.enemies = s.enemies.filter(e => e.id !== enemy.id);
   }
 
-  private killPlayer() {
+  /** Spawn a random power-up at a safe position on the map. */
+  private spawnPowerUp(): void {
+    const pos = getRandomPowerUpPosition(
+      C.MAP_COLS * C.TILE_SIZE,
+      C.MAP_ROWS * C.TILE_SIZE,
+    );
+    const powerUp: PowerUp = {
+      id: uid(),
+      x: pos.x,
+      y: pos.y,
+      width: C.TILE_SIZE,
+      height: C.TILE_SIZE,
+      type: getRandomPowerUpType(),
+      timer: C.POWERUP_LIFETIME,
+      flashTimer: 0,
+    };
+    this.state.powerUps.push(powerUp);
+  }
+
+  /**
+   * Handle player death: decrement lives, respawn or remove from game.
+   * @param playerIndex - Which player died
+   */
+  private killPlayer(playerIndex: PlayerIndex): void {
     const s = this.state;
-    if (!s.player) return;
+    const player = s.players.find(p => p.playerIndex === playerIndex);
+    if (!player) return;
 
     this.addExplosion(
-      s.player.x + s.player.width / 2,
-      s.player.y + s.player.height / 2,
+      player.x + player.width / 2,
+      player.y + player.height / 2,
       true,
     );
 
-    s.lives--;
-    if (s.lives <= 0) {
-      s.player = null;
+    s.lives[playerIndex]--;
+    if (s.lives[playerIndex] <= 0) {
+      s.players = s.players.filter(p => p.playerIndex !== playerIndex);
+      this.checkAllPlayersDead();
+    } else {
+      this.respawnPlayer(player);
+    }
+  }
+
+  /** Check if all players are dead and trigger game over if so. */
+  private checkAllPlayersDead(): void {
+    const s = this.state;
+    if (s.players.length === 0) {
       s.phase = GamePhase.GAME_OVER;
       s.gameOverTimer = C.GAME_OVER_DELAY;
       this.notifyUI();
-    } else {
-      // Respawn
-      const level = this.levels[s.currentLevel];
-      s.player.x = level.playerSpawnPoint.x;
-      s.player.y = level.playerSpawnPoint.y;
-      s.player.direction = Direction.UP;
-      s.player.isRespawning = true;
-      s.player.respawnTimer = C.RESPAWN_DELAY;
-      s.player.hasShield = false;
-      s.player.firepowerLevel = 0;
-      s.player.speed = C.PLAYER_SPEED;
-      s.player.baseSpeed = C.PLAYER_SPEED;
-      s.player.bulletPower = 1;
-      s.player.bulletSpeed = C.PLAYER_BULLET_SPEED;
-      s.player.speedBoostTimer = 0;
     }
+  }
+
+  /**
+   * Reset a player to their spawn point in respawning state.
+   * @param player - The player to respawn
+   */
+  private respawnPlayer(player: PlayerTank): void {
+    const spawnPoint = this.getPlayerSpawnPoint(player.playerIndex);
+    player.x = spawnPoint.x;
+    player.y = spawnPoint.y;
+    player.direction = Direction.UP;
+    player.isRespawning = true;
+    player.respawnTimer = C.RESPAWN_DELAY;
+    player.hasShield = false;
+    player.firepowerLevel = 0;
+    player.speed = C.PLAYER_SPEED;
+    player.baseSpeed = C.PLAYER_SPEED;
+    player.bulletPower = 1;
+    player.bulletSpeed = C.PLAYER_BULLET_SPEED;
+    player.speedBoostTimer = 0;
+  }
+
+  /**
+   * Get the spawn point for a player by index from the current level.
+   * @param playerIndex - 0 for P1, 1 for P2
+   * @returns The spawn point coordinates
+   */
+  private getPlayerSpawnPoint(playerIndex: PlayerIndex): Point {
+    const level = this.levels[this.state.currentLevel];
+    if (!level) return { x: 0, y: 0 };
+    return playerIndex === 0 ? level.playerSpawnPoint : level.player2SpawnPoint;
   }
 
   // ============ POWERUPS ============
 
-  private updatePowerUps(dtMs: number) {
+  /**
+   * Update all power-ups: tick timers and check for player pickups.
+   * @param dtMs - Delta time in milliseconds
+   */
+  private updatePowerUps(dtMs: number): void {
     const s = this.state;
 
     for (const pu of s.powerUps) {
       pu.timer -= dtMs;
       pu.flashTimer += dtMs;
 
-      // Player pickup
-      if (s.player && !s.player.isRespawning && entityOverlap(s.player, pu)) {
-        this.applyPowerUp(pu.type);
-        pu.timer = -1; // mark for removal
+      for (const player of s.players) {
+        if (!player.isRespawning && entityOverlap(player, pu)) {
+          this.applyPowerUp(pu.type, player.playerIndex);
+          pu.timer = -1;
+          break;
+        }
       }
     }
 
     s.powerUps = s.powerUps.filter(p => p.timer > 0);
   }
 
-  private applyPowerUp(type: PowerUpType) {
+  /**
+   * Apply a power-up effect to a specific player.
+   * @param type - The type of power-up to apply
+   * @param playerIndex - Which player receives the effect
+   */
+  private applyPowerUp(type: PowerUpType, playerIndex: PlayerIndex): void {
     const s = this.state;
-    const p = s.player;
-    if (!p) return;
+    const player = s.players.find(p => p.playerIndex === playerIndex);
+    if (!player) return;
 
     switch (type) {
       case PowerUpType.SHIELD:
-        p.hasShield = true;
-        p.shieldTimer = C.POWERUP_DURATION;
+        player.hasShield = true;
+        player.shieldTimer = C.POWERUP_DURATION;
         break;
       case PowerUpType.SPEED:
-        p.speed = p.baseSpeed * 1.5;
-        p.speedBoostTimer = C.POWERUP_DURATION;
+        player.speed = player.baseSpeed * 1.5;
+        player.speedBoostTimer = C.POWERUP_DURATION;
         break;
       case PowerUpType.FIREPOWER:
-        p.firepowerLevel = Math.min(p.firepowerLevel + 1, 3);
-        if (p.firepowerLevel >= 2) p.bulletSpeed = C.PLAYER_BULLET_SPEED * 1.5;
-        if (p.firepowerLevel >= 3) p.bulletPower = 3; // can destroy steel
+        player.firepowerLevel = Math.min(player.firepowerLevel + 1, 3);
+        if (player.firepowerLevel >= 2) player.bulletSpeed = C.PLAYER_BULLET_SPEED * 1.5;
+        if (player.firepowerLevel >= 3) player.bulletPower = 3;
         break;
       case PowerUpType.EXTRA_LIFE:
-        s.lives++;
+        s.lives[playerIndex]++;
         break;
       case PowerUpType.BOMB:
-        // Kill all enemies on screen
         for (const enemy of [...s.enemies]) {
-          this.killEnemy(enemy);
+          this.killEnemy(enemy, playerIndex);
         }
         break;
       case PowerUpType.TIME_FREEZE:
@@ -701,9 +964,15 @@ export class GameEngine {
 
   // ============ EFFECTS ============
 
-  private addExplosion(x: number, y: number, big: boolean) {
-    const maxR = big ? 30 : 15;
-    const dur = big ? C.BIG_EXPLOSION_DURATION : C.EXPLOSION_DURATION;
+  /**
+   * Add an explosion effect at a position.
+   * @param x - Center X coordinate
+   * @param y - Center Y coordinate
+   * @param isBig - Whether this is a large explosion (boss/player death)
+   */
+  private addExplosion(x: number, y: number, isBig: boolean): void {
+    const maxR = isBig ? 30 : 15;
+    const dur = isBig ? C.BIG_EXPLOSION_DURATION : C.EXPLOSION_DURATION;
     this.state.explosions.push({
       id: uid(),
       x, y,
@@ -711,14 +980,21 @@ export class GameEngine {
       maxRadius: maxR,
       timer: dur,
       maxTimer: dur,
-      isBig: big,
+      isBig,
     });
-    this.addParticles(x, y, big ? '#FF4400' : '#FFAA00', big ? 12 : 6);
+    this.addParticles(x, y, isBig ? '#FF4400' : '#FFAA00', isBig ? 12 : 6);
   }
 
-  private addParticles(x: number, y: number, color: string, count: number) {
-    for (let i = 0; i < count; i++) {
-      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+  /**
+   * Create debris particles radiating from a point.
+   * @param x - Center X coordinate
+   * @param y - Center Y coordinate
+   * @param color - Particle fill color
+   * @param count - Number of particles to spawn
+   */
+  private addParticles(x: number, y: number, color: string, count: number): void {
+    for (let idx = 0; idx < count; idx++) {
+      const angle = (Math.PI * 2 * idx) / count + (Math.random() - 0.5) * 0.5;
       const speed = 40 + Math.random() * 80;
       this.state.particles.push({
         x, y,
@@ -732,11 +1008,14 @@ export class GameEngine {
     }
   }
 
-  private updateEffects(dtMs: number) {
+  /**
+   * Tick explosion and particle timers, remove expired effects.
+   * @param dtMs - Delta time in milliseconds
+   */
+  private updateEffects(dtMs: number): void {
     const s = this.state;
     const dtSec = dtMs / 1000;
 
-    // Explosions
     for (const exp of s.explosions) {
       exp.timer -= dtMs;
       const progress = 1 - exp.timer / exp.maxTimer;
@@ -744,17 +1023,20 @@ export class GameEngine {
     }
     s.explosions = s.explosions.filter(e => e.timer > 0);
 
-    // Particles
     for (const p of s.particles) {
       p.x += p.vx * dtSec;
       p.y += p.vy * dtSec;
-      p.vy += 100 * dtSec; // gravity
+      p.vy += 100 * dtSec;
       p.life -= dtMs;
     }
     s.particles = s.particles.filter(p => p.life > 0);
   }
 
-  private updateSpawnEffects(dtMs: number) {
+  /**
+   * Tick spawn effect timers, remove expired effects.
+   * @param dtMs - Delta time in milliseconds
+   */
+  private updateSpawnEffects(dtMs: number): void {
     for (const se of this.state.spawnEffects) {
       se.timer -= dtMs;
     }
@@ -763,10 +1045,10 @@ export class GameEngine {
 
   // ============ WIN/LOSE ============
 
-  private checkWinLose() {
+  /** Check victory and defeat conditions each frame. */
+  private checkWinLose(): void {
     const s = this.state;
 
-    // Base destroyed
     if (s.baseDestroyed) {
       s.phase = GamePhase.GAME_OVER;
       s.gameOverTimer = C.GAME_OVER_DELAY;
@@ -774,7 +1056,6 @@ export class GameEngine {
       return;
     }
 
-    // All enemies defeated
     if (s.enemySpawnQueue.length === 0 && s.enemies.length === 0) {
       s.phase = GamePhase.LEVEL_COMPLETE;
       s.levelCompleteTimer = C.LEVEL_COMPLETE_DELAY;
@@ -784,35 +1065,48 @@ export class GameEngine {
 
   // ============ LEVEL MANAGEMENT ============
 
-  startGame() {
+  /**
+   * Initialize and start a new game with the selected mode.
+   * @param mode - 1 for single player, 2 for two-player coop
+   */
+  startGame(mode: GameMode): void {
     this.state = this.createInitialState();
+    this.state.gameMode = mode;
     this.state.currentLevel = 0;
+    if (mode === 2) {
+      this.state.scores = [0, 0];
+      this.state.lives = [C.PLAYER_INITIAL_LIVES, C.PLAYER_INITIAL_LIVES];
+    }
     this.loadLevel(0);
   }
 
-  private nextLevel() {
+  /** Advance to the next level, or loop back to level 1 with a bonus. */
+  private nextLevel(): void {
     const s = this.state;
     s.currentLevel++;
     if (s.currentLevel >= this.levels.length) {
-      // Won the game! restart
       s.currentLevel = 0;
-      s.score += 5000; // bonus
+      for (let i = 0; i < s.scores.length; i++) {
+        s.scores[i] += 5000;
+      }
     }
     this.loadLevel(s.currentLevel);
   }
 
-  private loadLevel(index: number) {
+  /**
+   * Load a level: reset map, entities, and create player tank(s).
+   * @param index - Level index to load
+   */
+  private loadLevel(index: number): void {
     const s = this.state;
     const level = this.levels[index];
     if (!level) return;
 
-    // Deep copy map
     s.mapData = level.mapData.map(row => [...row]);
     s.brickHealth = level.mapData.map(row =>
       row.map(tile => (tile === TileType.BRICK ? 0b1111 : 0)),
     );
 
-    // Reset entities
     s.enemies = [];
     s.bullets = [];
     s.powerUps = [];
@@ -824,11 +1118,28 @@ export class GameEngine {
     s.enemySpawnQueue = [...level.enemySpawnQueue];
     s.enemySpawnTimer = 1000;
 
-    // Create player
-    s.player = {
-      id: 'player',
-      x: level.playerSpawnPoint.x,
-      y: level.playerSpawnPoint.y,
+    s.players = [];
+    this.createAndAddPlayer(0, level.playerSpawnPoint);
+    if (s.gameMode === 2 && s.lives[1] > 0) {
+      this.createAndAddPlayer(1, level.player2SpawnPoint);
+    }
+
+    s.phase = GamePhase.STAGE_INTRO;
+    s.stageIntroTimer = C.STAGE_INTRO_DURATION;
+    this.notifyUI();
+  }
+
+  /**
+   * Create a player tank and add it to the game state.
+   * @param playerIndex - 0 for P1, 1 for P2
+   * @param spawnPoint - The spawn position
+   */
+  private createAndAddPlayer(playerIndex: PlayerIndex, spawnPoint: Point): void {
+    const player: PlayerTank = {
+      id: playerIndex === 0 ? 'player1' : 'player2',
+      playerIndex,
+      x: spawnPoint.x,
+      y: spawnPoint.y,
       width: C.TANK_SIZE,
       height: C.TANK_SIZE,
       direction: Direction.UP,
@@ -850,9 +1161,6 @@ export class GameEngine {
       baseSpeed: C.PLAYER_SPEED,
     };
 
-    // Stage intro
-    s.phase = GamePhase.STAGE_INTRO;
-    s.stageIntroTimer = C.STAGE_INTRO_DURATION;
-    this.notifyUI();
+    this.state.players.push(player);
   }
 }

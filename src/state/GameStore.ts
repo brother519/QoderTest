@@ -1,41 +1,34 @@
 import { create } from 'zustand';
+import type { GameMode } from '../types/game';
 import { GamePhase } from '../types/game';
 
+/** UI state synchronized from the game engine, consumed by React components. */
 interface UIState {
   phase: GamePhase;
-  score: number;
-  lives: number;
+  scores: number[];
+  lives: number[];
   currentLevel: number;
   enemiesRemaining: number;
-  playerPowerUps: {
-    hasShield: boolean;
-    speedBoost: boolean;
-    firepowerLevel: number;
-  };
+  gameMode: GameMode;
+  playersInfo: Array<{ hasShield: boolean; speedBoost: boolean; firepowerLevel: number } | null>;
   updateFromEngine: (data: {
     phase: GamePhase;
-    score: number;
-    lives: number;
+    scores: number[];
+    lives: number[];
     currentLevel: number;
     enemiesRemaining: number;
-    playerPowerUps: {
-      hasShield: boolean;
-      speedBoost: boolean;
-      firepowerLevel: number;
-    };
+    gameMode: GameMode;
+    playersInfo: Array<{ hasShield: boolean; speedBoost: boolean; firepowerLevel: number } | null>;
   }) => void;
 }
 
 export const useGameStore = create<UIState>((set) => ({
   phase: GamePhase.START_SCREEN,
-  score: 0,
-  lives: 3,
+  scores: [0],
+  lives: [3],
   currentLevel: 0,
   enemiesRemaining: 0,
-  playerPowerUps: {
-    hasShield: false,
-    speedBoost: false,
-    firepowerLevel: 0,
-  },
+  gameMode: 1,
+  playersInfo: [null],
   updateFromEngine: (data) => set(data),
 }));
