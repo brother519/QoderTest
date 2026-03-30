@@ -1,3 +1,7 @@
+/** 游戏核心逻辑模块 - 纯函数实现蛇移动、碰撞检测、食物生成、得分计算 */
+
+import { loadHighScore, saveHighScore } from './game-persistence'
+
 /** 坐标点 */
 export interface Point {
   x: number
@@ -118,10 +122,16 @@ export function getSpeedByDifficulty(difficulty: Difficulty): number {
   return DIFFICULTY_SPEED[difficulty]
 }
 
+/** 每 5 分的加速步长（ms） */
+const SPEED_INCREMENT_PER_5_SCORE = 8
+
+/** 最低速度下限（ms），不会比这更快 */
+const MIN_SPEED = 50
+
 /** 根据得分动态加速（每得 5 分加速一次） */
 export function getSpeedByScore(baseSpeed: number, score: number): number {
-  const speedReduction = Math.floor(score / 5) * 8
-  return Math.max(baseSpeed - speedReduction, 50)
+  const speedReduction = Math.floor(score / 5) * SPEED_INCREMENT_PER_5_SCORE
+  return Math.max(baseSpeed - speedReduction, MIN_SPEED)
 }
 
 /** 创建初始游戏状态 */
@@ -149,23 +159,25 @@ export function createInitialState(
 export function gameTick(state: GameState): GameState {
   if (state.status !== 'playing') return state
 
+  // 1. 解析方向并计算下一帧蛇头位置
   const direction = state.nextDirection
   const head = state.snake[0]
   const nextHead = getNextHead(head, direction, state.config.gridSize)
 
-  // 检测自身碰撞（排除尾部，因为尾部会移动走）
+  // 2. 碰撞检测（排除尾部，因为尾部会移动走）
   const bodyWithoutTail = state.snake.slice(0, -1)
   if (checkSelfCollision(nextHead, bodyWithoutTail)) {
     return { ...state, status: 'gameover', direction }
   }
 
+  // 3. 食物消耗 & 蛇体更新
   const ateFood = nextHead.x === state.food.x && nextHead.y === state.food.y
   const newSnake = [nextHead, ...state.snake]
-
   if (!ateFood) {
     newSnake.pop()
   }
 
+  // 4. 分数、速度、食物刷新
   const newScore = ateFood ? state.score + 1 : state.score
   const newHighScore = Math.max(newScore, state.highScore)
   const newSpeed = ateFood
@@ -175,6 +187,7 @@ export function gameTick(state: GameState): GameState {
     ? generateFood(newSnake, state.config.gridSize)
     : state.food
 
+  // 5. 高分持久化
   if (ateFood && newHighScore > state.highScore) {
     saveHighScore(newHighScore)
   }
@@ -207,23 +220,4 @@ export function keyToDirection(key: string): Direction | null {
     D: 'RIGHT',
   }
   return mapping[key] ?? null
-}
-
-const HIGH_SCORE_KEY = 'snake-game-high-score'
-
-function loadHighScore(): number {
-  try {
-    const val = localStorage.getItem(HIGH_SCORE_KEY)
-    return val ? parseInt(val, 10) : 0
-  } catch {
-    return 0
-  }
-}
-
-function saveHighScore(score: number): void {
-  try {
-    localStorage.setItem(HIGH_SCORE_KEY, String(score))
-  } catch {
-    // localStorage 不可用时忽略
-  }
 }

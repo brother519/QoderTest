@@ -1,8 +1,12 @@
+/** 贪吃蛇游戏容器组件 - 整合画布、控制面板、得分和设置界面 */
+
 import { useCallback } from 'react'
+
 import { SnakeGameComponent } from './SnakeGameComponent'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { useGameState, useGameDispatch } from '@/store'
+
 import type { Difficulty } from '@/lib/game-utils'
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = {
@@ -11,27 +15,26 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   hard: '困难',
 }
 
-/** 贪吃蛇游戏完整界面，包含控制面板和信息展示 */
+/**
+ * 贪吃蛇游戏完整界面
+ *
+ * 包含游戏画布、得分面板、游戏控制按钮、难度选择和操作说明。
+ * 响应式布局：桌面端左右排列，移动端上下排列并显示方向控制按钮。
+ */
 export function SnakeGame() {
   const state = useGameState()
   const dispatch = useGameDispatch()
 
-  const handleStart = useCallback(() => dispatch({ type: 'START' }), [dispatch])
-  const handlePause = useCallback(() => dispatch({ type: 'PAUSE' }), [dispatch])
-  const handleResume = useCallback(() => dispatch({ type: 'RESUME' }), [dispatch])
-  const handleReset = useCallback(() => dispatch({ type: 'RESET' }), [dispatch])
-
   const handleDifficultyChange = useCallback(
-    (difficulty: Difficulty) => dispatch({ type: 'SET_DIFFICULTY', difficulty }),
-    [dispatch]
+    (difficulty: Difficulty): void => dispatch({ type: 'SET_DIFFICULTY', difficulty }),
+    [dispatch],
   )
 
-  // 移动端方向控制
   const handleDirection = useCallback(
-    (direction: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT') => {
+    (direction: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'): void => {
       dispatch({ type: 'CHANGE_DIRECTION', direction })
     },
-    [dispatch]
+    [dispatch],
   )
 
   return (
@@ -79,27 +82,27 @@ export function SnakeGame() {
         <Card title="游戏控制">
           <div className="flex flex-col gap-3">
             {state.status === 'idle' && (
-              <Button onClick={handleStart} size="lg" className="w-full">
+              <Button onClick={() => dispatch({ type: 'START' })} size="lg" className="w-full">
                 开始游戏
               </Button>
             )}
             {state.status === 'playing' && (
-              <Button onClick={handlePause} variant="secondary" size="lg" className="w-full">
+              <Button onClick={() => dispatch({ type: 'PAUSE' })} variant="secondary" size="lg" className="w-full">
                 暂停
               </Button>
             )}
             {state.status === 'paused' && (
-              <Button onClick={handleResume} size="lg" className="w-full">
+              <Button onClick={() => dispatch({ type: 'RESUME' })} size="lg" className="w-full">
                 继续
               </Button>
             )}
             {state.status === 'gameover' && (
-              <Button onClick={handleStart} size="lg" className="w-full">
+              <Button onClick={() => dispatch({ type: 'START' })} size="lg" className="w-full">
                 重新开始
               </Button>
             )}
             {state.status !== 'idle' && (
-              <Button onClick={handleReset} variant="danger" size="sm" className="w-full">
+              <Button onClick={() => dispatch({ type: 'RESET' })} variant="danger" size="sm" className="w-full">
                 重置
               </Button>
             )}
