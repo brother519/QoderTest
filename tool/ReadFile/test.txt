@@ -1,0 +1,16 @@
+# ReadFile Test Document
+
+This is a test file for verifying the ReadFile tool (T01).
+It serves as the primary readable text file.
+
+## Section 1
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+## Section 2
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+Nisi ut aliquip ex ea commodo consequat.
+
+## Section 3
+Duis aute irure dolor in reprehenderit in voluptate velit esse.
+Cillum dolore eu fugiat nulla pariatur.

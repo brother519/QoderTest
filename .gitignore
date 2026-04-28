@@ -15,3 +15,7 @@ build/
 .lingma/*
 
 /Agents.md
+
+vibe_imagen/
+.vscode/
+test_data/

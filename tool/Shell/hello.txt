@@ -1,0 +1,3 @@
+new text here
+this file is for Shell tool testing.
+new value should be replaced.

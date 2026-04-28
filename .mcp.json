@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "done_sse": {
+      "type": "sse",
+      "url": "https://mcp.alibaba-inc.com/d.one/sse"
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ],
+      "env": {}
+    }
+  }
+}
