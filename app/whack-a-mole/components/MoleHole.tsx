@@ -8,25 +8,44 @@
 
 import { HoleData, MoleType } from '../types/game';
 
+/** MoleHole 组件属性 */
 interface MoleHoleProps {
+  /** 当前洞的数据（状态、地鼠类型、唯一 key） */
   hole: HoleData;
+  /** 洞所在的行索引 */
   row: number;
+  /** 洞所在的列索引 */
   col: number;
+  /** 是否禁用点击（游戏未开始或已结束时为 true） */
   disabled: boolean;
+  /** 点击回调，传入行列坐标 */
   onWhack: (row: number, col: number) => void;
 }
 
+/** 地鼠类型对应的 emoji 和无障碍标签映射 */
 const MOLE_FACES: Record<MoleType, { emoji: string; label: string }> = {
   normal: { emoji: '🐹', label: '地鼠' },
   golden: { emoji: '🌟', label: '金色地鼠' },
   bomb: { emoji: '💣', label: '炸弹' },
 };
 
+/**
+ * 单个地鼠洞组件
+ *
+ * 渲染一个可交互的地鼠洞，包含：
+ * - 洞口背景与前沿装饰
+ * - 地鼠本体（根据状态控制升起/落下/击中动画）
+ * - 不同地鼠类型的视觉区分（普通弹跳、金色发光、炸弹脉动）
+ * - 击中时的爆炸特效
+ * - 两侧草丛装饰
+ *
+ * @param props - 组件属性
+ */
 export function MoleHole({ hole, row, col, disabled, onWhack }: MoleHoleProps) {
   const { state, moleType, key } = hole;
   const face = MOLE_FACES[moleType];
-  const isActive = state === 'rising' || state === 'up';
-  const isHit = state === 'hit';
+  const isActive = state === 'rising' || state === 'up'; // 地鼠处于可交互状态（升起中或完全露出）
+  const isHit = state === 'hit'; // 地鼠刚被击中
 
   return (
     <button

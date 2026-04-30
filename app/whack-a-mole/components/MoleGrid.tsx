@@ -9,14 +9,29 @@
 import { HoleData, GameConfig, ScorePopup } from '../types/game';
 import { MoleHole } from './MoleHole';
 
+/** MoleGrid 组件属性 */
 interface MoleGridProps {
+  /** 地鼠洞二维数组数据 */
   holes: HoleData[][];
+  /** 游戏配置（用于获取行列数） */
   config: GameConfig;
+  /** 当前活跃的分数弹出动画列表 */
   scorePopups: ScorePopup[];
+  /** 是否禁用所有洞的点击 */
   disabled: boolean;
+  /** 点击洞时的回调 */
   onWhack: (row: number, col: number) => void;
 }
 
+/**
+ * 地鼠游戏网格组件
+ *
+ * 渲染 rows x cols 的地鼠洞网格，并在对应位置叠加分数弹出动画。
+ * 网格使用 CSS Grid 布局，列数根据配置动态设置。
+ * 分数弹出动画使用绝对定位，根据洞的行列位置计算百分比坐标。
+ *
+ * @param props - 组件属性
+ */
 export function MoleGrid({ holes, config, scorePopups, disabled, onWhack }: MoleGridProps) {
   const { rows, cols } = config;
 

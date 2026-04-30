@@ -15,9 +15,18 @@ import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
 import { GameStats } from './types/game';
 
+/**
+ * 游戏结束统计面板
+ *
+ * 展示游戏结束后的统计数据，包括最终得分、击中次数、未中次数、
+ * 命中率、最高连击和逃跑地鼠数。
+ *
+ * @param stats - 游戏统计数据
+ * @param score - 最终得分
+ */
 function GameOverStats({ stats, score }: { stats: GameStats; score: number }) {
-  const totalClicks = stats.hits + stats.misses;
-  const accuracy = totalClicks > 0 ? Math.round((stats.hits / totalClicks) * 100) : 0;
+  const totalClicks = stats.hits + stats.misses; // 总点击次数（击中 + 未中）
+  const accuracy = totalClicks > 0 ? Math.round((stats.hits / totalClicks) * 100) : 0; // 命中率百分比
 
   return (
     <div className="space-y-3 text-center">
@@ -46,6 +55,7 @@ function GameOverStats({ stats, score }: { stats: GameStats; score: number }) {
   );
 }
 
+/** 地鼠类型图例组件，展示三种地鼠类型及其对应分值 */
 function MoleLegend() {
   return (
     <div className="flex items-center justify-center gap-4 text-sm">
@@ -65,9 +75,27 @@ function MoleLegend() {
   );
 }
 
+/**
+ * 打地鼠游戏主页面组件
+ *
+ * 作为游戏的入口路由页面（/whack-a-mole），整合所有子组件：
+ * - GameControls：得分、时间、连击等信息面板与操作按钮
+ * - MoleGrid：地鼠洞网格，处理点击交互
+ * - GameOverlay：暂停、结束、待开始等覆盖层
+ * - MoleLegend：地鼠类型说明图例
+ *
+ * 键盘快捷键：
+ * - P：暂停/继续
+ * - R：重新开始
+ * - 空格：开始游戏（idle 状态）或重新开始（over 状态）
+ */
 export default function WhackAMolePage() {
-  const game = useWhackAMoleGame(DEFAULT_CONFIG);
+  const game = useWhackAMoleGame(DEFAULT_CONFIG); // 初始化游戏核心逻辑
 
+  /**
+   * 键盘事件处理
+   * 监听 P（暂停/继续）、R（重新开始）、空格（开始/重新开始）
+   */
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
@@ -89,12 +117,13 @@ export default function WhackAMolePage() {
     [game]
   );
 
+  /** 注册全局键盘事件监听，组件卸载时移除 */
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  const isGameActive = game.status === 'playing';
+  const isGameActive = game.status === 'playing'; // 仅在 playing 状态允许点击地鼠
 
   return (
     <GameLayout title="打地鼠" className="bg-gradient-to-b from-green-950 via-amber-950 to-amber-950 flex items-center justify-center py-6 px-4">

@@ -9,18 +9,37 @@
 import { GameStatus } from '../types/game';
 import { COMBO_THRESHOLD, COMBO_MULTIPLIERS } from '../constants/config';
 
+/** GameControls 组件属性 */
 interface GameControlsProps {
+  /** 当前得分 */
   score: number;
+  /** 历史最高分 */
   highScore: number;
+  /** 剩余时间（秒） */
   timeLeft: number;
+  /** 总游戏时长（秒），用于计算进度条百分比 */
   totalTime: number;
+  /** 当前连击数 */
   combo: number;
+  /** 游戏状态 */
   status: GameStatus;
+  /** 开始游戏回调 */
   onStart: () => void;
+  /** 切换暂停/继续回调 */
   onTogglePause: () => void;
+  /** 重新开始回调 */
   onRestart: () => void;
 }
 
+/**
+ * 根据当前连击数获取对应的倍率标签
+ *
+ * 遍历 COMBO_MULTIPLIERS 映射表，返回当前连击数所达到的最高倍率标签。
+ * 如果连击数未达到任何阈值，返回 null。
+ *
+ * @param combo - 当前连击数
+ * @returns 倍率标签字符串（如 "x1.5"、"x2"）或 null
+ */
 function getComboLabel(combo: number): string | null {
   let label: string | null = null;
   for (const threshold of Object.keys(COMBO_MULTIPLIERS).map(Number).sort((a, b) => a - b)) {
@@ -31,12 +50,22 @@ function getComboLabel(combo: number): string | null {
   return label;
 }
 
+/**
+ * 游戏控制面板组件
+ *
+ * 显示游戏信息和操作按钮，包括：
+ * - 得分、最高分、连击数显示面板
+ * - 剩余时间进度条（颜色随时间变化：绿色 -> 黄色 -> 红色）
+ * - 根据游戏状态显示不同的操作按钮（开始/暂停/继续/重新开始/再来一局）
+ *
+ * @param props - 组件属性
+ */
 export function GameControls({
   score, highScore, timeLeft, totalTime, combo, status,
   onStart, onTogglePause, onRestart,
 }: GameControlsProps) {
-  const timePercent = (timeLeft / totalTime) * 100;
-  const comboLabel = getComboLabel(combo);
+  const timePercent = (timeLeft / totalTime) * 100; // 时间进度条百分比
+  const comboLabel = getComboLabel(combo); // 当前连击倍率标签
 
   return (
     <div className="w-full max-w-lg mx-auto mb-4 space-y-3">
