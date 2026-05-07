@@ -1,4 +1,0 @@
-This file uses “smart quotes” for testing.
-The word “hello” appears with curly quotes.
-Another “hello” instance in curly quotes.
-Straight quotes "also exist" in this file.

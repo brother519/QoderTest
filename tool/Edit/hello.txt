@@ -1,5 +1,0 @@
-hi world
-this is a test file for Edit tool (T03).
-hi appears here again for replacement testing.
-edit edn
-雪山飞狐

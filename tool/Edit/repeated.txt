@@ -1,5 +1,0 @@
-This file contains bar multiple times for testing.
-The word bar appears here in the second line.
-And bar shows up again in the third line.
-Even more bar in the fourth line.
-Final bar occurrence at the end.

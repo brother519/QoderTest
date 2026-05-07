@@ -1,2 +1,0 @@
-This file is used for permission behavior testing.
-Read Kind tools should access this without confirmation (T60).
