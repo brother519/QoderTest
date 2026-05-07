@@ -17,6 +17,7 @@ import { snakeMeta } from '@/app/snake/meta';
 import { tetrisMeta } from '@/app/tetris/meta';
 import { tankBattleMeta } from '@/app/tank-battle/meta';
 import { whackAMoleMeta } from '@/app/whack-a-mole/meta';
+import { minesweeperMeta } from '@/app/minesweeper/meta';
 import { monopolyMeta } from '@/app/monopoly/meta';
 import { aircraftMeta } from '@/app/aircraft-battle/meta';
 
@@ -27,6 +28,7 @@ export const GAME_REGISTRY: GameMeta[] = [
   tetrisMeta,
   tankBattleMeta,
   whackAMoleMeta,
+  minesweeperMeta,
   monopolyMeta,
   aircraftMeta,
 ];

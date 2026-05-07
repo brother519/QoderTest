@@ -19,3 +19,34 @@ build/
 vibe_imagen/
 .vscode/
 test_data/
+
+# ---- local-only / build artifacts / scratch (ignored) ----
+# test / build outputs
+coverage/
+tsconfig.tsbuildinfo
+
+# tool sandbox outputs
+tool/WriteFile/
+
+# browser automation logs
+.playwright-mcp/
+
+# local images / packages / tarballs
+vibe_images/
+package/
+package 2/
+qoder-dev-qodercli-*.tgz
+
+# dev-time screenshots at repo root
+aircraft-battle-*.png
+whack-a-mole-*.png
+tank-battle-*.png
+
+# root-level scratch files
+test.ipynb
+clear
+brand-new.txt
+conversation-*.txt
+world.ts
+附件.pdf
+2026-04-03-*mcp.txt
