@@ -1,12 +1,27 @@
+/**
+ * 飞机大战游戏控制面板组件
+ *
+ * 展示游戏信息（分数、最高分、生命、武器类型、难度等级）和操作按钮。
+ * 根据游戏状态动态渲染不同的按钮（开始/暂停/继续/重新开始）。
+ *
+ * @module aircraft-battle/components/AircraftControls
+ */
+
 'use client';
 
 import { AircraftGameState } from '../types/game';
 
+/** AircraftControls 组件属性 */
 interface AircraftControlsProps {
+  /** 当前游戏完整状态 */
   state: AircraftGameState;
+  /** 历史最高分 */
   highScore: number;
+  /** 开始游戏回调 */
   onStart: () => void;
+  /** 重新开始回调 */
   onRestart: () => void;
+  /** 暂停/继续回调 */
   onTogglePause: () => void;
 }
 

@@ -1,3 +1,13 @@
+/**
+ * 坦克大战游戏主页面
+ *
+ * 整合 useTankGame Hook 与所有 UI 组件，处理键盘事件（按下/抬起）。
+ * 包含游戏画布、控制面板、遮罩层和操作提示。
+ * 访问路径：/tank-battle
+ *
+ * @module tank-battle/page
+ */
+
 'use client';
 
 import { useEffect, useCallback } from 'react';
@@ -8,6 +18,7 @@ import { DEFAULT_CONFIG } from './constants/config';
 import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
 
+/** 键盘按键到操作的映射（支持方向键、WASD、空格/J射击） */
 const KEY_MAP: Record<string, string> = {
   arrowup: 'UP',
   w: 'UP',

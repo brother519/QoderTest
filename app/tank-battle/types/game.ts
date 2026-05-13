@@ -1,3 +1,12 @@
+/**
+ * 坦克大战游戏类型定义
+ *
+ * 定义游戏中所有 TypeScript 类型和接口，包括方向、地图格子类型、
+ * 坦克、子弹、爆炸动画、道具和完整游戏状态。
+ *
+ * @module tank-battle/types/game
+ */
+
 /** 移动方向 */
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 

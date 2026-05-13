@@ -1,3 +1,12 @@
+/**
+ * 坦克大战游戏配置常量
+ *
+ * 定义默认游戏配置、经典第一关地图（26x26 格子）、
+ * 敌人出生点、玩家出生点和计分规则。
+ *
+ * @module tank-battle/constants/config
+ */
+
 import { TankGameConfig, TileType } from '../types/game';
 
 const T = TileType;

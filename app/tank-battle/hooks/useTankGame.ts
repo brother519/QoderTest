@@ -1,3 +1,13 @@
+/**
+ * 坦克大战游戏核心逻辑 Hook
+ *
+ * 管理玩家坦克移动与射击、敌人 AI（随机方向移动+自动射击）、
+ * 子弹碰撞检测（地图/坦克）、道具系统、爆炸动画和胜负判定。
+ * 使用 requestAnimationFrame 驱动游戏主循环。
+ *
+ * @module tank-battle/hooks/useTankGame
+ */
+
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -22,13 +32,16 @@ import {
 } from '../constants/config';
 import { useHighScore } from '@/lib/hooks/useHighScore';
 
+/** 全局自增 ID，用于唯一标识游戏对象 */
 let nextId = 1;
 const uid = () => nextId++;
 
+/** 深拷贝地图（避免修改原始关卡数据） */
 function cloneMap(m: TileType[][]) {
   return m.map((row) => [...row]);
 }
 
+/** 创建玩家坦克（根据出生点配置初始位置） */
 function createPlayer(config: TankGameConfig): Tank {
   return {
     id: uid(),
@@ -42,6 +55,7 @@ function createPlayer(config: TankGameConfig): Tank {
   };
 }
 
+/** 创建敌人坦克（从预设出生点之一生成） */
 function createEnemy(config: TankGameConfig, spawnIdx: number): Tank {
   const spawn = ENEMY_SPAWNS[spawnIdx % ENEMY_SPAWNS.length];
   return {
@@ -56,10 +70,12 @@ function createEnemy(config: TankGameConfig, spawnIdx: number): Tank {
   };
 }
 
+/** 方向到 X 轴增量的映射 */
 const DIR_DX: Record<Direction, number> = { UP: 0, DOWN: 0, LEFT: -1, RIGHT: 1 };
+/** 方向到 Y 轴增量的映射 */
 const DIR_DY: Record<Direction, number> = { UP: -1, DOWN: 1, LEFT: 0, RIGHT: 0 };
 
-// 辅助函数：添加爆炸效果
+/** 在指定位置添加爆炸效果到游戏状态 */
 function addExplosionInternal(state: TankGameState, x: number, y: number) {
   state.explosions.push({
     id: uid(),
@@ -70,7 +86,7 @@ function addExplosionInternal(state: TankGameState, x: number, y: number) {
   });
 }
 
-// 辅助函数：生成道具
+/** 在指定位置随机生成一个道具（星/盾/命） */
 function spawnPowerUpInternal(state: TankGameState, x: number, y: number) {
   const types = [PowerUpType.STAR, PowerUpType.SHIELD, PowerUpType.LIFE];
   const type = types[Math.floor(Math.random() * types.length)];
@@ -82,6 +98,7 @@ function spawnPowerUpInternal(state: TankGameState, x: number, y: number) {
   });
 }
 
+/** 矩形碰撞检测（AABB） */
 function rectOverlap(
   ax: number, ay: number, aw: number, ah: number,
   bx: number, by: number, bw: number, bh: number,
@@ -89,6 +106,7 @@ function rectOverlap(
   return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
 }
 
+/** 检测坦克是否与地图障碍物碰撞（砖墙/钢墙/水域/基地） */
 function tankCollidesMap(
   tx: number, ty: number, size: number, map: TileType[][], tileSize: number,
 ): boolean {
@@ -108,6 +126,7 @@ function tankCollidesMap(
   return false;
 }
 
+/** 检测坦克是否与其他坦克发生碰撞（排除自身） */
 function tankCollidesOtherTanks(
   tx: number, ty: number, size: number, selfId: number, tanks: Tank[],
 ): boolean {

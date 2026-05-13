@@ -1,3 +1,13 @@
+/**
+ * 飞机大战游戏核心逻辑 Hook
+ *
+ * 管理玩家飞机移动、自动射击、敌机生成与AI、碰撞检测、
+ * 道具系统、爆炸动画、难度递增和游戏循环（requestAnimationFrame）。
+ * 使用 Ref 模式管理可变状态，避免频繁 re-render。
+ *
+ * @module aircraft-battle/hooks/useAircraftGame
+ */
+
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -30,10 +40,15 @@ import {
 } from '../constants/config';
 import { useHighScore } from '../../../lib/hooks/useHighScore';
 
+/** 全局自增 ID，用于唯一标识游戏对象 */
 let nextId = 1;
 const uid = () => nextId++;
 
-// 矩形碰撞检测
+/**
+ * 矩形碰撞检测（AABB）
+ *
+ * @returns true 表示两矩形有重叠
+ */
 function rectOverlap(
   ax: number,
   ay: number,
@@ -47,7 +62,7 @@ function rectOverlap(
   return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
 }
 
-// 创建玩家飞机
+/** 创建玩家飞机（初始位置底部居中） */
 function createPlayer(): Aircraft {
   return {
     x: (AIRCRAFT_CONFIG.width - PLAYER_WIDTH) / 2,
@@ -64,7 +79,7 @@ function createPlayer(): Aircraft {
   };
 }
 
-// 创建背景星星
+/** 创建背景星星（随机位置、速度、大小） */
 function createStars(): Star[] {
   return Array.from({ length: STAR_COUNT }, () => ({
     x: Math.random() * AIRCRAFT_CONFIG.width,
@@ -75,7 +90,11 @@ function createStars(): Star[] {
   }));
 }
 
-// 根据权重随机选择敌机类型
+/**
+ * 根据权重随机选择敌机类型
+ *
+ * Boss 受分数门槛限制，每 5000 分最多生成一次
+ */
 function randomEnemyType(difficultyLevel: number, score: number, lastBossSpawnScore: number): EnemyType {
   const types: EnemyType[] = ['small', 'medium', 'large', 'boss'];
   const weights = [
@@ -106,7 +125,7 @@ function randomEnemyType(difficultyLevel: number, score: number, lastBossSpawnSc
   return 'small';
 }
 
-// 创建敌机
+/** 创建敌机（根据类型配置尺寸、速度、血量和移动模式） */
 function createEnemy(
   type: EnemyType,
   speedMultiplier: number,
@@ -137,7 +156,7 @@ function createEnemy(
   };
 }
 
-// 创建子弹
+/** 创建子弹（区分玩家子弹和敌机子弹，方向和伤害不同） */
 function createBullet(
   x: number,
   y: number,
@@ -177,7 +196,7 @@ function createBullet(
   }
 }
 
-// 创建扇形子弹
+/** 创建扇形子弹（散射武器，左中右三个方向） */
 function createSpreadBullets(x: number, y: number): Bullet[] {
   const angles = [-0.3, 0, 0.3]; // 左中右三个方向
   return angles.map((angle) => {
@@ -197,7 +216,7 @@ function createSpreadBullets(x: number, y: number): Bullet[] {
   });
 }
 
-// 创建道具
+/** 创建道具（随机类型：生命/射速/散射/炸弹） */
 function createPowerUp(x: number, y: number): PowerUp {
   const types: PowerUpType[] = ['life', 'fireRate', 'spread', 'bomb'];
   const type = types[Math.floor(Math.random() * types.length)];
@@ -213,7 +232,7 @@ function createPowerUp(x: number, y: number): PowerUp {
   };
 }
 
-// 创建爆炸效果
+/** 创建爆炸效果（逐帧扩散动画） */
 function createExplosion(x: number, y: number, radius: number = EXPLOSION_BASE_RADIUS): Explosion {
   return {
     id: uid(),

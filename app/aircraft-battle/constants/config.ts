@@ -1,5 +1,15 @@
+/**
+ * 飞机大战游戏配置常量
+ *
+ * 定义游戏中所有常量配置，包括画布尺寸、玩家属性、子弹参数、
+ * 敌机类型（小/中/大/Boss）、难度递增规则、道具效果等。
+ *
+ * @module aircraft-battle/constants/config
+ */
+
 import { AircraftGameConfig } from '../types/game';
 
+/** 游戏核心配置 */
 export const AIRCRAFT_CONFIG: AircraftGameConfig = {
   // 画布尺寸
   width: 400,

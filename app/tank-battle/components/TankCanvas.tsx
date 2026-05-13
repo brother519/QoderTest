@@ -1,3 +1,13 @@
+/**
+ * 坦克大战游戏主画布组件
+ *
+ * 使用 Canvas 2D 渲染完整的游戏画面，包括地图（砖墙/钢墙/水域/树丛/基地）、
+ * 玩家坦克、敌人坦克、子弹、道具、爆炸效果和护盾光环。
+ * 树丛绘制在最上层以实现遮挡效果。
+ *
+ * @module tank-battle/components/TankCanvas
+ */
+
 'use client';
 
 import { useEffect, useRef } from 'react';

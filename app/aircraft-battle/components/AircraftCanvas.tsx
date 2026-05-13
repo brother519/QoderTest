@@ -1,10 +1,21 @@
+/**
+ * 飞机大战游戏主画布组件
+ *
+ * 使用 Canvas 2D 渲染完整的游戏画面，包括星空背景、玩家飞机（含尾焰动画）、
+ * 4 种敌机、子弹、道具和爆炸效果。每帧由 useEffect 触发重绘。
+ *
+ * @module aircraft-battle/components/AircraftCanvas
+ */
+
 'use client';
 
 import { useEffect, useRef } from 'react';
 import { AircraftGameState, EnemyType, PowerUpType } from '../types/game';
 import { AIRCRAFT_CONFIG } from '../constants/config';
 
+/** AircraftCanvas 组件属性 */
 interface AircraftCanvasProps {
+  /** 当前游戏完整状态 */
   state: AircraftGameState;
 }
 
