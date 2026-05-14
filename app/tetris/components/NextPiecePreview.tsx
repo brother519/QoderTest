@@ -1,8 +1,12 @@
 /**
  * 下一个方块预览组件
+ * Next Piece Preview Component
  *
  * 使用小型 Canvas 2D 渲染下一个即将出现的方块，
  * 显示方块的初始旋转状态并居中显示。
+ *
+ * Uses a small Canvas 2D to render the next upcoming piece,
+ * displays the piece in its initial rotation state and centers it.
  *
  * @module tetris/components/NextPiecePreview
  */
@@ -13,22 +17,26 @@ import { useRef, useEffect } from 'react';
 import { TetrominoType, GameConfig } from '../types/game';
 import { TETROMINOES, CELL_BORDER_COLOR } from '../constants/config';
 
-/** NextPiecePreview 组件属性 */
+/**
+ * NextPiecePreview 组件属性
+ * NextPiecePreview component props
+ */
 interface NextPiecePreviewProps {
-  /** 下一个方块类型 */
+  /** 下一个方块类型 / Next piece type */
   pieceType: TetrominoType;
-  /** 游戏配置（取 previewCellSize） */
+  /** 游戏配置（取 previewCellSize） / Game config (uses previewCellSize) */
   config: GameConfig;
 }
 
 /**
  * 绘制预览区的单个格子
+ * Draw a single cell in the preview area
  *
- * @param ctx - Canvas 2D 上下文
- * @param x - 左上角像素 x 坐标
- * @param y - 左上角像素 y 坐标
- * @param size - 格子尺寸
- * @param color - 填充颜色
+ * @param ctx - Canvas 2D 上下文 / Canvas 2D context
+ * @param x - 左上角像素 x 坐标 / Top-left pixel x coordinate
+ * @param y - 左上角像素 y 坐标 / Top-left pixel y coordinate
+ * @param size - 格子尺寸 / Cell size
+ * @param color - 填充颜色 / Fill color
  */
 function drawPreviewCell(
   ctx: CanvasRenderingContext2D,
@@ -37,11 +45,11 @@ function drawPreviewCell(
   size: number,
   color: string
 ) {
-  // 填充底色
+  // 填充底色 / Fill base color
   ctx.fillStyle = color;
   ctx.fillRect(x + 1, y + 1, size - 2, size - 2);
 
-  // 高光边
+  // 高光边 / Highlight edge
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -50,7 +58,7 @@ function drawPreviewCell(
   ctx.lineTo(x + size - 1, y + 1);
   ctx.stroke();
 
-  // 阴影边
+  // 阴影边 / Shadow edge
   ctx.strokeStyle = CELL_BORDER_COLOR;
   ctx.beginPath();
   ctx.moveTo(x + size - 1, y + 1);
@@ -63,6 +71,7 @@ export function NextPiecePreview({ pieceType, config }: NextPiecePreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cellSize = config.previewCellSize;
   // 使用 4×4 的画布尺寸，容纳最大的 I 方块
+  // Use 4×4 canvas size to accommodate the largest I piece
   const canvasSize = 4 * cellSize;
 
   useEffect(() => {
@@ -71,22 +80,23 @@ export function NextPiecePreview({ pieceType, config }: NextPiecePreviewProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // 清空画布
+    // 清空画布 / Clear canvas
     ctx.clearRect(0, 0, canvasSize, canvasSize);
 
-    // 获取方块初始旋转状态
+    // 获取方块初始旋转状态 / Get piece initial rotation state
     const shape = TETROMINOES[pieceType].shapes[0];
     const color = TETROMINOES[pieceType].color;
 
     // 计算方块实际占用的行列范围，用于居中
+    // Calculate actual row/col range occupied by piece for centering
     const shapeRows = shape.length;
     const shapeCols = shape[0].length;
 
-    // 居中偏移
+    // 居中偏移 / Centering offset
     const offsetX = Math.floor((4 - shapeCols) / 2) * cellSize;
     const offsetY = Math.floor((4 - shapeRows) / 2) * cellSize;
 
-    // 绘制方块
+    // 绘制方块 / Draw piece
     for (let row = 0; row < shapeRows; row++) {
       for (let col = 0; col < shapeCols; col++) {
         if (shape[row][col]) {

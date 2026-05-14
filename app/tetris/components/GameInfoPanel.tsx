@@ -1,8 +1,12 @@
 /**
  * 俄罗斯方块游戏信息面板组件
+ * Tetris Game Info Panel Component
  *
  * 展示游戏信息（得分、等级、消行数、最高分）和操作按钮，
  * 嵌入下一个方块预览组件。根据游戏状态显示不同的按钮。
+ *
+ * Displays game info (score, level, lines cleared, high score) and action buttons,
+ * embeds the next piece preview component. Shows different buttons based on game state.
  *
  * @module tetris/components/GameInfoPanel
  */
@@ -12,27 +16,30 @@
 import { GameStatus, TetrominoType, GameConfig } from '../types/game';
 import { NextPiecePreview } from './NextPiecePreview';
 
-/** GameInfoPanel 组件属性 */
+/**
+ * GameInfoPanel 组件属性
+ * GameInfoPanel component props
+ */
 interface GameInfoPanelProps {
-  /** 当前得分 */
+  /** 当前得分 / Current score */
   score: number;
-  /** 当前等级 */
+  /** 当前等级 / Current level */
   level: number;
-  /** 已消除行数 */
+  /** 已消除行数 / Lines cleared */
   lines: number;
-  /** 历史最高分 */
+  /** 历史最高分 / All-time high score */
   highScore: number;
-  /** 游戏状态 */
+  /** 游戏状态 / Game status */
   status: GameStatus;
-  /** 下一个方块类型 */
+  /** 下一个方块类型 / Next piece type */
   nextPiece: TetrominoType;
-  /** 游戏配置 */
+  /** 游戏配置 / Game configuration */
   config: GameConfig;
-  /** 开始游戏回调 */
+  /** 开始游戏回调 / Start game callback */
   onStart: () => void;
-  /** 暂停/继续回调 */
+  /** 暂停/继续回调 / Pause/resume callback */
   onTogglePause: () => void;
-  /** 重新开始回调 */
+  /** 重新开始回调 / Restart callback */
   onRestart: () => void;
 }
 
@@ -50,7 +57,7 @@ export function GameInfoPanel({
 }: GameInfoPanelProps) {
   return (
     <div className="flex flex-col gap-4 w-44">
-      {/* 下一个方块预览 */}
+      {/* 下一个方块预览 / Next piece preview */}
       <div className="bg-[#16213e] border border-cyan-400/30 rounded-lg p-3">
         <h3 className="text-cyan-400 text-sm font-bold mb-2 text-center">
           下一个
@@ -58,7 +65,7 @@ export function GameInfoPanel({
         <NextPiecePreview pieceType={nextPiece} config={config} />
       </div>
 
-      {/* 游戏信息 */}
+      {/* 游戏信息 / Game info */}
       <div className="bg-[#16213e] border border-cyan-400/30 rounded-lg p-3 space-y-2">
         <div className="text-gray-300 text-sm">
           得分: <strong className="text-white">{score}</strong>
@@ -74,7 +81,7 @@ export function GameInfoPanel({
         </div>
       </div>
 
-      {/* 按钮区域 */}
+      {/* 按钮区域 / Button area */}
       <div className="flex flex-col gap-2">
         {status === 'idle' && (
           <button

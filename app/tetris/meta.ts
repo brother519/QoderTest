@@ -1,5 +1,6 @@
 /**
  * 俄罗斯方块游戏元数据
+ * Tetris Game Metadata
  *
  * @module tetris/meta
  */
