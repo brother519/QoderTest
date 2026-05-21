@@ -46,9 +46,9 @@ export function Board({
   return (
     <div className="w-full overflow-x-auto pb-2">
       <div className="relative inline-block min-w-max mx-auto">
-        <div className="rounded-[28px] border border-cyan-400/20 bg-slate-950/65 p-3 shadow-[0_20px_80px_rgba(8,145,178,0.15)] backdrop-blur-sm">
+        <div className="inline-block border-2 border-slate-500 bg-slate-400">
           <div
-            className="grid gap-[3px] rounded-[22px] bg-gradient-to-br from-slate-900 via-slate-950 to-[#041319] p-3"
+            className="grid gap-px bg-slate-400"
             style={{ gridTemplateColumns: `repeat(${difficulty.cols}, minmax(0, 1fr))` }}
           >
             {board.map((row, rowIndex) =>

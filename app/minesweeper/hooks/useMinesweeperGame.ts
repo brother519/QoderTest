@@ -406,6 +406,23 @@ export function useMinesweeperGame(
         (position) => nextBoard[position.row][position.col].isFlagged
       ).length;
 
+      const unrevealedUnflagged = neighbors.filter(
+        (position) => {
+          const n = nextBoard[position.row][position.col];
+          return !n.isFlagged && !n.isRevealed;
+        }
+      );
+
+      // 当结果确定时自动标记，省去玩家手动标记明显地雷的操作
+      const remainingMines = targetCell.adjacentMines - flaggedNeighbors;
+      if (remainingMines > 0 && unrevealedUnflagged.length === remainingMines) {
+        unrevealedUnflagged.forEach((position) => {
+          nextBoard[position.row][position.col].isFlagged = true;
+        });
+        setBoard(nextBoard);
+        return;
+      }
+
       if (flaggedNeighbors !== targetCell.adjacentMines) {
         return;
       }
