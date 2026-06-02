@@ -26,8 +26,8 @@ export default function HanoiPage() {
     } = useHanoiGame();
 
     return (
-        <GameLayout title="汉诺塔" backHref="/">
-            <div className="mx-auto flex max-w-4xl flex-col gap-6 p-4">
+        <GameLayout title="汉诺塔">
+            <div className="mx-auto flex max-w-4xl flex-col gap-6 p-4 pt-20">
                 {/* 层数选择器 */}
                 <LevelSelector
                     unlockedLevels={stats.unlockedLevels}
@@ -55,23 +55,41 @@ export default function HanoiPage() {
 
                     {/* 暂停遮罩 */}
                     {state.status === 'paused' && (
-                        <GameOverlay
-                            title="游戏暂停"
-                            actionText="继续游戏"
-                            onAction={togglePause}
-                        />
+                        <GameOverlay visible={true}>
+                            <h2 className="text-2xl font-bold text-white">游戏暂停</h2>
+                            <button
+                                onClick={togglePause}
+                                className="rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white hover:bg-blue-700"
+                            >
+                                继续游戏
+                            </button>
+                        </GameOverlay>
                     )}
 
                     {/* 完成遮罩 */}
                     {state.status === 'completed' && (
-                        <GameOverlay
-                            title="🎉 恭喜通关！"
-                            message={`你用 ${state.moveCount} 步完成了 ${state.level} 层汉诺塔！\n最优步数是 ${getOptimalMoves(state.level)} 步。`}
-                            actionText="下一关"
-                            onAction={() => startGame(state.level + 1)}
-                            secondaryActionText="重玩本关"
-                            onSecondaryAction={resetGame}
-                        />
+                        <GameOverlay visible={true}>
+                            <h2 className="text-2xl font-bold text-white">🎉 恭喜通关！</h2>
+                            <p className="text-center text-white/80">
+                                你用 {state.moveCount} 步完成了 {state.level} 层汉诺塔！
+                                <br />
+                                最优步数是 {getOptimalMoves(state.level)} 步。
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => startGame(state.level + 1)}
+                                    className="rounded-lg bg-green-600 px-6 py-2 font-semibold text-white hover:bg-green-700"
+                                >
+                                    下一关
+                                </button>
+                                <button
+                                    onClick={resetGame}
+                                    className="rounded-lg bg-slate-600 px-6 py-2 font-semibold text-white hover:bg-slate-700"
+                                >
+                                    重玩本关
+                                </button>
+                            </div>
+                        </GameOverlay>
                     )}
                 </div>
 
