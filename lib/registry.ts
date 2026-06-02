@@ -22,6 +22,8 @@ import { monopolyMeta } from '@/app/monopoly/meta';
 import { aircraftMeta } from '@/app/aircraft-battle/meta';
 import { matchThreeMeta } from '@/app/match-three/meta';
 import { puzzle2048Meta } from '@/app/puzzle-2048/meta';
+import { klotskiMeta } from '@/app/klotski/meta';
+import { hanoiMeta } from '@/app/hanoi/meta';
 
 /** 所有已注册的游戏列表 */
 export const GAME_REGISTRY: GameMeta[] = [
@@ -35,4 +37,6 @@ export const GAME_REGISTRY: GameMeta[] = [
   aircraftMeta,
   matchThreeMeta,
   puzzle2048Meta,
+  klotskiMeta,
+  hanoiMeta,
 ];
