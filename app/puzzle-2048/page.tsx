@@ -8,64 +8,40 @@
  * @module puzzle-2048/page
  */
 
-import { useEffect, useCallback } from 'react';
 import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
+import { GamePageHeader } from '@/lib/components/GamePageHeader';
 import { use2048Game } from './hooks/use2048Game';
 import { Board } from './components/Board';
 import { ScorePanel } from './components/ScorePanel';
 import { DEFAULT_CONFIG } from './constants/config';
 import { Direction } from './types/game';
+import { useKeyboard } from '@/lib/hooks/useKeyboard';
 
 /** 棋盘单格像素尺寸 */
 const CELL_SIZE = 80;
 /** 格子之间的间隙 */
 const CELL_GAP = 10;
 
-/** 键盘按键到滑动方向的映射 */
-const KEY_TO_DIRECTION: Record<string, Direction> = {
-  ArrowUp: 'up',
-  ArrowDown: 'down',
-  ArrowLeft: 'left',
-  ArrowRight: 'right',
-  w: 'up',
-  s: 'down',
-  a: 'left',
-  d: 'right',
-  W: 'up',
-  S: 'down',
-  A: 'left',
-  D: 'right',
+const KEY_MAP: Record<string, string> = {
+    ArrowUp: 'up',
+    ArrowDown: 'down',
+    ArrowLeft: 'left',
+    ArrowRight: 'right',
+    w: 'up', W: 'up',
+    s: 'down', S: 'down',
+    a: 'left', A: 'left',
+    d: 'right', D: 'right',
 };
 
-/**
- * 2048 游戏页面组件
- *
- * 作为路由 /puzzle-2048 的入口。
- * - 通过 use2048Game 获取核心游戏状态与控制方法
- * - 通过 Board 渲染棋盘并支持触屏手势
- * - 通过 GameOverlay 在胜利/失败时叠加提示
- * - 监听键盘方向键 + WASD 触发滑动
- */
 export default function Puzzle2048Page() {
-  const game = use2048Game(DEFAULT_CONFIG);
+    const game = use2048Game(DEFAULT_CONFIG);
 
-  /** 处理全局键盘事件：方向键/WASD 滑动 */
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      const direction = KEY_TO_DIRECTION[e.key];
-      if (direction) {
-        e.preventDefault();
-        game.move(direction);
-      }
-    },
-    [game]
-  );
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+    useKeyboard(KEY_MAP, {
+        onKeyDown: (action) => {
+            game.move(action as Direction);
+        },
+    });
 
   return (
     <GameLayout
@@ -73,12 +49,7 @@ export default function Puzzle2048Page() {
       className="bg-gradient-to-b from-amber-950 via-orange-950 to-amber-950 flex items-center justify-center py-6 px-4"
     >
       <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold text-amber-400 mb-2 drop-shadow-lg text-center">
-          🔢 2048
-        </h1>
-        <p className="text-amber-200/60 text-xs text-center mb-4">
-          方向键 / WASD / 滑动手势 移动方块，合成 2048
-        </p>
+        <GamePageHeader title="2048" icon="🔢" colorClass="text-amber-400" subtitle="方向键 / WASD / 滑动手势 移动方块，合成 2048" />
 
         <ScorePanel score={game.score} highScore={game.highScore} onRestart={game.restart} />
 

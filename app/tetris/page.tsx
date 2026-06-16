@@ -15,104 +15,57 @@
 
 'use client';
 
-import { useEffect, useCallback } from 'react';
 import { useTetrisGame } from './hooks/useTetrisGame';
 import { TetrisCanvas } from './components/TetrisCanvas';
 import { GameInfoPanel } from './components/GameInfoPanel';
 import { DEFAULT_CONFIG } from './constants/config';
 import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
+import { GamePageHeader } from '@/lib/components/GamePageHeader';
+import { ControlHints } from '@/lib/components/ControlHints';
+import { useKeyboard } from '@/lib/hooks/useKeyboard';
 
-/**
- * 键盘按键到操作的映射
- * Keyboard key to action mapping
- *
- * 键值使用小写，支持方向键和 WASD
- * Keys are lowercase, supports arrow keys and WASD
- */
 const KEY_MAP: Record<string, string> = {
-  arrowleft: 'moveLeft',
-  a: 'moveLeft',
-  arrowright: 'moveRight',
-  d: 'moveRight',
-  arrowup: 'rotate',
-  w: 'rotate',
-  arrowdown: 'softDrop',
-  s: 'softDrop',
-  ' ': 'hardDrop',
-  p: 'togglePause',
-  r: 'restart',
+    ArrowLeft: 'moveLeft',
+    a: 'moveLeft', A: 'moveLeft',
+    ArrowRight: 'moveRight',
+    d: 'moveRight', D: 'moveRight',
+    ArrowUp: 'rotate',
+    w: 'rotate', W: 'rotate',
+    ArrowDown: 'softDrop',
+    s: 'softDrop', S: 'softDrop',
+    ' ': 'hardDrop',
+    p: 'togglePause', P: 'togglePause',
+    r: 'restart', R: 'restart',
 };
 
 export default function TetrisPage() {
-  const game = useTetrisGame(DEFAULT_CONFIG);
+    const game = useTetrisGame(DEFAULT_CONFIG);
 
-  /**
-   * 键盘事件处理 - 监听用户按键并映射到游戏操作
-   * Keyboard event handler - listens for key presses and maps them to game actions
-   */
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      const action = KEY_MAP[key];
-
-      if (!action) return;
-
-      e.preventDefault();
-
-      // idle 状态下按方向键/操作键自动开始游戏
-      // Auto-start game when pressing direction/action keys in idle state
-      if (game.status === 'idle' && action !== 'togglePause' && action !== 'restart') {
-        game.start();
-        return;
-      }
-
-      // 根据 action 调用对应方法
-      // Call the corresponding method based on action
-      switch (action) {
-        case 'moveLeft':
-          game.moveLeft();
-          break;
-        case 'moveRight':
-          game.moveRight();
-          break;
-        case 'rotate':
-          game.rotate();
-          break;
-        case 'softDrop':
-          game.softDrop();
-          break;
-        case 'hardDrop':
-          game.hardDrop();
-          break;
-        case 'togglePause':
-          if (game.status === 'playing' || game.status === 'paused') {
-            game.togglePause();
-          }
-          break;
-        case 'restart':
-          game.restart();
-          break;
-      }
-    },
-    [game]
-  );
-
-  // 组件挂载时注册键盘监听，卸载时自动清理
-  // Register keyboard listener on mount, auto-cleanup on unmount
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+    useKeyboard(KEY_MAP, {
+        onKeyDown: (action) => {
+            if (game.status === 'idle' && action !== 'togglePause' && action !== 'restart') {
+                game.start();
+                return;
+            }
+            switch (action) {
+                case 'moveLeft': game.moveLeft(); break;
+                case 'moveRight': game.moveRight(); break;
+                case 'rotate': game.rotate(); break;
+                case 'softDrop': game.softDrop(); break;
+                case 'hardDrop': game.hardDrop(); break;
+                case 'togglePause':
+                    if (game.status === 'playing' || game.status === 'paused') game.togglePause();
+                    break;
+                case 'restart': game.restart(); break;
+            }
+        },
+    });
 
   return (
     <GameLayout title="俄罗斯方块" className="bg-[#1a1a2e] flex items-center justify-center py-8 px-4">
       <div className="text-center pt-8">
-        {/* 游戏标题区域 / Game title area */}
-        {/* 使用 cyan 色系保持视觉一致性 / Use cyan color scheme for visual consistency */}
-        <h1 className="text-3xl font-bold text-cyan-400 mb-6">
-          俄罗斯方块
-        </h1>
+        <GamePageHeader title="俄罗斯方块" />
 
         {/* 游戏主体区域：左侧棋盘 + 右侧信息面板 / Main game area: left board + right info panel */}
         <div className="flex gap-6 justify-center items-start">
@@ -158,12 +111,7 @@ export default function TetrisPage() {
           />
         </div>
 
-        {/* 操作提示 / Control hints */}
-        {/* 底部快捷键说明，帮助玩家了解操作方式 / Bottom shortcut instructions to help players understand controls */}
-        {/* TODO: 后续可考虑加入移动端虚拟按键支持 / TODO: Consider adding mobile virtual button support later */}
-        <div className="mt-4 text-gray-500 text-sm">
-          方向键/WASD 移动 &nbsp;|&nbsp; &uarr;/W 旋转 &nbsp;|&nbsp; &darr;/S 软降 &nbsp;|&nbsp; 空格 硬降 &nbsp;|&nbsp; P 暂停 &nbsp;|&nbsp; R 重开
-        </div>
+        <ControlHints hints={['方向键/WASD 移动', '↑/W 旋转', '↓/S 软降', '空格 硬降', 'P 暂停', 'R 重开']} />
       </div>
     </GameLayout>
   );

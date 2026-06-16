@@ -10,80 +10,51 @@
 
 'use client';
 
-import { useEffect, useCallback } from 'react';
 import { useAircraftGame } from './hooks/useAircraftGame';
 import { AircraftCanvas } from './components/AircraftCanvas';
 import { AircraftControls } from './components/AircraftControls';
 import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
+import { GamePageHeader } from '@/lib/components/GamePageHeader';
+import { ControlHints } from '@/lib/components/ControlHints';
+import { useKeyboard } from '@/lib/hooks/useKeyboard';
 
-/** 键盘按键到操作的映射（支持方向键、WASD、空格/J射击） */
 const KEY_MAP: Record<string, string> = {
-  arrowup: 'UP',
-  w: 'UP',
-  arrowdown: 'DOWN',
-  s: 'DOWN',
-  arrowleft: 'LEFT',
-  a: 'LEFT',
-  arrowright: 'RIGHT',
-  d: 'RIGHT',
-  ' ': 'SHOOT',
-  j: 'SHOOT',
+    ArrowUp: 'UP', w: 'UP', W: 'UP',
+    ArrowDown: 'DOWN', s: 'DOWN', S: 'DOWN',
+    ArrowLeft: 'LEFT', a: 'LEFT', A: 'LEFT',
+    ArrowRight: 'RIGHT', d: 'RIGHT', D: 'RIGHT',
+    ' ': 'SHOOT', j: 'SHOOT', J: 'SHOOT',
+    p: 'PAUSE', P: 'PAUSE',
+    r: 'RESTART', R: 'RESTART',
 };
 
 export default function AircraftBattlePage() {
-  const { state, highScore, start, restart, togglePause, setKey } = useAircraftGame();
+    const { state, highScore, start, restart, togglePause, setKey } = useAircraftGame();
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      const action = KEY_MAP[key];
-
-      if (action) {
-        e.preventDefault();
-        if (state.status === 'idle') start();
-        setKey(action, true);
-        return;
-      }
-
-      if (key === 'p') {
-        togglePause();
-      }
-
-      // 在暂停或游戏结束时按 R 都可以重新开始
-      if (key === 'r' && (state.status === 'over' || state.status === 'paused')) {
-        restart();
-      }
-    },
-    [setKey, togglePause, restart, state.status, start]
-  );
-
-  const handleKeyUp = useCallback(
-    (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      const action = KEY_MAP[key];
-      if (action) {
-        setKey(action, false);
-      }
-    },
-    [setKey]
-  );
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [handleKeyDown, handleKeyUp]);
+    useKeyboard(KEY_MAP, {
+        onKeyDown: (action) => {
+            if (['UP', 'DOWN', 'LEFT', 'RIGHT', 'SHOOT'].includes(action)) {
+                if (state.status === 'idle') start();
+                setKey(action, true);
+                return;
+            }
+            if (action === 'PAUSE') togglePause();
+            if (action === 'RESTART' && (state.status === 'over' || state.status === 'paused')) {
+                restart();
+            }
+        },
+        onKeyUp: (action) => {
+            if (['UP', 'DOWN', 'LEFT', 'RIGHT', 'SHOOT'].includes(action)) {
+                setKey(action, false);
+            }
+        },
+    });
 
   return (
     <GameLayout title="飞机大战" className="bg-[#0f172a] flex items-center justify-center py-8 px-4">
       <div className="text-center pt-8">
-        <h1 className="text-3xl font-bold text-cyan-400 mb-6">
-          飞机大战
-        </h1>
+        <GamePageHeader title="飞机大战" />
 
         <AircraftControls
           state={state}
@@ -111,9 +82,7 @@ export default function AircraftBattlePage() {
           </GameOverlay>
         </div>
 
-        <div className="mt-4 text-slate-500 text-sm">
-          WASD / 方向键移动 &nbsp;|&nbsp; 空格 / J 射击 &nbsp;|&nbsp; P 暂停 &nbsp;|&nbsp; R 重新开始
-        </div>
+        <ControlHints hints={['WASD / 方向键移动', '空格 / J 射击', 'P 暂停', 'R 重新开始']} />
       </div>
     </GameLayout>
   );

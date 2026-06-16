@@ -4,7 +4,7 @@
  * @module minesweeper/types/game
  */
 
-import type { BaseGameStatus, GridPosition as BaseGridPosition } from '@/lib/types/game';
+import type { GameStatus as BaseGameStatus, GridPosition as BaseGridPosition } from '@/lib/types/game';
 
 /** 单元格数据 */
 export interface Cell {
@@ -35,3 +35,13 @@ export type GameStatus = Extract<BaseGameStatus, 'idle' | 'playing'> | 'won' | '
 
 /** 最佳时间记录（秒） */
 export type BestTimeMap = Partial<Record<DifficultyKey, number>>;
+
+/** 单个难度的统计记录 */
+export interface DifficultyStats {
+    gamesPlayed: number;
+    gamesWon: number;
+    totalTime: number;
+}
+
+/** 完整统计记录（按难度分组） */
+export type GameStatsMap = Partial<Record<DifficultyKey, DifficultyStats>>;

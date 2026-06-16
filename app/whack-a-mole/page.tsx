@@ -6,13 +6,14 @@
 
 'use client';
 
-import { useEffect, useCallback } from 'react';
 import { useWhackAMoleGame } from './hooks/useWhackAMoleGame';
 import { MoleGrid } from './components/MoleGrid';
 import { GameControls } from './components/GameControls';
 import { DEFAULT_CONFIG } from './constants/config';
 import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
+import { GamePageHeader } from '@/lib/components/GamePageHeader';
+import { useKeyboard } from '@/lib/hooks/useKeyboard';
 import { GameStats } from './types/game';
 
 /**
@@ -90,45 +91,33 @@ function MoleLegend() {
  * - 空格：开始游戏（idle 状态）或重新开始（over 状态）
  */
 export default function WhackAMolePage() {
-  const game = useWhackAMoleGame(DEFAULT_CONFIG); // 初始化游戏核心逻辑
+  const game = useWhackAMoleGame(DEFAULT_CONFIG);
 
-  /**
-   * 键盘事件处理
-   * 监听 P（暂停/继续）、R（重新开始）、空格（开始/重新开始）
-   */
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      if (key === 'p' && (game.status === 'playing' || game.status === 'paused')) {
+  const KEY_MAP: Record<string, string> = {
+    p: 'PAUSE', P: 'PAUSE',
+    r: 'RESTART', R: 'RESTART',
+    ' ': 'START_OR_RESTART',
+  };
+
+  useKeyboard(KEY_MAP, {
+    onKeyDown: (action) => {
+      if (action === 'PAUSE' && (game.status === 'playing' || game.status === 'paused')) {
         game.togglePause();
       }
-      if (key === 'r') {
-        game.restart();
-      }
-      if (key === ' ') {
-        e.preventDefault();
-        if (game.status === 'idle') {
-          game.start();
-        } else if (game.status === 'over') {
-          game.restart();
-        }
+      if (action === 'RESTART') game.restart();
+      if (action === 'START_OR_RESTART') {
+        if (game.status === 'idle') game.start();
+        else if (game.status === 'over') game.restart();
       }
     },
-    [game]
-  );
-
-  /** 注册全局键盘事件监听，组件卸载时移除 */
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  });
 
   const isGameActive = game.status === 'playing'; // 仅在 playing 状态允许点击地鼠
 
   return (
     <GameLayout title="打地鼠" className="bg-gradient-to-b from-green-950 via-amber-950 to-amber-950 flex items-center justify-center py-6 px-4">
       <div className="text-center w-full max-w-xl">
-        <h1 className="text-3xl font-bold text-amber-400 mb-4 drop-shadow-lg">🔨 打地鼠</h1>
+        <GamePageHeader title="打地鼠" icon="🔨" colorClass="text-amber-400" />
         <div className="mb-3"><MoleLegend /></div>
         <GameControls
           score={game.score}

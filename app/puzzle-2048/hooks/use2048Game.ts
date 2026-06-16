@@ -265,16 +265,27 @@ function createInitialTiles(size: number, fourChance: number): Tile[] {
 export function use2048Game(config: GameConfig): Use2048GameReturn {
   const { size, winValue, fourChance, moveDuration } = config;
 
-  const [tiles, setTiles] = useState<Tile[]>(() => createInitialTiles(size, fourChance));
+  // 初始状态为空数组，避免 SSR/CSR 水合错误（随机数在服务端和客户端不一致）
+  const [tiles, setTiles] = useState<Tile[]>([]);
   const [score, setScore] = useState(0);
-  const [status, setStatus] = useState<GameStatus>('playing');
+  const [status, setStatus] = useState<GameStatus>('idle');
   const [reached2048, setReached2048] = useState(false);
   const [highScore, updateHighScore] = useHighScore(HIGH_SCORE_KEY);
+
+  // 客户端首次挂载时生成初始方块
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      setTiles(createInitialTiles(size, fourChance));
+      setStatus('playing');
+    }
+  }, [size, fourChance]);
 
   // 在回调中访问最新值，避免闭包陷阱
   const tilesRef = useRef(tiles);
   const scoreRef = useRef(0);
-  const statusRef = useRef<GameStatus>('playing');
+  const statusRef = useRef<GameStatus>('idle');
   const lockRef = useRef(false); // 移动动画锁
   tilesRef.current = tiles;
   scoreRef.current = score;

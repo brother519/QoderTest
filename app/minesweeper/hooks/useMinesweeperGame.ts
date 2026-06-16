@@ -12,12 +12,15 @@ import {
   DEFAULT_DIFFICULTY,
   DIFFICULTIES,
   DIFFICULTY_ORDER,
+  GAME_STATS_STORAGE_KEY,
 } from '../constants/config';
 import type {
   BestTimeMap,
   Cell,
   Difficulty,
   DifficultyKey,
+  DifficultyStats,
+  GameStatsMap,
   GameStatus,
   GridPosition,
 } from '../types/game';
@@ -31,6 +34,7 @@ export interface UseMinesweeperGameReturn {
   elapsedTime: number;
   bestTime: number | null;
   remainingMines: number;
+  stats: DifficultyStats;
   revealCell: (row: number, col: number) => void;
   toggleFlag: (row: number, col: number) => void;
   chordCell: (row: number, col: number) => void;
@@ -234,6 +238,30 @@ function normalizeBestTimes(rawValue: unknown): BestTimeMap {
   return normalized;
 }
 
+/** 过滤并标准化游戏统计记录 */
+function normalizeGameStats(rawValue: unknown): GameStatsMap {
+  if (!rawValue || typeof rawValue !== 'object') {
+    return {};
+  }
+
+  const record = rawValue as Record<string, unknown>;
+  const normalized: GameStatsMap = {};
+
+  DIFFICULTY_ORDER.forEach((difficultyKey) => {
+    const value = record[difficultyKey];
+    if (value && typeof value === 'object') {
+      const stats = value as Record<string, unknown>;
+      normalized[difficultyKey] = {
+        gamesPlayed: typeof stats.gamesPlayed === 'number' ? stats.gamesPlayed : 0,
+        gamesWon: typeof stats.gamesWon === 'number' ? stats.gamesWon : 0,
+        totalTime: typeof stats.totalTime === 'number' ? stats.totalTime : 0,
+      };
+    }
+  });
+
+  return normalized;
+}
+
 export function useMinesweeperGame(
   initialDifficulty: DifficultyKey = DEFAULT_DIFFICULTY
 ): UseMinesweeperGameReturn {
@@ -245,6 +273,7 @@ export function useMinesweeperGame(
   const [status, setStatus] = useState<GameStatus>('idle');
   const [elapsedTime, setElapsedTime] = useState(0);
   const [bestTimes, setBestTimes] = useState<BestTimeMap>({});
+  const [gameStats, setGameStats] = useState<GameStatsMap>({});
 
   const difficulty = DIFFICULTIES[difficultyKey];
 
@@ -266,6 +295,18 @@ export function useMinesweeperGame(
       const saved = localStorage.getItem(BEST_TIME_STORAGE_KEY);
       if (saved) {
         setBestTimes(normalizeBestTimes(JSON.parse(saved) as unknown));
+      }
+    } catch {
+      // localStorage 不可用或数据损坏时回退为空对象
+    }
+  }, []);
+
+  /** 读取本地游戏统计 */
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(GAME_STATS_STORAGE_KEY);
+      if (saved) {
+        setGameStats(normalizeGameStats(JSON.parse(saved) as unknown));
       }
     } catch {
       // localStorage 不可用或数据损坏时回退为空对象
@@ -315,6 +356,44 @@ export function useMinesweeperGame(
     });
   }, []);
 
+  /** 更新游戏统计 */
+  const updateGameStats = useCallback(
+    (action: 'start' | 'win' | 'lose') => {
+      setGameStats((previous) => {
+        const currentStats = previous[difficultyKeyRef.current] ?? {
+          gamesPlayed: 0,
+          gamesWon: 0,
+          totalTime: 0,
+        };
+
+        const nextStats: DifficultyStats = { ...currentStats };
+
+        if (action === 'start') {
+          nextStats.gamesPlayed += 1;
+        } else if (action === 'win') {
+          nextStats.gamesWon += 1;
+          nextStats.totalTime += elapsedTimeRef.current;
+        } else if (action === 'lose') {
+          nextStats.totalTime += elapsedTimeRef.current;
+        }
+
+        const nextRecord: GameStatsMap = {
+          ...previous,
+          [difficultyKeyRef.current]: nextStats,
+        };
+
+        try {
+          localStorage.setItem(GAME_STATS_STORAGE_KEY, JSON.stringify(nextRecord));
+        } catch {
+          // localStorage 不可用时忽略持久化失败
+        }
+
+        return nextRecord;
+      });
+    },
+    []
+  );
+
   /** 胜利结算 */
   const finishWin = useCallback(
     (nextBoard: Cell[][]) => {
@@ -322,8 +401,9 @@ export function useMinesweeperGame(
       setBoard(nextBoard);
       setStatus('won');
       updateBestTime(Math.max(1, elapsedTimeRef.current), difficultyKeyRef.current);
+      updateGameStats('win');
     },
-    [updateBestTime]
+    [updateBestTime, updateGameStats]
   );
 
   /** 左键揭开格子 */
@@ -347,6 +427,7 @@ export function useMinesweeperGame(
 
       if (statusRef.current === 'idle') {
         setStatus('playing');
+        updateGameStats('start');
       }
 
       const hitMine = revealArea(nextBoard, { row, col });
@@ -355,6 +436,7 @@ export function useMinesweeperGame(
         revealAllMines(nextBoard, { row, col });
         setBoard(nextBoard);
         setStatus('lost');
+        updateGameStats('lose');
         return;
       }
 
@@ -365,7 +447,7 @@ export function useMinesweeperGame(
 
       setBoard(nextBoard);
     },
-    [finishWin]
+    [finishWin, updateGameStats]
   );
 
   /** 右键/长按插旗 */
@@ -440,6 +522,7 @@ export function useMinesweeperGame(
         revealAllMines(nextBoard, { row, col });
         setBoard(nextBoard);
         setStatus('lost');
+        updateGameStats('lose');
         return;
       }
 
@@ -450,7 +533,7 @@ export function useMinesweeperGame(
 
       setBoard(nextBoard);
     },
-    [finishWin]
+    [finishWin, updateGameStats]
   );
 
   /** 重新开始当前难度 */
@@ -476,6 +559,7 @@ export function useMinesweeperGame(
     elapsedTime,
     bestTime: bestTimes[difficultyKey] ?? null,
     remainingMines: difficulty.mines - countFlags(board),
+    stats: gameStats[difficultyKey] ?? { gamesPlayed: 0, gamesWon: 0, totalTime: 0 },
     revealCell,
     toggleFlag,
     chordCell,

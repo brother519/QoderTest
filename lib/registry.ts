@@ -24,6 +24,10 @@ import { matchThreeMeta } from '@/app/match-three/meta';
 import { puzzle2048Meta } from '@/app/puzzle-2048/meta';
 import { klotskiMeta } from '@/app/klotski/meta';
 import { hanoiMeta } from '@/app/hanoi/meta';
+import { sokobanMeta } from '@/app/sokoban/meta';
+import { lightsOutMeta } from '@/app/lights-out/meta';
+import { sudokuMeta } from '@/app/sudoku/meta';
+import { ticTacToeMeta } from '@/app/tic-tac-toe/meta';
 
 /** 所有已注册的游戏列表 */
 export const GAME_REGISTRY: GameMeta[] = [
@@ -39,4 +43,8 @@ export const GAME_REGISTRY: GameMeta[] = [
   puzzle2048Meta,
   klotskiMeta,
   hanoiMeta,
+  sokobanMeta,
+  lightsOutMeta,
+  sudokuMeta,
+  ticTacToeMeta,
 ];

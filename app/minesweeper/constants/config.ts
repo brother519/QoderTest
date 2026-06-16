@@ -9,6 +9,9 @@ import type { Difficulty, DifficultyKey } from '../types/game';
 /** 最佳时间存储键 */
 export const BEST_TIME_STORAGE_KEY = 'minesweeperBestTimes';
 
+/** 游戏统计存储键 */
+export const GAME_STATS_STORAGE_KEY = 'minesweeperGameStats';
+
 /** 移动端长按插旗时长（毫秒） */
 export const LONG_PRESS_DURATION = 360;
 

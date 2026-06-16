@@ -9,7 +9,6 @@
 
 'use client';
 
-import { useEffect, useCallback } from 'react';
 import { useSnakeGame } from './hooks/useSnakeGame';
 import { SnakeCanvas } from './components/SnakeCanvas';
 import { SnakeControls } from './components/SnakeControls';
@@ -17,66 +16,48 @@ import { DEFAULT_CONFIG } from './constants/config';
 import { Direction } from './types/game';
 import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
+import { GamePageHeader } from '@/lib/components/GamePageHeader';
+import { ControlHints } from '@/lib/components/ControlHints';
+import { useKeyboard } from '@/lib/hooks/useKeyboard';
 
-/** 键盘按键到方向的映射 */
-const KEY_DIRECTION_MAP: Record<string, Direction> = {
-  arrowup: 'UP',
-  w: 'UP',
-  arrowdown: 'DOWN',
-  s: 'DOWN',
-  arrowleft: 'LEFT',
-  a: 'LEFT',
-  arrowright: 'RIGHT',
-  d: 'RIGHT',
+const KEY_MAP: Record<string, string> = {
+    ArrowUp: 'UP',
+    ArrowDown: 'DOWN',
+    ArrowLeft: 'LEFT',
+    ArrowRight: 'RIGHT',
+    w: 'UP', W: 'UP',
+    s: 'DOWN', S: 'DOWN',
+    a: 'LEFT', A: 'LEFT',
+    d: 'RIGHT', D: 'RIGHT',
+    p: 'PAUSE', P: 'PAUSE',
+    r: 'RESTART', R: 'RESTART',
 };
 
+const DIRECTIONS = new Set(['UP', 'DOWN', 'LEFT', 'RIGHT']);
+
 export default function SnakePage() {
-  const game = useSnakeGame(DEFAULT_CONFIG);
+    const game = useSnakeGame(DEFAULT_CONFIG);
 
-  /** 键盘事件处理 */
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-
-      // 方向控制
-      const dir = KEY_DIRECTION_MAP[key];
-      if (dir) {
-        e.preventDefault();
-        if (game.status === 'idle') {
-          game.start();
-        }
-        if (game.status === 'playing') {
-          game.changeDirection(dir);
-        }
-        return;
-      }
-
-      // P 键：暂停/继续
-      if (key === 'p' && (game.status === 'playing' || game.status === 'paused')) {
-        game.togglePause();
-      }
-
-      // R 键：重新开始
-      if (key === 'r') {
-        game.restart();
-      }
-    },
-    [game]
-  );
-
-  /** 注册/清理键盘监听 */
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+    useKeyboard(KEY_MAP, {
+        onKeyDown: (action) => {
+            if (DIRECTIONS.has(action)) {
+                if (game.status === 'idle') game.start();
+                if (game.status === 'playing') game.changeDirection(action as Direction);
+                return;
+            }
+            if (action === 'PAUSE' && (game.status === 'playing' || game.status === 'paused')) {
+                game.togglePause();
+            }
+            if (action === 'RESTART') {
+                game.restart();
+            }
+        },
+    });
 
   return (
     <GameLayout title="贪吃蛇" className="bg-[#1a1a2e] flex items-center justify-center py-8 px-4">
       <div className="text-center pt-8">
-        {/* 标题 */}
-        <h1 className="text-3xl font-bold text-cyan-400 mb-6">
-          贪吃蛇
-        </h1>
+        <GamePageHeader title="贪吃蛇" />
 
         {/* 控制面板 */}
         <SnakeControls
@@ -114,10 +95,7 @@ export default function SnakePage() {
           </GameOverlay>
         </div>
 
-        {/* 操作提示 */}
-        <div className="mt-4 text-gray-500 text-sm">
-          方向键 / WASD 控制 &nbsp;|&nbsp; P 暂停 &nbsp;|&nbsp; R 重新开始
-        </div>
+        <ControlHints hints={['方向键 / WASD 控制', 'P 暂停', 'R 重新开始']} />
       </div>
     </GameLayout>
   );

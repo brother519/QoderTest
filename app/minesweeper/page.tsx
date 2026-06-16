@@ -6,45 +6,34 @@
 
 'use client';
 
-import { useCallback, useEffect } from 'react';
 import { Board } from './components/Board';
 import { Controls } from './components/Controls';
+import { StatsPanel } from './components/StatsPanel';
 import { DEFAULT_DIFFICULTY } from './constants/config';
 import { useMinesweeperGame } from './hooks/useMinesweeperGame';
 import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
 import { formatTime } from '@/lib/utils/format';
+import { useKeyboard } from '@/lib/hooks/useKeyboard';
+
+const KEY_MAP: Record<string, string> = {
+    r: 'restart', R: 'restart',
+    '1': 'beginner',
+    '2': 'intermediate',
+    '3': 'expert',
+};
 
 export default function MinesweeperPage() {
-  const game = useMinesweeperGame(DEFAULT_DIFFICULTY);
+    const game = useMinesweeperGame(DEFAULT_DIFFICULTY);
 
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      const key = event.key.toLowerCase();
-
-      if (key === 'r') {
-        game.restart();
-      }
-
-      if (key === '1') {
-        game.changeDifficulty('beginner');
-      }
-
-      if (key === '2') {
-        game.changeDifficulty('intermediate');
-      }
-
-      if (key === '3') {
-        game.changeDifficulty('expert');
-      }
-    },
-    [game]
-  );
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+    useKeyboard(KEY_MAP, {
+        onKeyDown: (action) => {
+            if (action === 'restart') game.restart();
+            if (action === 'beginner') game.changeDifficulty('beginner');
+            if (action === 'intermediate') game.changeDifficulty('intermediate');
+            if (action === 'expert') game.changeDifficulty('expert');
+        },
+    });
 
   return (
     <GameLayout
@@ -79,6 +68,8 @@ export default function MinesweeperPage() {
             onChangeDifficulty={game.changeDifficulty}
             onRestart={game.restart}
           />
+
+          <StatsPanel stats={game.stats} />
 
           <div className="rounded-[32px] border border-cyan-400/10 bg-white/[0.03] backdrop-blur-sm px-3 py-4 md:px-5 md:py-6 shadow-[0_24px_80px_rgba(2,12,27,0.45)]">
             <Board

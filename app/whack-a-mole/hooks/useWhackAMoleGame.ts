@@ -29,6 +29,7 @@ import {
   MAX_ACTIVE_MOLES,
 } from '../constants/config';
 import { useHighScore } from '@/lib/hooks/useHighScore';
+import { useIntervalLoop } from '@/lib/hooks/useIntervalLoop';
 
 /** Hook 返回类型 */
 export interface UseWhackAMoleGameReturn {
@@ -205,7 +206,6 @@ export function useWhackAMoleGame(config: GameConfig): UseWhackAMoleGameReturn {
 
   // ==================== 定时器引用 ====================
   const moleTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map()); // 各地鼠的升起/停留定时器
-  const gameTimerRef = useRef<ReturnType<typeof setInterval> | null>(null); // 游戏倒计时计时器
   const moleSpawnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null); // 下一只地鼠的生成定时器
 
   // 每次渲染同步 Ref 为最新值
@@ -240,14 +240,6 @@ export function useWhackAMoleGame(config: GameConfig): UseWhackAMoleGameReturn {
     if (moleSpawnTimerRef.current) {
       clearTimeout(moleSpawnTimerRef.current);
       moleSpawnTimerRef.current = null;
-    }
-  }, []);
-
-  /** 清除游戏倒计时计时器 */
-  const clearGameTimer = useCallback(() => {
-    if (gameTimerRef.current) {
-      clearInterval(gameTimerRef.current);
-      gameTimerRef.current = null;
     }
   }, []);
 
@@ -354,13 +346,28 @@ export function useWhackAMoleGame(config: GameConfig): UseWhackAMoleGameReturn {
     moleSpawnTimerRef.current = nextTimer;
   }, [config, getMoleInterval, getMoleStayDuration, hideMole]);
 
-  /** 游戏结束处理：清除所有定时器、设置状态为 over、更新最高分 */
+  /** 游戏结束处理：清除所有地鼠定时器、设置状态为 over、更新最高分 */
   const gameOver = useCallback(() => {
     clearAllMoleTimers();
-    clearGameTimer();
     setStatus('over');
     updateHighScore(scoreRef.current);
-  }, [clearAllMoleTimers, clearGameTimer, updateHighScore]);
+  }, [clearAllMoleTimers, updateHighScore]);
+
+  // 游戏倒计时 — 每秒递减 timeLeft，归零时结束游戏
+  const countdownTick = useCallback(() => {
+    elapsedTimeRef.current += 1;
+    setTimeLeft((prev) => {
+      const newTime = prev - 1;
+      if (newTime <= 0) {
+        clearAllMoleTimers();
+        setStatus('over');
+        updateHighScore(scoreRef.current);
+      }
+      return Math.max(0, newTime);
+    });
+  }, [clearAllMoleTimers, updateHighScore]);
+
+  useIntervalLoop(countdownTick, 1000, status === 'playing');
 
   /**
    * 开始游戏
@@ -379,22 +386,11 @@ export function useWhackAMoleGame(config: GameConfig): UseWhackAMoleGameReturn {
     setStatus('playing');
     statusRef.current = 'playing';
 
-    gameTimerRef.current = setInterval(() => {
-      elapsedTimeRef.current += 1;
-      setTimeLeft((prev) => {
-        const newTime = prev - 1;
-        if (newTime <= 0) {
-          gameOver();
-        }
-        return Math.max(0, newTime);
-      });
-    }, 1000);
-
     const startDelay = setTimeout(() => {
       showMole();
     }, 500);
     moleSpawnTimerRef.current = startDelay;
-  }, [rows, cols, gameDuration, gameOver, showMole]);
+  }, [rows, cols, gameDuration, showMole]);
 
   /**
    * 切换暂停/继续
@@ -405,32 +401,20 @@ export function useWhackAMoleGame(config: GameConfig): UseWhackAMoleGameReturn {
   const togglePause = useCallback(() => {
     if (statusRef.current === 'playing') {
       clearAllMoleTimers();
-      clearGameTimer();
       setStatus('paused');
       statusRef.current = 'paused';
     } else if (statusRef.current === 'paused') {
       setStatus('playing');
       statusRef.current = 'playing';
-      gameTimerRef.current = setInterval(() => {
-        elapsedTimeRef.current += 1;
-        setTimeLeft((prev) => {
-          const newTime = prev - 1;
-          if (newTime <= 0) {
-            gameOver();
-          }
-          return Math.max(0, newTime);
-        });
-      }, 1000);
       showMole();
     }
-  }, [clearAllMoleTimers, clearGameTimer, gameOver, showMole]);
+  }, [clearAllMoleTimers, showMole]);
 
   /** 重新开始游戏：清除所有定时器后重新调用 start */
   const restart = useCallback(() => {
     clearAllMoleTimers();
-    clearGameTimer();
     start();
-  }, [clearAllMoleTimers, clearGameTimer, start]);
+  }, [clearAllMoleTimers, start]);
 
   /**
    * 玩家点击（敲击）指定位置
@@ -506,13 +490,12 @@ export function useWhackAMoleGame(config: GameConfig): UseWhackAMoleGameReturn {
     [config.hitEffectDuration, addScorePopup]
   );
 
-  /** 组件卸载时清理所有定时器，防止内存泄漏 */
+  /** 组件卸载时清理地鼠定时器，防止内存泄漏 */
   useEffect(() => {
     return () => {
       clearAllMoleTimers();
-      clearGameTimer();
     };
-  }, [clearAllMoleTimers, clearGameTimer]);
+  }, [clearAllMoleTimers]);
 
   return { holes, score, highScore, status, timeLeft, combo, stats, scorePopups, start, togglePause, restart, whack };
 }

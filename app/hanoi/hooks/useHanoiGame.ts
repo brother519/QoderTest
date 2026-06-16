@@ -29,20 +29,25 @@ function getInitialState(level: number): HanoiState {
 
 /** 从 localStorage 加载统计 */
 function loadStats(): HanoiStats {
-    if (typeof window === 'undefined') {
-        return { unlockedLevels: 3, bestMoves: {}, totalGames: 0, totalTime: 0 };
+    const fallback: HanoiStats = { unlockedLevels: 3, bestMoves: {}, totalGames: 0, totalTime: 0 };
+    if (typeof window === 'undefined') return fallback;
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return fallback;
+        const parsed = JSON.parse(saved);
+        return { ...parsed, unlockedLevels: Math.max(3, parsed.unlockedLevels || 3) };
+    } catch {
+        return fallback;
     }
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-        return { ...JSON.parse(saved), unlockedLevels: Math.max(3, JSON.parse(saved).unlockedLevels || 3) };
-    }
-    return { unlockedLevels: 3, bestMoves: {}, totalGames: 0, totalTime: 0 };
 }
 
 /** 保存统计到 localStorage */
 function saveStats(stats: HanoiStats): void {
-    if (typeof window !== 'undefined') {
+    if (typeof window === 'undefined') return;
+    try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+    } catch {
+        // 静默忽略写入失败（如存储配额满或隐私模式）
     }
 }
 

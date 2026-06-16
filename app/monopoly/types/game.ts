@@ -2,7 +2,7 @@
  * 大富翁游戏类型定义
  */
 
-import { BaseGameStatus } from '@/lib/types/game';
+import { GameStatus as BaseGameStatus } from '@/lib/types/game';
 
 /** 游戏状态（扩展基础状态） */
 export type GameStatus = BaseGameStatus | 'won';

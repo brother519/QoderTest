@@ -10,78 +10,52 @@
 
 'use client';
 
-import { useEffect, useCallback } from 'react';
 import { useTankGame } from './hooks/useTankGame';
 import { TankCanvas } from './components/TankCanvas';
 import { TankControls } from './components/TankControls';
 import { DEFAULT_CONFIG } from './constants/config';
 import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
+import { GamePageHeader } from '@/lib/components/GamePageHeader';
+import { ControlHints } from '@/lib/components/ControlHints';
+import { useKeyboard } from '@/lib/hooks/useKeyboard';
 
-/** 键盘按键到操作的映射（支持方向键、WASD、空格/J射击） */
 const KEY_MAP: Record<string, string> = {
-  arrowup: 'UP',
-  w: 'UP',
-  arrowdown: 'DOWN',
-  s: 'DOWN',
-  arrowleft: 'LEFT',
-  a: 'LEFT',
-  arrowright: 'RIGHT',
-  d: 'RIGHT',
-  ' ': 'SHOOT',
-  j: 'SHOOT',
+    ArrowUp: 'UP', w: 'UP', W: 'UP',
+    ArrowDown: 'DOWN', s: 'DOWN', S: 'DOWN',
+    ArrowLeft: 'LEFT', a: 'LEFT', A: 'LEFT',
+    ArrowRight: 'RIGHT', d: 'RIGHT', D: 'RIGHT',
+    ' ': 'SHOOT', j: 'SHOOT', J: 'SHOOT',
+    p: 'PAUSE', P: 'PAUSE',
+    r: 'RESTART', R: 'RESTART',
 };
 
 export default function TankBattlePage() {
-  const game = useTankGame(DEFAULT_CONFIG);
+    const game = useTankGame(DEFAULT_CONFIG);
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      const action = KEY_MAP[key];
-
-      if (action) {
-        e.preventDefault();
-        if (game.status === 'idle') game.start();
-        game.setKey(action, true);
-        return;
-      }
-      if (key === 'p' && (game.status === 'playing' || game.status === 'paused')) {
-        game.togglePause();
-      }
-      if (key === 'r') {
-        game.restart();
-      }
-    },
-    [game]
-  );
-
-  const handleKeyUp = useCallback(
-    (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      const action = KEY_MAP[key];
-      if (action) {
-        game.setKey(action, false);
-      }
-    },
-    [game]
-  );
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [handleKeyDown, handleKeyUp]);
+    useKeyboard(KEY_MAP, {
+        onKeyDown: (action) => {
+            if (['UP', 'DOWN', 'LEFT', 'RIGHT', 'SHOOT'].includes(action)) {
+                if (game.status === 'idle') game.start();
+                game.setKey(action, true);
+                return;
+            }
+            if (action === 'PAUSE' && (game.status === 'playing' || game.status === 'paused')) {
+                game.togglePause();
+            }
+            if (action === 'RESTART') game.restart();
+        },
+        onKeyUp: (action) => {
+            if (['UP', 'DOWN', 'LEFT', 'RIGHT', 'SHOOT'].includes(action)) {
+                game.setKey(action, false);
+            }
+        },
+    });
 
   return (
     <GameLayout title="坦克大战" className="bg-[#1a1a2e] flex items-center justify-center py-8 px-4">
       <div className="text-center pt-8">
-        <h1 className="text-3xl font-bold text-orange-400 mb-6">
-          坦克大战
-        </h1>
+        <GamePageHeader title="坦克大战" colorClass="text-orange-400" />
 
         <TankControls
           score={game.score}
@@ -129,9 +103,7 @@ export default function TankBattlePage() {
           </GameOverlay>
         </div>
 
-        <div className="mt-4 text-gray-500 text-sm">
-          WASD / 方向键移动 &nbsp;|&nbsp; 空格 / J 射击 &nbsp;|&nbsp; P 暂停 &nbsp;|&nbsp; R 重新开始
-        </div>
+        <ControlHints hints={['WASD / 方向键移动', '空格 / J 射击', 'P 暂停', 'R 重新开始']} />
       </div>
     </GameLayout>
   );
