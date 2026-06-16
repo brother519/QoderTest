@@ -29,6 +29,7 @@ import { lightsOutMeta } from '@/app/lights-out/meta';
 import { sudokuMeta } from '@/app/sudoku/meta';
 import { ticTacToeMeta } from '@/app/tic-tac-toe/meta';
 import { slidingPuzzleMeta } from '@/app/sliding-puzzle/meta';
+import { colorSortMeta } from '@/app/color-sort/meta';
 
 /** 所有已注册的游戏列表 */
 export const GAME_REGISTRY: GameMeta[] = [
@@ -49,4 +50,5 @@ export const GAME_REGISTRY: GameMeta[] = [
   sudokuMeta,
   ticTacToeMeta,
   slidingPuzzleMeta,
+  colorSortMeta,
 ];
