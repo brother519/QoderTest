@@ -1,0 +1,6 @@
+{
+  "my-test-mcp": {
+    "type": "http",
+    "url": "https://example.com/mcp"
+  }
+}
