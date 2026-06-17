@@ -21,7 +21,7 @@ export function GamePageHeader({
                 {icon ? `${icon} ` : ''}{title}
             </h1>
             {subtitle && (
-                <p className={`${colorClass}/60 text-xs mb-4`}>{subtitle}</p>
+                <p className="text-white/60 text-xs mb-4">{subtitle}</p>
             )}
         </div>
     );
