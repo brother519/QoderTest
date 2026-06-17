@@ -27,12 +27,12 @@ export default function MemoryCardPage() {
     return (
         <GameLayout
             title="记忆翻牌"
-            className="bg-gradient-to-b from-emerald-950 via-teal-950 to-emerald-950 flex flex-col items-center py-6 px-4"
+            className="bg-gradient-to-b from-gray-950 via-slate-900 to-gray-950 flex flex-col items-center py-6 px-4"
         >
             <GamePageHeader
                 title="记忆翻牌"
                 icon="🃏"
-                colorClass="text-emerald-400"
+                colorClass="text-sky-400"
                 subtitle="翻开卡牌找配对，考验你的记忆力"
             />
 
@@ -61,7 +61,7 @@ export default function MemoryCardPage() {
                             {Array.from({ length: 12 }).map((_, i) => (
                                 <div
                                     key={i}
-                                    className="w-20 h-20 rounded-lg bg-teal-700/30 animate-pulse"
+                                    className="w-20 h-20 rounded-lg bg-slate-700/30 animate-pulse"
                                 />
                             ))}
                         </div>
@@ -69,7 +69,7 @@ export default function MemoryCardPage() {
 
                     <GameOverlay
                         visible={game.status === 'won'}
-                        bgClass="bg-emerald-950/80 backdrop-blur-sm"
+                        bgClass="bg-slate-950/80 backdrop-blur-sm"
                     >
                         <div className="flex flex-col items-center gap-3">
                             <div className="text-yellow-300 text-4xl font-bold drop-shadow-lg">
@@ -77,7 +77,7 @@ export default function MemoryCardPage() {
                             </div>
                             <div className="text-white/80 text-lg">
                                 用了{' '}
-                                <span className="font-bold text-emerald-400">
+                                <span className="font-bold text-sky-400">
                                     {game.moves}
                                 </span>{' '}
                                 步，耗时{' '}
@@ -97,7 +97,7 @@ export default function MemoryCardPage() {
                             )}
                             <button
                                 onClick={game.restart}
-                                className="mt-2 px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all active:scale-95 shadow-lg shadow-emerald-500/30"
+                                className="mt-2 px-6 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold transition-all active:scale-95 shadow-lg shadow-sky-500/30"
                             >
                                 再来一局
                             </button>
@@ -107,7 +107,7 @@ export default function MemoryCardPage() {
 
                 <ControlHints
                     hints={['点击卡牌翻面', '找到相同图案配对', 'R 重新开始']}
-                    className="text-emerald-300/50 text-xs"
+                    className="text-slate-400/50 text-xs"
                 />
             </div>
         </GameLayout>

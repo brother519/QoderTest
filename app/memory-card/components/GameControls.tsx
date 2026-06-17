@@ -33,7 +33,7 @@ export function GameControls({
             <div className="flex items-center gap-6 text-sm">
                 <div className="flex items-center gap-1.5">
                     <span className="text-white/50">步数</span>
-                    <span className="text-emerald-400 font-bold text-base">{moves}</span>
+                    <span className="text-sky-400 font-bold text-base">{moves}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                     <span className="text-white/50">时间</span>
@@ -72,7 +72,7 @@ export function GameControls({
                         onClick={() => onSetDifficulty(d)}
                         className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all
                             ${d === difficulty
-                                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/30'
+                                ? 'bg-sky-600 text-white shadow-lg shadow-sky-500/30'
                                 : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'
                             }`}
                     >
