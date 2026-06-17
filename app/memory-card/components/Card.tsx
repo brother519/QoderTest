@@ -33,10 +33,10 @@ export function Card({ card, disabled, onClick }: CardProps) {
                 {/* 背面 */}
                 <div
                     className={`absolute inset-0 rounded-lg flex items-center justify-center text-2xl font-bold
-                        bg-gradient-to-br from-teal-600 to-emerald-700
-                        border-2 border-teal-400/30
-                        shadow-lg shadow-teal-500/20
-                        hover:border-teal-300/50 hover:shadow-teal-400/30
+                        bg-gradient-to-br from-slate-600 to-slate-800
+                        border-2 border-sky-400/30
+                        shadow-lg shadow-sky-500/20
+                        hover:border-sky-300/50 hover:shadow-sky-400/30
                         transition-all duration-200
                         ${!card.matched && !card.flipped ? 'hover:scale-105' : ''}`}
                     style={{ backfaceVisibility: 'hidden' }}
@@ -50,7 +50,7 @@ export function Card({ card, disabled, onClick }: CardProps) {
                         bg-gradient-to-br from-slate-800 to-slate-900
                         border-2
                         ${card.matched
-                            ? 'border-emerald-400/60 shadow-lg shadow-emerald-400/30'
+                            ? 'border-sky-400/60 shadow-lg shadow-sky-400/30'
                             : 'border-slate-600/40'
                         }
                         transition-all duration-300`}
