@@ -31,6 +31,7 @@ import { ticTacToeMeta } from '@/app/tic-tac-toe/meta';
 import { slidingPuzzleMeta } from '@/app/sliding-puzzle/meta';
 import { colorSortMeta } from '@/app/color-sort/meta';
 import { memoryCardMeta } from '@/app/memory-card/meta';
+import { nonogramMeta } from '@/app/nonogram/meta';
 
 /** 所有已注册的游戏列表 */
 export const GAME_REGISTRY: GameMeta[] = [
@@ -53,4 +54,5 @@ export const GAME_REGISTRY: GameMeta[] = [
   slidingPuzzleMeta,
   colorSortMeta,
   memoryCardMeta,
+  nonogramMeta,
 ];
