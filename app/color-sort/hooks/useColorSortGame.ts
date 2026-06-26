@@ -58,18 +58,20 @@ function isSorted(tubes: TubeState[]): boolean {
     return true;
 }
 
-function shufflePuzzle(config: GameConfig): TubeState[] {
+function shufflePuzzle(config: GameConfig, difficulty: Difficulty): TubeState[] {
     let tubes = createSolvedState(config);
-    let lastFrom = -1;
-    let lastTo = -1;
+    const recentMoves: [number, number][] = [];
+    const maxHistory = 3;
+    const moves = SHUFFLE_MOVES[difficulty];
 
-    for (let i = 0; i < SHUFFLE_MOVES; i++) {
+    for (let i = 0; i < moves; i++) {
         const candidates: [number, number][] = [];
         for (let f = 0; f < tubes.length; f++) {
             if (tubes[f].balls.length === 0) continue;
             for (let t = 0; t < tubes.length; t++) {
                 if (f === t) continue;
-                if (f === lastTo && t === lastFrom) continue;
+                const isReverse = recentMoves.some(([rf, rt]) => f === rt && t === rf);
+                if (isReverse) continue;
                 if (canPlaceBall(tubes, f, t)) {
                     candidates.push([f, t]);
                 }
@@ -78,12 +80,12 @@ function shufflePuzzle(config: GameConfig): TubeState[] {
         if (candidates.length === 0) break;
         const [f, t] = candidates[Math.floor(Math.random() * candidates.length)];
         tubes = executeMove(tubes, f, t);
-        lastFrom = f;
-        lastTo = t;
+        recentMoves.push([f, t]);
+        if (recentMoves.length > maxHistory) recentMoves.shift();
     }
 
     if (isSorted(tubes)) {
-        return shufflePuzzle(config);
+        return shufflePuzzle(config, difficulty);
     }
     return tubes;
 }
@@ -124,27 +126,53 @@ export interface UseColorSortGameReturn {
     setDifficulty: (d: Difficulty) => void;
 }
 
+/**
+ * 颜色分拣游戏核心逻辑 Hook
+ *
+ * 管理游戏的所有状态与交互逻辑，包括：
+ * - 试管状态与球的移动
+ * - 计时器的启动与停止
+ * - 撤销/重启操作
+ * - 最佳记录的读取与保存
+ * - 难度切换
+ *
+ * @param initialDifficulty 初始难度，默认为 'easy'
+ * @returns UseColorSortGameReturn 游戏状态与操作方法集合
+ */
 export function useColorSortGame(initialDifficulty: Difficulty = 'easy'): UseColorSortGameReturn {
     const [difficulty, setDifficultyState] = useState<Difficulty>(initialDifficulty);
     const config = DIFFICULTY_CONFIGS[difficulty];
 
+    // 所有试管的状态（初始为有序的已解决状态，等待 effect 随机打乱）
     const [tubes, setTubes] = useState<TubeState[]>(() => createSolvedState(config));
+    // 当前被选中的试管下标，null 表示未选中任何试管
     const [selectedTube, setSelectedTube] = useState<number | null>(null);
+    // 玩家已操作的移动步数
     const [moves, setMoves] = useState(0);
+    // 游戏已用时（秒）
     const [time, setTime] = useState(0);
+    // 游戏状态：'idle' | 'playing' | 'won'
     const [status, setStatus] = useState<GameStatus>('idle');
+    // 操作历史快照，用于支持撤销功能
     const [history, setHistory] = useState<TubeState[][]>([]);
+    // 当前难度下的历史最佳记录（步数 + 时间）
     const [bestRecord, setBestRecord] = useState<BestRecord>({ moves: null, time: null });
+    // 标记是否已完成初始化（打乱谜题 + 加载最佳记录）
     const [initialized, setInitialized] = useState(false);
 
+    // 难度变化时重新生成谜题并加载对应最佳记录
     useEffect(() => {
-        setTubes(shufflePuzzle(DIFFICULTY_CONFIGS[difficulty]));
+        setTubes(shufflePuzzle(DIFFICULTY_CONFIGS[difficulty], difficulty));
         setBestRecord(loadBestRecord(difficulty));
         setInitialized(true);
     }, [difficulty]);
 
+    // 计时器 ref，避免在 state 更新时触发不必要的重渲染
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+    /**
+     * 启动计时器（每秒 +1），若已在运行则忽略
+     */
     const startTimer = useCallback(() => {
         if (timerRef.current !== null) return;
         timerRef.current = setInterval(() => {
@@ -152,6 +180,9 @@ export function useColorSortGame(initialDifficulty: Difficulty = 'easy'): UseCol
         }, 1000);
     }, []);
 
+    /**
+     * 清除计时器并重置 ref
+     */
     const clearTimer = useCallback(() => {
         if (timerRef.current !== null) {
             clearInterval(timerRef.current);
@@ -159,10 +190,12 @@ export function useColorSortGame(initialDifficulty: Difficulty = 'easy'): UseCol
         }
     }, []);
 
+    // 组件卸载时自动清除计时器，防止内存泄漏
     useEffect(() => {
         return () => clearTimer();
     }, [clearTimer]);
 
+    // 游戏胜利时更新并持久化最佳记录（步数和时间取历史最优）
     useEffect(() => {
         if (status !== 'won') return;
         setBestRecord((prev) => {
@@ -176,6 +209,11 @@ export function useColorSortGame(initialDifficulty: Difficulty = 'easy'): UseCol
         });
     }, [status, moves, time, difficulty]);
 
+    /**
+     * 判断当前选中试管的顶部球是否可以放入指定试管
+     * @param tubeIndex 目标试管下标
+     * @returns 是否可放置
+     */
     const canPlace = useCallback(
         (tubeIndex: number): boolean => {
             if (selectedTube === null) return false;
@@ -184,11 +222,22 @@ export function useColorSortGame(initialDifficulty: Difficulty = 'easy'): UseCol
         [selectedTube, tubes],
     );
 
+    /**
+     * 点击试管时的处理逻辑：
+     * 1. 若无选中试管，则选中当前试管（非空才可选）
+     * 2. 再次点击已选中试管，取消选中
+     * 3. 点击其他试管且可放置，则执行移动；不可放置则取消选中
+     * 4. 首次移动时启动计时器，完成排序时标记胜利并停止计时
+     *
+     * @param index 被点击的试管下标
+     */
     const selectTube = useCallback(
         (index: number) => {
+            // 游戏已胜利，不响应点击
             if (status === 'won') return;
 
             if (selectedTube === null) {
+                // 首次选择：只有非空试管才可被选中
                 if (tubes[index].balls.length > 0) {
                     setSelectedTube(index);
                 }
@@ -196,11 +245,13 @@ export function useColorSortGame(initialDifficulty: Difficulty = 'easy'): UseCol
             }
 
             if (selectedTube === index) {
+                // 再次点击同一试管，取消选中
                 setSelectedTube(null);
                 return;
             }
 
             if (canPlaceBall(tubes, selectedTube, index)) {
+                // 保存当前状态快照用于撤销
                 const snapshot = cloneTubes(tubes);
                 const newTubes = executeMove(tubes, selectedTube, index);
                 const newMoves = moves + 1;
@@ -210,22 +261,29 @@ export function useColorSortGame(initialDifficulty: Difficulty = 'easy'): UseCol
                 setMoves(newMoves);
                 setSelectedTube(null);
 
+                // 首次移动时将状态从 idle 切换为 playing 并启动计时
                 if (status === 'idle') {
                     setStatus('playing');
                     startTimer();
                 }
 
+                // 检测是否已全部排序完成
                 if (isSorted(newTubes)) {
                     setStatus('won');
                     clearTimer();
                 }
             } else {
+                // 目标试管不可放置，取消选中
                 setSelectedTube(null);
             }
         },
         [selectedTube, tubes, moves, status, startTimer, clearTimer],
     );
 
+    /**
+     * 撤销上一步操作：恢复历史快照，步数 -1
+     * 仅在游戏进行中且有历史记录时可用
+     */
     const undo = useCallback(() => {
         if (status !== 'playing' || history.length === 0) return;
         const prev = history[history.length - 1];
@@ -235,16 +293,26 @@ export function useColorSortGame(initialDifficulty: Difficulty = 'easy'): UseCol
         setSelectedTube(null);
     }, [status, history]);
 
+    /**
+     * 重新开始当前难度的游戏：
+     * 停止计时，重新打乱谜题，重置所有状态
+     */
     const restart = useCallback(() => {
         clearTimer();
-        setTubes(shufflePuzzle(config));
+        setTubes(shufflePuzzle(config, difficulty));
         setSelectedTube(null);
         setMoves(0);
         setTime(0);
         setStatus('idle');
         setHistory([]);
-    }, [config, clearTimer]);
+    }, [config, difficulty, clearTimer]);
 
+    /**
+     * 切换游戏难度：
+     * 停止计时，更新难度状态（会触发 difficulty useEffect 重新生成谜题），重置所有进度
+     *
+     * @param d 目标难度
+     */
     const setDifficulty = useCallback(
         (d: Difficulty) => {
             clearTimer();
@@ -267,6 +335,7 @@ export function useColorSortGame(initialDifficulty: Difficulty = 'easy'): UseCol
         status,
         bestRecord,
         difficulty,
+        // 仅在游戏进行中且存在历史记录时，撤销功能才可用
         canUndo: history.length > 0 && status === 'playing',
         canPlace,
         selectTube,

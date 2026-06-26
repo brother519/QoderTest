@@ -2,8 +2,8 @@ import { Difficulty, GameConfig } from '../types/game';
 
 export const DIFFICULTY_CONFIGS: Record<Difficulty, GameConfig> = {
     easy: { numColors: 5, ballsPerTube: 4, extraTubes: 2 },
-    medium: { numColors: 7, ballsPerTube: 4, extraTubes: 2 },
-    hard: { numColors: 10, ballsPerTube: 4, extraTubes: 2 },
+    medium: { numColors: 8, ballsPerTube: 4, extraTubes: 2 },
+    hard: { numColors: 10, ballsPerTube: 4, extraTubes: 1 },
 };
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
@@ -29,7 +29,11 @@ export const COLOR_KEYS = Object.keys(COLOR_PALETTE);
 
 export const BEST_RECORD_KEY_PREFIX = 'color-sort-best-';
 
-export const SHUFFLE_MOVES = 80;
+export const SHUFFLE_MOVES: Record<Difficulty, number> = {
+    easy: 80,
+    medium: 150,
+    hard: 300,
+};
 
 export const TUBE_WIDTH = 52;
 export const TUBE_HEIGHT = 200;

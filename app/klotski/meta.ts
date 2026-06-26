@@ -3,7 +3,7 @@ import { GameMeta } from '@/lib/types/registry';
 export const klotskiMeta: GameMeta = {
   id: 'klotski',
   name: '华容道',
-  description: '经典三国滑块益智游戏。滑动方块，帮助曹操从重重包围中突围而出！步数越少越厉害。',
+  description: '经典三国华容道益智游戏，拖动方块帮助曹操突围！支持触摸拖拽、多关卡挑战。',
   icon: '🏯',
   tags: ['益智', '策略', '三国'],
   gradient: 'from-red-800 via-red-600 to-orange-700',

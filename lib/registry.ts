@@ -32,6 +32,16 @@ import { slidingPuzzleMeta } from '@/app/sliding-puzzle/meta';
 import { colorSortMeta } from '@/app/color-sort/meta';
 import { memoryCardMeta } from '@/app/memory-card/meta';
 import { nonogramMeta } from '@/app/nonogram/meta';
+import { pipePuzzleMeta } from '@/app/pipe-puzzle/meta';
+import { guessNumberMeta } from '@/app/guess-number/meta';
+import { oneStrokeMeta } from '@/app/one-stroke/meta';
+import { gomokuMeta } from '@/app/gomoku/meta';
+import { rubiksCubeMeta } from '@/app/rubiks-cube/meta';
+import { mazeMeta } from '@/app/maze/meta';
+import { hanziWordleMeta } from '@/app/hanzi-wordle/meta';
+import { hanziRiddleMeta } from '@/app/hanzi-riddle/meta';
+import { flowFreeMeta } from '@/app/flow-free/meta';
+import { tangramMeta } from '@/app/tangram/meta';
 
 /** 所有已注册的游戏列表 */
 export const GAME_REGISTRY: GameMeta[] = [
@@ -55,4 +65,14 @@ export const GAME_REGISTRY: GameMeta[] = [
   colorSortMeta,
   memoryCardMeta,
   nonogramMeta,
+  pipePuzzleMeta,
+  guessNumberMeta,
+  gomokuMeta,
+  oneStrokeMeta,
+  rubiksCubeMeta,
+  mazeMeta,
+  flowFreeMeta,
+  hanziWordleMeta,
+  hanziRiddleMeta,
+  tangramMeta,
 ];

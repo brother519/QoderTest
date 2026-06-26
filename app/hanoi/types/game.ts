@@ -4,11 +4,14 @@
  * @module hanoi/types/game
  */
 
+/** 游戏模式 */
+export type GameMode = 'classic' | 'frame-stewart';
+
 /** 游戏状态 */
 export type GameStatus = 'idle' | 'playing' | 'paused' | 'completed';
 
-/** 柱子索引 (0, 1, 2) */
-export type PegIndex = 0 | 1 | 2;
+/** 柱子索引 (0-3) */
+export type PegIndex = 0 | 1 | 2 | 3;
 
 /** 圆盘数据 */
 export interface Disk {
@@ -20,7 +23,7 @@ export interface Disk {
 
 /** 游戏状态 */
 export interface HanoiState {
-    /** 三根柱子的圆盘分布 */
+    /** 柱子的圆盘分布 (3或4根柱子) */
     pegs: number[][];
     /** 当前步数 */
     moveCount: number;
@@ -32,10 +35,14 @@ export interface HanoiState {
     selectedPeg: PegIndex | null;
     /** 当前层数 (3-8) */
     level: number;
+    /** 游戏模式 */
+    mode: GameMode;
+    /** 柱子数量 */
+    pegCount: number;
 }
 
-/** 游戏统计 */
-export interface HanoiStats {
+/** 单模式统计 */
+export interface ModeStats {
     /** 最高解锁层数 */
     unlockedLevels: number;
     /** 每层最佳步数 */
@@ -44,6 +51,12 @@ export interface HanoiStats {
     totalGames: number;
     /** 总游戏时长 (秒) */
     totalTime: number;
+}
+
+/** 游戏统计 */
+export interface HanoiStats {
+    classic: ModeStats;
+    'frame-stewart': ModeStats;
 }
 
 /** 游戏配置 */
