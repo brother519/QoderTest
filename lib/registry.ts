@@ -43,7 +43,7 @@ import { hanziRiddleMeta } from '@/app/hanzi-riddle/meta';
 import { flowFreeMeta } from '@/app/flow-free/meta';
 import { tangramMeta } from '@/app/tangram/meta';
 
-/** 所有已注册的游戏列表 */
+/** All registered games — array order determines homepage display order. */
 export const GAME_REGISTRY: GameMeta[] = [
   linkMatchMeta,
   snakeMeta,
