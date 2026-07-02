@@ -42,6 +42,7 @@ import { hanziWordleMeta } from '@/app/hanzi-wordle/meta';
 import { hanziRiddleMeta } from '@/app/hanzi-riddle/meta';
 import { flowFreeMeta } from '@/app/flow-free/meta';
 import { tangramMeta } from '@/app/tangram/meta';
+import { reversiMeta } from '@/app/reversi/meta';
 
 /** All registered games — array order determines homepage display order. */
 export const GAME_REGISTRY: GameMeta[] = [
@@ -75,4 +76,5 @@ export const GAME_REGISTRY: GameMeta[] = [
   hanziWordleMeta,
   hanziRiddleMeta,
   tangramMeta,
+  reversiMeta,
 ];
