@@ -6,7 +6,15 @@
  * @module rubiks-cube/utils/cubeRender
  */
 
-import { CubeletPosition, CubeletRenderData, CubeState, FaceColor, FaceKey, StickerFace } from '../types/game';
+import {
+    CubeletPosition,
+    CubeletRenderData,
+    CubeState,
+    FaceColor,
+    FaceKey,
+    MoveKey,
+    StickerFace,
+} from '../types/game';
 
 /**
  * 根据 cubelet 的 (x, y, z) 坐标，计算其在指定面上对应的贴纸索引
@@ -37,24 +45,33 @@ function getStickerIndex(face: FaceKey, x: number, y: number, z: number): number
 }
 
 /**
- * 获取某个面操作对应的 9 个 cubelet 位置
+ * 获取某个层操作对应的 9 个 cubelet 位置
  */
-export function getLayerCubelets(face: FaceKey): CubeletPosition[] {
+export function getLayerCubelets(moveKey: MoveKey): CubeletPosition[] {
     const positions: CubeletPosition[] = [];
     for (let a = -1; a <= 1; a++) {
         for (let b = -1; b <= 1; b++) {
-            switch (face) {
+            switch (moveKey) {
                 case 'U':
                 case 'D':
-                    positions.push([a, face === 'U' ? -1 : 1, b]);
+                    positions.push([a, moveKey === 'U' ? -1 : 1, b]);
                     break;
                 case 'F':
                 case 'B':
-                    positions.push([a, b, face === 'F' ? 1 : -1]);
+                    positions.push([a, b, moveKey === 'F' ? 1 : -1]);
                     break;
                 case 'L':
                 case 'R':
-                    positions.push([face === 'L' ? -1 : 1, a, b]);
+                    positions.push([moveKey === 'L' ? -1 : 1, a, b]);
+                    break;
+                case 'M':
+                    positions.push([0, a, b]);
+                    break;
+                case 'E':
+                    positions.push([a, 0, b]);
+                    break;
+                case 'S':
+                    positions.push([a, b, 0]);
                     break;
             }
         }
@@ -63,23 +80,26 @@ export function getLayerCubelets(face: FaceKey): CubeletPosition[] {
 }
 
 /**
- * 获取面操作对应的旋转轴与角度
+ * 获取层操作对应的旋转轴与角度
  */
 export function getLayerRotation(
-    face: FaceKey,
+    moveKey: MoveKey,
     direction: 'CW' | 'CCW'
 ): { axis: 'x' | 'y' | 'z'; angle: number } {
     const isClockwise = direction === 'CW';
-    switch (face) {
+    switch (moveKey) {
         case 'R':
             return { axis: 'x', angle: isClockwise ? 90 : -90 };
         case 'L':
+        case 'M':
             return { axis: 'x', angle: isClockwise ? -90 : 90 };
         case 'U':
             return { axis: 'y', angle: isClockwise ? -90 : 90 };
         case 'D':
+        case 'E':
             return { axis: 'y', angle: isClockwise ? 90 : -90 };
         case 'F':
+        case 'S':
             return { axis: 'z', angle: isClockwise ? 90 : -90 };
         case 'B':
             return { axis: 'z', angle: isClockwise ? -90 : 90 };

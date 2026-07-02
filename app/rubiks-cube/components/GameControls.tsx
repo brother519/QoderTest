@@ -27,6 +27,8 @@ interface GameControlsProps {
     onReset: () => void;
     /** 操作回调 */
     onMove: (move: Move) => void;
+    /** Hover 操作回调 */
+    onHoverMove?: (move: Move | null) => void;
 }
 
 export function GameControls({
@@ -35,6 +37,7 @@ export function GameControls({
     onScramble,
     onReset,
     onMove,
+    onHoverMove,
 }: GameControlsProps) {
     return (
         <div className="flex flex-col items-center gap-3 w-full max-w-md">
@@ -62,15 +65,18 @@ export function GameControls({
 
             {/* 操作按钮 */}
             <div className="grid grid-cols-6 gap-2">
-                {MOVES.map(({ move, label }) => (
+                {MOVES.map(({ move, moveKey, direction, label }) => (
                     <button
                         key={move}
                         type="button"
                         onClick={() => onMove(move as Move)}
+                        onMouseEnter={() => onHoverMove?.(move as Move)}
+                        onMouseLeave={() => onHoverMove?.(null)}
                         disabled={isAnimating || status === 'won'}
                         className="px-3 py-2 bg-indigo-600/80 hover:bg-indigo-500
                                    disabled:bg-indigo-900/40 disabled:text-white/40
                                    text-white rounded-lg font-medium text-sm transition-colors"
+                        title={`${moveKey} ${direction === 'CW' ? '顺时针' : '逆时针'}`}
                     >
                         {label}
                     </button>

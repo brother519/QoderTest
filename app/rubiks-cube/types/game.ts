@@ -9,6 +9,12 @@ import { GameStatus } from '@/lib/types/game';
 /** 六个面的标识 */
 export type FaceKey = 'U' | 'D' | 'F' | 'B' | 'L' | 'R';
 
+/** 中间层标识（slice moves） */
+export type SliceKey = 'M' | 'E' | 'S';
+
+/** 所有可旋转层标识 */
+export type MoveKey = FaceKey | SliceKey;
+
 /** 贴纸颜色 */
 export type FaceColor = 'W' | 'Y' | 'R' | 'O' | 'B' | 'G';
 
@@ -22,7 +28,7 @@ export type CubeState = Record<FaceKey, Face>;
 export type MoveDirection = 'CW' | 'CCW';
 
 /** 一步操作，如 'R' 或 'Ri'（i 表示 inverse，逆时针） */
-export type Move = `${FaceKey}${'' | 'i'}`;
+export type Move = `${MoveKey}${'' | 'i'}`;
 
 /** 小立方体在 3D 空间中的坐标，每个分量取 -1/0/1 */
 export type CubeletPosition = [number, number, number];
@@ -38,10 +44,9 @@ export interface CubeletRenderData {
     stickers: Partial<Record<StickerFace, FaceColor>>;
 }
 
-/** 视角角度 */
+/** View rotation stored as a 4x4 column-major matrix (trackball style, no gimbal lock) */
 export interface ViewAngles {
-    rx: number;
-    ry: number;
+    matrix: number[];
 }
 
 /** 临时动画组数据 */
@@ -74,6 +79,8 @@ export interface UseRubiksCubeReturn {
     scrambleMoves: Move[];
     /** 最高分 */
     highScore: number;
+    /** 当前 hover 的操作 */
+    hoveredMove: Move | null;
     /** 执行一步操作 */
     applyMove: (move: Move) => void;
     /** 动画结束，提交状态更新 */
@@ -84,4 +91,6 @@ export interface UseRubiksCubeReturn {
     reset: () => void;
     /** 更新视角 */
     setViewAngles: (angles: ViewAngles) => void;
+    /** 设置 hover 的操作 */
+    setHoveredMove: (move: Move | null) => void;
 }

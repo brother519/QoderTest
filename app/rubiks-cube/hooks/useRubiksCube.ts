@@ -10,7 +10,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { CubeState, Move, UseRubiksCubeReturn, ViewAngles } from '../types/game';
 import {
     applyMove,
-    applyMoves,
     createSolvedCube,
     generateScrambleMoves,
     isSolved,
@@ -44,12 +43,16 @@ export function useRubiksCube(): UseRubiksCubeReturn {
     const [isAnimating, setIsAnimating] = useState(false);
     const [pendingMove, setPendingMove] = useState<Move | null>(null);
     const [scrambleMoves, setScrambleMoves] = useState<Move[]>([]);
+    const [isScrambling, setIsScrambling] = useState(false);
+    const [hoveredMove, setHoveredMove] = useState<Move | null>(null);
     const [highScore, updateHighScore] = useHighScore('rubiksCubeHighScore');
 
     const statusRef = useRef(status);
     statusRef.current = status;
     const movesRef = useRef(moves);
     movesRef.current = moves;
+    const scrambleQueueRef = useRef<Move[]>([]);
+    const scrambleIndexRef = useRef(0);
 
     /** 计时器 */
     useEffect(() => {
@@ -80,7 +83,7 @@ export function useRubiksCube(): UseRubiksCubeReturn {
     );
 
     /**
-     * 动画结束，提交状态更新
+     * Commit the pending move. If scrambling, continue with the next queued move.
      */
     const commitMove = useCallback(() => {
         if (!pendingMove) return;
@@ -89,7 +92,7 @@ export function useRubiksCube(): UseRubiksCubeReturn {
         setCubeState((prev) => {
             const next = applyMove(prev, move);
 
-            if (isSolved(next)) {
+            if (!isScrambling && isSolved(next)) {
                 const currentMoves = movesRef.current + 1;
                 const score = calculateScore(currentMoves);
                 updateHighScore(score);
@@ -98,25 +101,47 @@ export function useRubiksCube(): UseRubiksCubeReturn {
 
             return next;
         });
-        setMoves((prev) => prev + 1);
-        setPendingMove(null);
-        setIsAnimating(false);
-    }, [pendingMove, updateHighScore]);
+
+        if (!isScrambling) {
+            setMoves((prev) => prev + 1);
+        }
+
+        if (scrambleIndexRef.current < scrambleQueueRef.current.length) {
+            const nextMove = scrambleQueueRef.current[scrambleIndexRef.current];
+            scrambleIndexRef.current++;
+            setPendingMove(nextMove);
+        } else {
+            setPendingMove(null);
+            setIsAnimating(false);
+            if (isScrambling) {
+                setIsScrambling(false);
+            }
+        }
+    }, [pendingMove, isScrambling, updateHighScore]);
 
     /**
-     * 打乱魔方
+     * Scramble the cube by playing a random sequence of moves with animation.
+     * The number of moves is random between 20 and 30.
      */
     const scramble = useCallback(() => {
-        const movesList = generateScrambleMoves();
-        const nextState = applyMoves(createSolvedCube(), movesList);
+        const count = Math.floor(Math.random() * 11) + 20;
+        const movesList = generateScrambleMoves(count);
 
-        setCubeState(nextState);
+        setCubeState(createSolvedCube());
         setStatus('playing');
         setMoves(0);
         setTime(0);
-        setPendingMove(null);
-        setIsAnimating(false);
         setScrambleMoves(movesList);
+        scrambleQueueRef.current = movesList;
+        scrambleIndexRef.current = 1;
+        setIsScrambling(true);
+
+        if (movesList.length > 0) {
+            setPendingMove(movesList[0]);
+            setIsAnimating(true);
+        } else {
+            setIsScrambling(false);
+        }
     }, []);
 
     /**
@@ -130,16 +155,9 @@ export function useRubiksCube(): UseRubiksCubeReturn {
         setPendingMove(null);
         setIsAnimating(false);
         setScrambleMoves([]);
-    }, []);
-
-    /**
-     * 更新视角角度（限制俯仰角避免万向节锁）
-     */
-    const handleSetViewAngles = useCallback((angles: ViewAngles) => {
-        setViewAngles({
-            rx: Math.max(-90, Math.min(90, angles.rx)),
-            ry: angles.ry,
-        });
+        scrambleQueueRef.current = [];
+        scrambleIndexRef.current = 0;
+        setIsScrambling(false);
     }, []);
 
     return {
@@ -156,6 +174,8 @@ export function useRubiksCube(): UseRubiksCubeReturn {
         commitMove,
         scramble,
         reset,
-        setViewAngles: handleSetViewAngles,
+        setViewAngles,
+        hoveredMove,
+        setHoveredMove,
     };
 }

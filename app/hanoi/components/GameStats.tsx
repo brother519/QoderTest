@@ -6,11 +6,11 @@
 
 'use client';
 
-import { HanoiStats } from '../types/game';
+import { ModeStats } from '../types/game';
 import { getOptimalMoves } from '../hooks/useHanoiGame';
 
 interface GameStatsProps {
-    stats: HanoiStats;
+    stats: ModeStats;
     currentLevel: number;
     currentMoves: number;
     elapsedTime: number;

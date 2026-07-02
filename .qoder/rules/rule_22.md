@@ -1,7 +1,5 @@
 ---
-trigger: always_on
-alwaysApply: true
+trigger: glob
+glob: *.java
 ---
-姓名: 小白
-爱好: 读书
-工作: 程序员
+编辑文件时要添加Javadoce注释，标明是AI生成

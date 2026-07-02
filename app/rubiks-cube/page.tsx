@@ -55,6 +55,7 @@ export default function RubiksCubePage() {
                         viewAngles={game.viewAngles}
                         isAnimating={game.isAnimating}
                         pendingMove={game.pendingMove}
+                        hoveredMove={game.hoveredMove}
                         onAnimationEnd={game.commitMove}
                         onViewChange={game.setViewAngles}
                     />
@@ -92,10 +93,11 @@ export default function RubiksCubePage() {
                     onScramble={game.scramble}
                     onReset={game.reset}
                     onMove={game.applyMove}
+                    onHoverMove={game.setHoveredMove}
                 />
 
                 <ControlHints
-                    hints={['点击按钮旋转各层', '拖拽空白处旋转视角', '还原六面颜色即可胜利']}
+                    hints={['点击按钮旋转各层', '拖拽魔方旋转视角', '还原六面颜色即可胜利']}
                     className="text-violet-300/50 text-xs"
                 />
             </div>

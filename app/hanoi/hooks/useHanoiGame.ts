@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { HanoiState, HanoiStats, PegIndex, GameStatus } from '../types/game';
+import { HanoiState, ModeStats, PegIndex, GameStatus } from '../types/game';
 import { HANOI_CONFIG, STORAGE_KEY } from '../constants/config';
 
 /** 获取初始状态 */
@@ -24,12 +24,14 @@ function getInitialState(level: number): HanoiState {
         status: 'playing' as GameStatus,
         selectedPeg: null,
         level,
+        mode: 'classic' as const,
+        pegCount: 3,
     };
 }
 
 /** 从 localStorage 加载统计 */
-function loadStats(): HanoiStats {
-    const fallback: HanoiStats = { unlockedLevels: 3, bestMoves: {}, totalGames: 0, totalTime: 0 };
+function loadStats(): ModeStats {
+    const fallback: ModeStats = { unlockedLevels: 3, bestMoves: {}, totalGames: 0, totalTime: 0 };
     if (typeof window === 'undefined') return fallback;
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -42,7 +44,7 @@ function loadStats(): HanoiStats {
 }
 
 /** 保存统计到 localStorage */
-function saveStats(stats: HanoiStats): void {
+function saveStats(stats: ModeStats): void {
     if (typeof window === 'undefined') return;
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
@@ -63,7 +65,7 @@ export function getOptimalMoves(level: number): number {
 
 export function useHanoiGame() {
     const [state, setState] = useState<HanoiState>(() => getInitialState(3));
-    const [stats, setStats] = useState<HanoiStats>(loadStats);
+    const [stats, setStats] = useState<ModeStats>(loadStats);
     const [elapsedTime, setElapsedTime] = useState(0);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 

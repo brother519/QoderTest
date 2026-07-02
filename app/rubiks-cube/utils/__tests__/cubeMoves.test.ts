@@ -15,7 +15,9 @@ import {
 } from '../cubeMoves';
 import { FaceKey, Move } from '../../types/game';
 
-const ALL_MOVES: Move[] = ['R', 'Ri', 'L', 'Li', 'U', 'Ui', 'D', 'Di', 'F', 'Fi', 'B', 'Bi'];
+const ALL_MOVES: Move[] = [
+    'R', 'Ri', 'L', 'Li', 'U', 'Ui', 'D', 'Di', 'F', 'Fi', 'B', 'Bi', 'M', 'Mi', 'E', 'Ei', 'S', 'Si',
+];
 const FACE_KEYS: FaceKey[] = ['U', 'D', 'F', 'B', 'L', 'R'];
 
 describe('cubeMoves', () => {
@@ -56,6 +58,9 @@ describe('cubeMoves', () => {
             ['D', 'Di'],
             ['F', 'Fi'],
             ['B', 'Bi'],
+            ['M', 'Mi'],
+            ['E', 'Ei'],
+            ['S', 'Si'],
         ] as [Move, Move][])('先 %s 再 %s 回到还原态', (move, inverse) => {
             const cube = createSolvedCube();
             const next = applyMove(applyMove(cube, move), inverse);
@@ -136,6 +141,118 @@ describe('cubeMoves', () => {
             expect(next.R[6]).toBe('Y');
             expect(next.R[3]).toBe('Y');
             expect(next.R[0]).toBe('Y');
+        });
+    });
+
+    describe('L move sticker correctness', () => {
+        it('L rotation moves U left column to F, F left column to D, B right column to U', () => {
+            const cube = createSolvedCube();
+            const next = applyMove(cube, 'L');
+
+            // U color (W) flows to F's left column.
+            expect(next.F[0]).toBe('W');
+            expect(next.F[3]).toBe('W');
+            expect(next.F[6]).toBe('W');
+
+            // F color (R) flows to D's left column.
+            expect(next.D[0]).toBe('R');
+            expect(next.D[3]).toBe('R');
+            expect(next.D[6]).toBe('R');
+
+            // B color (O) flows to U's left column (reversed indices).
+            expect(next.U[0]).toBe('O');
+            expect(next.U[3]).toBe('O');
+            expect(next.U[6]).toBe('O');
+        });
+    });
+
+    describe('U move sticker correctness', () => {
+        it('U rotation moves R to F, B to R, L to B, F to L', () => {
+            const cube = createSolvedCube();
+            const next = applyMove(cube, 'U');
+
+            // F color (R=red) flows to L's top row.
+            expect(next.L[2]).toBe('R');
+            expect(next.L[1]).toBe('R');
+            expect(next.L[0]).toBe('R');
+
+            // R color (G=green) flows to F's top row.
+            expect(next.F[0]).toBe('G');
+            expect(next.F[1]).toBe('G');
+            expect(next.F[2]).toBe('G');
+
+            // B color (O=orange) flows to R's top row.
+            expect(next.R[2]).toBe('O');
+            expect(next.R[1]).toBe('O');
+            expect(next.R[0]).toBe('O');
+        });
+    });
+
+    describe('D move sticker correctness', () => {
+        it('D rotation moves F bottom to R, R to B, B to L, L to F', () => {
+            const cube = createSolvedCube();
+            const next = applyMove(cube, 'D');
+
+            // F color (R=red) flows to R's bottom row (reversed).
+            expect(next.R[8]).toBe('R');
+            expect(next.R[7]).toBe('R');
+            expect(next.R[6]).toBe('R');
+
+            // R color (G=green) flows to B's bottom row (reversed).
+            expect(next.B[8]).toBe('G');
+            expect(next.B[7]).toBe('G');
+            expect(next.B[6]).toBe('G');
+
+            // L color (B=blue) flows to F's bottom row (reversed).
+            expect(next.F[6]).toBe('B');
+            expect(next.F[7]).toBe('B');
+            expect(next.F[8]).toBe('B');
+        });
+    });
+
+    describe('F move sticker correctness', () => {
+        it('F rotation moves U bottom to R left col, L right col to U bottom', () => {
+            const cube = createSolvedCube();
+            const next = applyMove(cube, 'F');
+
+            // U color (W) flows to R's left column.
+            expect(next.R[2]).toBe('W');
+            expect(next.R[5]).toBe('W');
+            expect(next.R[8]).toBe('W');
+
+            // L color (B=blue) flows to U's bottom row.
+            expect(next.U[6]).toBe('B');
+            expect(next.U[7]).toBe('B');
+            expect(next.U[8]).toBe('B');
+        });
+    });
+
+    describe('slice moves sticker correctness', () => {
+        it('M rotation (clockwise) moves U color to F face', () => {
+            const cube = createSolvedCube();
+            const next = applyMove(cube, 'M');
+
+            expect(next.F[1]).toBe('W');
+            expect(next.F[4]).toBe('W');
+            expect(next.F[7]).toBe('W');
+        });
+
+        it('E rotation (clockwise) moves F color to R face', () => {
+            const cube = createSolvedCube();
+            const next = applyMove(cube, 'E');
+
+            expect(next.R[3]).toBe('R');
+            expect(next.R[4]).toBe('R');
+            expect(next.R[5]).toBe('R');
+        });
+
+        it('S rotation (clockwise) moves U color to R face', () => {
+            const cube = createSolvedCube();
+            const next = applyMove(cube, 'S');
+
+            expect(next.R[1]).toBe('W');
+            expect(next.R[4]).toBe('W');
+            expect(next.R[7]).toBe('W');
         });
     });
 

@@ -9,14 +9,19 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
-import { CubeState, Move, ViewAngles } from '../types/game';
+import { CubeState, Move, MoveKey, ViewAngles } from '../types/game';
 import {
     CUBELET_OFFSET,
+    CUBELET_HALF_SIZE,
+    DRAG_SENSITIVITY,
     PERSPECTIVE,
     ROTATION_DURATION,
+    SCENE_PADDING,
 } from '../constants/config';
 import { computeCubeletRenderData, getLayerCubelets, getLayerRotation } from '../utils/cubeRender';
 import { Cubelet } from './Cubelet';
+import { RotationArrows } from './RotationArrows';
+import { applyScreenRotation, matrixToCSS } from '../utils/viewMatrix';
 
 interface CubeSceneProps {
     /** 当前魔方状态 */
@@ -27,6 +32,8 @@ interface CubeSceneProps {
     isAnimating: boolean;
     /** 当前待执行的操作 */
     pendingMove: Move | null;
+    /** 当前 hover 的操作（用于预览高亮） */
+    hoveredMove?: Move | null;
     /** 动画结束回调 */
     onAnimationEnd: () => void;
     /** 视角变化回调 */
@@ -36,8 +43,8 @@ interface CubeSceneProps {
 /**
  * 解析操作字符串
  */
-function parseMove(move: Move): { face: 'U' | 'D' | 'F' | 'B' | 'L' | 'R'; direction: 'CW' | 'CCW' } {
-    const face = move.charAt(0) as 'U' | 'D' | 'F' | 'B' | 'L' | 'R';
+function parseMove(move: Move): { face: MoveKey; direction: 'CW' | 'CCW' } {
+    const face = move.charAt(0) as MoveKey;
     const direction = move.length === 2 ? 'CCW' : 'CW';
     return { face, direction };
 }
@@ -54,6 +61,7 @@ export function CubeScene({
     viewAngles,
     isAnimating,
     pendingMove,
+    hoveredMove,
     onAnimationEnd,
     onViewChange,
 }: CubeSceneProps) {
@@ -61,6 +69,9 @@ export function CubeScene({
     const animationGroupRef = useRef<HTMLDivElement>(null);
 
     const layerPositions = pendingMove ? getLayerCubelets(parseMove(pendingMove).face) : [];
+    const hoveredLayerPositions = hoveredMove ? getLayerCubelets(parseMove(hoveredMove).face) : [];
+
+
 
     /**
      * 启动层旋转动画
@@ -76,6 +87,8 @@ export function CubeScene({
         // 先重置为 0 度（无过渡）
         el.style.transition = 'none';
         el.style.transform = `rotate${axis.toUpperCase()}(0deg)`;
+        // Force reflow so the reset is applied before starting the next transition.
+        void el.offsetHeight;
 
         // 下一帧设置目标角度，触发 transition
         const frame = requestAnimationFrame(() => {
@@ -94,46 +107,48 @@ export function CubeScene({
     }, [onAnimationEnd]);
 
     /**
-     * 视角拖拽逻辑
+     * Trackball drag logic — uses incremental rotation to avoid gimbal lock.
      */
     const dragRef = useRef({
         isDragging: false,
-        startX: 0,
-        startY: 0,
-        startRx: 0,
-        startRy: 0,
+        lastX: 0,
+        lastY: 0,
+        startMatrix: viewAngles.matrix,
     });
 
     const handlePointerDown = useCallback(
         (e: React.PointerEvent) => {
-            // 只有点击空白处（非贴纸）才触发视角旋转
-            const target = e.target as HTMLElement;
-            if (target.dataset.face) return;
-
+            // Clicking anywhere on the scene starts view rotation drag.
             dragRef.current = {
                 isDragging: true,
-                startX: e.clientX,
-                startY: e.clientY,
-                startRx: viewAngles.rx,
-                startRy: viewAngles.ry,
+                lastX: e.clientX,
+                lastY: e.clientY,
+                startMatrix: viewAngles.matrix,
             };
             (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
         },
-        [viewAngles.rx, viewAngles.ry]
+        [viewAngles.matrix]
     );
 
     const handlePointerMove = useCallback(
         (e: React.PointerEvent) => {
             if (!dragRef.current.isDragging) return;
 
-            const dx = e.clientX - dragRef.current.startX;
-            const dy = e.clientY - dragRef.current.startY;
+            const dx = e.clientX - dragRef.current.lastX;
+            const dy = e.clientY - dragRef.current.lastY;
+            dragRef.current.lastX = e.clientX;
+            dragRef.current.lastY = e.clientY;
 
-            // 水平拖动影响 ry，垂直拖动影响 rx
-            onViewChange({
-                rx: dragRef.current.startRx - dy * 0.5,
-                ry: dragRef.current.startRy + dx * 0.5,
-            });
+            const deltaRx = -dy * DRAG_SENSITIVITY;
+            const deltaRy = dx * DRAG_SENSITIVITY;
+
+            // Pre-multiply incremental rotation onto the current matrix.
+            dragRef.current.startMatrix = applyScreenRotation(
+                dragRef.current.startMatrix,
+                deltaRx,
+                deltaRy
+            );
+            onViewChange({ matrix: dragRef.current.startMatrix });
         },
         [onViewChange]
     );
@@ -155,29 +170,34 @@ export function CubeScene({
     // 场景整体尺寸：3 * CUBELET_OFFSET
     const sceneSize = CUBELET_OFFSET * 3;
 
+    // Cube grid center offset: cubelets positioned from (0,0) need this shift to center
+    const centerOffset = sceneSize / 2 - CUBELET_HALF_SIZE;
+
     return (
         <div
             style={{
-                width: sceneSize + 280,
-                height: sceneSize + 280,
+                width: sceneSize + SCENE_PADDING,
+                height: sceneSize + SCENE_PADDING,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
+                position: 'relative',
+                cursor: 'grab',
+                touchAction: 'none',
             }}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
         >
+
             <div
                 style={{
                     width: sceneSize,
                     height: sceneSize,
                     perspective: PERSPECTIVE,
-                    cursor: 'grab',
-                    touchAction: 'none',
                 }}
-                onPointerDown={handlePointerDown}
-                onPointerMove={handlePointerMove}
-                onPointerUp={handlePointerUp}
-                onPointerCancel={handlePointerUp}
             >
             <div
                 style={{
@@ -185,7 +205,8 @@ export function CubeScene({
                     height: '100%',
                     position: 'relative',
                     transformStyle: 'preserve-3d',
-                    transform: `rotateX(${viewAngles.rx}deg) rotateY(${viewAngles.ry}deg)`,
+                    transformOrigin: `${CUBELET_HALF_SIZE}px ${CUBELET_HALF_SIZE}px ${CUBELET_HALF_SIZE}px`,
+                    transform: `translate(${centerOffset}px, ${centerOffset}px) ${matrixToCSS(viewAngles.matrix)}`,
                 }}
             >
                 {/* 主容器中渲染 27 个 cubelet，动画层中的隐藏 */}
@@ -193,16 +214,20 @@ export function CubeScene({
                     const isInLayer = layerPositions.some((pos) =>
                         positionsEqual(cubelet.position, pos as [number, number, number])
                     );
+                    const isHovered = hoveredLayerPositions.some((pos) =>
+                        positionsEqual(cubelet.position, pos as [number, number, number])
+                    );
                     return (
                         <Cubelet
                             key={cubelet.position.join(',')}
                             data={cubelet}
                             hidden={isAnimating && isInLayer}
+                            highlight={isHovered}
                         />
                     );
                 })}
 
-                {/* 临时动画组：仅动画期间渲染 */}
+                {/* Animation group: rendered only during layer rotation */}
                 {isAnimating && pendingMove && (
                     <div
                         ref={animationGroupRef}
@@ -211,6 +236,7 @@ export function CubeScene({
                             position: 'absolute',
                             inset: 0,
                             transformStyle: 'preserve-3d',
+                            transformOrigin: '0px 0px 0px',
                             transform: 'rotateX(0deg)',
                         }}
                     >
@@ -219,6 +245,10 @@ export function CubeScene({
                         ))}
                     </div>
                 )}
+
+                {/* Hover 旋转方向箭头 */}
+                <RotationArrows move={hoveredMove} />
+
             </div>
             </div>
         </div>

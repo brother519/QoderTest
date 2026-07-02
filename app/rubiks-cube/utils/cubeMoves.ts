@@ -6,7 +6,7 @@
  * @module rubiks-cube/utils/cubeMoves
  */
 
-import { CubeState, Face, FaceColor, FaceKey, Move } from '../types/game';
+import { CubeState, Face, FaceColor, FaceKey, Move, MoveKey, SliceKey } from '../types/game';
 import { SCRAMBLE_COUNT, SOLVED_CUBE } from '../constants/config';
 
 /** 面顺时针旋转 90° 的索引映射 */
@@ -25,7 +25,7 @@ function rotateFaceCCW(face: Face): Face {
     return CCW_MAP.map((i) => face[i]);
 }
 
-/** 边缘循环规则：每个面顺时针时，四个相邻面上被影响的索引 */
+/** 边缘循环规则：每个层顺时针时，四个相邻面上被影响的索引 */
 interface EdgeCycle {
     /** 相邻面 */
     face: FaceKey;
@@ -33,8 +33,8 @@ interface EdgeCycle {
     indices: [number, number, number];
 }
 
-/** 六个面的顺时针边缘循环定义 */
-const EDGE_CYCLES: Record<FaceKey, EdgeCycle[]> = {
+/** 所有可旋转层的顺时针边缘循环定义 */
+const EDGE_CYCLES: Record<FaceKey | SliceKey, EdgeCycle[]> = {
     R: [
         // Ordered so the edge flow is U->B->D->F->U (physical clockwise),
         // matching getLayerRotation('R','CW') = rotateX(+90deg).
@@ -48,20 +48,20 @@ const EDGE_CYCLES: Record<FaceKey, EdgeCycle[]> = {
     L: [
         { face: 'F', indices: [0, 3, 6] },
         { face: 'U', indices: [0, 3, 6] },
-        { face: 'B', indices: [2, 5, 8] },
+        { face: 'B', indices: [8, 5, 2] },
         { face: 'D', indices: [0, 3, 6] },
     ],
     U: [
         { face: 'F', indices: [0, 1, 2] },
-        { face: 'R', indices: [0, 1, 2] },
-        { face: 'B', indices: [2, 1, 0] },
+        { face: 'R', indices: [2, 1, 0] },
+        { face: 'B', indices: [0, 1, 2] },
         { face: 'L', indices: [2, 1, 0] },
     ],
     D: [
         { face: 'F', indices: [6, 7, 8] },
         { face: 'L', indices: [8, 7, 6] },
         { face: 'B', indices: [6, 7, 8] },
-        { face: 'R', indices: [6, 7, 8] },
+        { face: 'R', indices: [8, 7, 6] },
     ],
     F: [
         // Ordered for physical clockwise (U->R->D->L->U), matching
@@ -78,6 +78,30 @@ const EDGE_CYCLES: Record<FaceKey, EdgeCycle[]> = {
         { face: 'R', indices: [0, 3, 6] },
         { face: 'D', indices: [8, 7, 6] },
         { face: 'L', indices: [8, 5, 2] },
+    ],
+    // Middle slice: between L and R, parallel to L. CW from L-side view.
+    // Cycle order yields actual flow U->F->D->B->U.
+    M: [
+        { face: 'U', indices: [1, 4, 7] },
+        { face: 'B', indices: [7, 4, 1] },
+        { face: 'D', indices: [1, 4, 7] },
+        { face: 'F', indices: [1, 4, 7] },
+    ],
+    // Equator slice: between U and D, parallel to D. CW from D-side view.
+    // Cycle order yields actual flow F->R->B->L->F.
+    E: [
+        { face: 'F', indices: [3, 4, 5] },
+        { face: 'L', indices: [5, 4, 3] },
+        { face: 'B', indices: [3, 4, 5] },
+        { face: 'R', indices: [5, 4, 3] },
+    ],
+    // Standing slice: between F and B, parallel to F. CW from F-side view.
+    // Cycle order yields actual flow U->R->D->L->U.
+    S: [
+        { face: 'U', indices: [3, 4, 5] },
+        { face: 'L', indices: [7, 4, 1] },
+        { face: 'D', indices: [5, 4, 3] },
+        { face: 'R', indices: [1, 4, 7] },
     ],
 };
 
@@ -98,14 +122,21 @@ function cloneCubeState(state: CubeState): CubeState {
 /**
  * 应用单个顺时针操作
  */
-function applyClockwiseMove(state: CubeState, face: FaceKey): CubeState {
+function applyClockwiseMove(state: CubeState, moveKey: MoveKey): CubeState {
     const next = cloneCubeState(state);
 
-    // 1. 旋转操作面本身
-    next[face] = rotateFaceCW(state[face]);
+    // 1. Rotate the operating face itself (only outer layers have a center face).
+    //    The face rotation function applies the INVERSE of the forward permutation.
+    //    R, L have forward=CW_MAP → inverse=CCW_MAP → use rotateFaceCCW.
+    //    U, D, F, B have forward=CCW_MAP → inverse=CW_MAP → use rotateFaceCW.
+    if (moveKey === 'R' || moveKey === 'L') {
+        next[moveKey as FaceKey] = rotateFaceCCW(state[moveKey as FaceKey]);
+    } else if (moveKey.length === 1 && 'UDFB'.includes(moveKey)) {
+        next[moveKey as FaceKey] = rotateFaceCW(state[moveKey as FaceKey]);
+    }
 
     // 2. 循环相邻面边缘贴纸
-    const cycle = EDGE_CYCLES[face];
+    const cycle = EDGE_CYCLES[moveKey];
     const temp: FaceColor[] = cycle[0].indices.map((i) => state[cycle[0].face][i]);
 
     for (let i = 0; i < cycle.length - 1; i++) {
@@ -141,8 +172,8 @@ export function createSolvedCube(): CubeState {
 /**
  * 解析操作字符串
  */
-function parseMove(move: Move): { face: FaceKey; isInverse: boolean } {
-    const face = move.charAt(0) as FaceKey;
+function parseMove(move: Move): { face: MoveKey; isInverse: boolean } {
+    const face = move.charAt(0) as MoveKey;
     const isInverse = move.length === 2 && move.charAt(1) === 'i';
     return { face, isInverse };
 }
