@@ -25,6 +25,7 @@ test_data/
 # test / build outputs
 coverage/
 tsconfig.tsbuildinfo
+tmp/
 
 # tool sandbox outputs
 tool/WriteFile/
@@ -51,3 +52,6 @@ conversation-*.txt
 world.ts
 附件.pdf
 2026-04-03-*mcp.txt
+
+# git worktrees
+.worktrees/
