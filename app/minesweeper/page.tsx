@@ -51,7 +51,7 @@ export default function MinesweeperPage() {
           </h1>
         </div>
 
-        <div className="relative z-10 flex flex-col min-h-0 gap-3">
+        <div className="relative z-10 flex flex-col min-h-0 gap-2">
           <Controls
             difficultyKey={game.difficultyKey}
             remainingMines={game.remainingMines}
@@ -64,7 +64,7 @@ export default function MinesweeperPage() {
 
           <StatsPanel stats={game.stats} />
 
-          <div className="flex-1 min-h-0 rounded-[32px] border border-cyan-400/10 bg-white/[0.03] backdrop-blur-sm px-3 py-4 md:px-5 md:py-6 shadow-[0_24px_80px_rgba(2,12,27,0.45)] overflow-hidden">
+          <div className="flex-1 min-h-0 rounded-[32px] border border-cyan-400/10 bg-white/[0.03] backdrop-blur-sm px-3 py-2 md:px-5 md:py-3 shadow-[0_24px_80px_rgba(2,12,27,0.45)] flex flex-col">
             <Board
               board={game.board}
               difficulty={game.difficulty}
