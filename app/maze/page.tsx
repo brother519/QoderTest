@@ -11,14 +11,14 @@ import { GamePageHeader } from '@/lib/components/GamePageHeader';
 import { ControlHints } from '@/lib/components/ControlHints';
 import { GameOverlay } from '@/lib/components/GameOverlay';
 import { useKeyboard } from '@/lib/hooks/useKeyboard';
-import { useMaze } from './hooks/useMaze';
+import { useMazeGame } from './hooks/useMazeGame';
 import { MazeBoard } from './components/MazeBoard';
 import { GameControls } from './components/GameControls';
 import { CELL_SIZES } from './constants/config';
 import { MazeDirection } from './types/game';
 
 export default function MazePage() {
-    const game = useMaze('easy');
+    const game = useMazeGame('easy');
 
     // Keyboard controls for movement and restart
     useKeyboard(

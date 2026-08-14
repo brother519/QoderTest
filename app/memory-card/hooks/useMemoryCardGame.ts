@@ -48,7 +48,7 @@ function saveBestRecord(difficulty: Difficulty, record: BestRecord): void {
     }
 }
 
-export interface UseMemoryCardReturn {
+export interface UseMemoryCardGameReturn {
     cards: CardItem[];
     config: GameConfig;
     moves: number;
@@ -65,7 +65,7 @@ export interface UseMemoryCardReturn {
     setDifficulty: (d: Difficulty) => void;
 }
 
-export function useMemoryCard(initialDifficulty: Difficulty = 'easy'): UseMemoryCardReturn {
+export function useMemoryCardGame(initialDifficulty: Difficulty = 'easy'): UseMemoryCardGameReturn {
     const [difficulty, setDifficultyState] = useState<Difficulty>(initialDifficulty);
     const [cards, setCards] = useState<CardItem[]>([]);
     const [moves, setMoves] = useState(0);

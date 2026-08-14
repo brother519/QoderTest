@@ -5,7 +5,7 @@
  * - 高亮卡牌的显示与 3 秒后自动清除
  * - 计时器的生命周期管理（防止内存泄漏）
  *
- * @module link-match/hooks/useHintManager
+ * @module link-match/hooks/useLinkMatchHint
  */
 
 'use client';
@@ -13,8 +13,8 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Card } from '../types/game';
 
-/** useHintManager Hook 的返回值类型 */
-interface UseHintManagerReturn {
+/** useLinkMatchHint Hook 的返回值类型 */
+interface UseLinkMatchHintReturn {
   /** 当前被提示高亮的卡牌列表 */
   hintedCards: Card[];
   /** 显示提示高亮，3 秒后自动消失 */
@@ -28,7 +28,7 @@ interface UseHintManagerReturn {
  *
  * @returns 提示状态与控制方法
  */
-export function useHintManager(): UseHintManagerReturn {
+export function useLinkMatchHint(): UseLinkMatchHintReturn {
   /** 当前被提示高亮的卡牌对 */
   const [hintedCards, setHintedCards] = useState<Card[]>([]);
   /** 提示高亮的自动清除计时器引用 */

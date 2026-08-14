@@ -3,7 +3,7 @@
  *
  * 管理游戏状态、输入处理、计时器、冲突检测和撤销。
  *
- * @module sudoku/hooks/useSudoku
+ * @module sudoku/hooks/useSudokuGame
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -82,7 +82,7 @@ function isBoardComplete(board: SudokuCell[][]): boolean {
     return true;
 }
 
-export function useSudoku(difficulty: SudokuDifficulty) {
+export function useSudokuGame(difficulty: SudokuDifficulty) {
     const [board, setBoard] = useState<SudokuCell[][]>(() => createBoard(Array(9).fill(Array(9).fill(0))));
     const [solution, setSolution] = useState<number[][]>(() => Array(9).fill(Array(9).fill(0)));
     const [status, setStatus] = useState<SudokuGameStatus>('idle');

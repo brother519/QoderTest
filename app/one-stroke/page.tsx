@@ -1,7 +1,7 @@
 /**
  * 一笔画游戏主页面
  *
- * 整合 useOneStroke Hook 与所有 UI 组件。
+ * 整合 useOneStrokeGame Hook 与所有 UI 组件。
  * 访问路径：/one-stroke
  *
  * @module one-stroke/page
@@ -9,7 +9,7 @@
 
 'use client';
 
-import { useOneStroke } from './hooks/useOneStroke';
+import { useOneStrokeGame } from './hooks/useOneStrokeGame';
 import { GameBoard } from './components/GameBoard';
 import { LevelSelect } from './components/LevelSelect';
 import { GameControls } from './components/GameControls';
@@ -18,7 +18,7 @@ import { GameOverlay } from '@/lib/components/GameOverlay';
 import { LEVELS } from './constants/config';
 
 export default function OneStrokePage() {
-    const game = useOneStroke();
+    const game = useOneStrokeGame();
     const { state, handleNodeClick, undo, reset, goToLevel, toggleLevelSelect, nextLevel } = game;
     const isStuck = (game as unknown as { isStuck: boolean }).isStuck;
 

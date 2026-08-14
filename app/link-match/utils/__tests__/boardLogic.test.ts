@@ -13,6 +13,7 @@ import {
   reshuffleBoard,
 } from '../boardLogic';
 import { DEFAULT_CONFIG } from '../../constants/config';
+import { GameConfig } from '../../types/game';
 
 describe('Link Match Board Logic', () => {
   describe('initBoard', () => {

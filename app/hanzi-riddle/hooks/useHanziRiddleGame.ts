@@ -51,7 +51,7 @@ export interface HanziRiddleState {
     resetGame: () => void;
 }
 
-export function useHanziRiddle(): HanziRiddleState {
+export function useHanziRiddleGame(): HanziRiddleState {
     const [highScore, updateHighScore] = useHighScore(HIGH_SCORE_KEY);
     const [recentChars] = useState<Set<string>>(() => new Set());
 

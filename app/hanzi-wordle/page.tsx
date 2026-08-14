@@ -10,7 +10,7 @@
 'use client';
 
 import { GameLayout } from '@/lib/components/GameLayout';
-import { useHanziWordle } from './hooks/useHanziWordle';
+import { useHanziWordleGame } from './hooks/useHanziWordleGame';
 import { GuessGrid } from './components/GuessGrid';
 import { HanziKeyboard } from './components/HanziKeyboard';
 import { GameStatusBar } from './components/GameStatus';
@@ -26,7 +26,7 @@ export default function HanziWordlePage() {
         removeChar,
         submitGuess,
         resetGame,
-    } = useHanziWordle();
+    } = useHanziWordleGame();
 
     const isGameOver = gameStatus !== 'playing';
 

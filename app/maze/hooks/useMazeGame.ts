@@ -5,7 +5,7 @@
  * with Recursive Backtracker (DFS) algorithm and player movement
  * with wall collision detection.
  *
- * @module maze/hooks/useMaze
+ * @module maze/hooks/useMazeGame
  */
 
 'use client';
@@ -296,7 +296,7 @@ function mazeReducer(state: MazeState, action: MazeAction): MazeState {
 
 // ─── Hook ───────────────────────────────────────────────────────────────────
 
-export function useMaze(initialDifficulty: Difficulty = 'easy') {
+export function useMazeGame(initialDifficulty: Difficulty = 'easy') {
     const [state, dispatch] = useReducer(
         mazeReducer,
         initialDifficulty,

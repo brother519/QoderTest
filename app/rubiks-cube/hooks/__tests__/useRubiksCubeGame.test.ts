@@ -1,10 +1,10 @@
 import { renderHook, act } from '@testing-library/react';
-import { useRubiksCube } from '../useRubiksCube';
+import { useRubiksCubeGame } from '../useRubiksCubeGame';
 import { isSolved } from '../../utils/cubeMoves';
 
-describe('useRubiksCube scramble animation', () => {
+describe('useRubiksCubeGame scramble animation', () => {
     it('scramble plays moves one by one and ends with a non-solved state', () => {
-        const { result } = renderHook(() => useRubiksCube());
+        const { result } = renderHook(() => useRubiksCubeGame());
 
         act(() => {
             result.current.scramble();
@@ -34,7 +34,7 @@ describe('useRubiksCube scramble animation', () => {
     });
 
     it('reset interrupts an in-progress scramble', () => {
-        const { result } = renderHook(() => useRubiksCube());
+        const { result } = renderHook(() => useRubiksCubeGame());
 
         act(() => {
             result.current.scramble();

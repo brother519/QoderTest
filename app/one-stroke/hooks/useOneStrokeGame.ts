@@ -3,7 +3,7 @@
  *
  * 管理游戏状态、节点点击交互、撤销/重置、关卡解锁与持久化。
  *
- * @module one-stroke/hooks/useOneStroke
+ * @module one-stroke/hooks/useOneStrokeGame
  */
 
 'use client';
@@ -35,7 +35,7 @@ function getUntraversedEdgeBetween(
 
 // ─── Hook ───────────────────────────────────────────────────────────────────
 
-export interface UseOneStrokeReturn {
+export interface UseOneStrokeGameReturn {
     state: GameState;
     /** 点击节点 */
     handleNodeClick: (nodeId: number) => void;
@@ -82,7 +82,7 @@ function buildInitialState(levelIndex: number, unlockedLevels: number): GameStat
     };
 }
 
-export function useOneStroke(): UseOneStrokeReturn {
+export function useOneStrokeGame(): UseOneStrokeGameReturn {
     const [state, setState] = useState<GameState>(() => {
         const unlocked = loadUnlocked();
         return buildInitialState(0, unlocked);
@@ -251,5 +251,5 @@ export function useOneStroke(): UseOneStrokeReturn {
         toggleLevelSelect,
         nextLevel,
         ...(isStuck ? { isStuck: true } : { isStuck: false }),
-    } as UseOneStrokeReturn & { isStuck: boolean };
+    } as UseOneStrokeGameReturn & { isStuck: boolean };
 }

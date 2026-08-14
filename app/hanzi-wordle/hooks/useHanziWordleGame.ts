@@ -4,7 +4,7 @@
  * Manages game state including the answer, submitted guesses,
  * current input buffer, game status, and keyboard character statuses.
  *
- * @module hanzi-wordle/hooks/useHanziWordle
+ * @module hanzi-wordle/hooks/useHanziWordleGame
  */
 
 import { useCallback, useState } from 'react';
@@ -70,7 +70,7 @@ export interface HanziWordleState {
     resetGame: () => void;
 }
 
-export function useHanziWordle(): HanziWordleState {
+export function useHanziWordleGame(): HanziWordleState {
     const [answer, setAnswer] = useState<string>(() => pickWord());
     const [guesses, setGuesses] = useState<Guess[]>([]);
     const [currentInput, setCurrentInput] = useState<string[]>([]);

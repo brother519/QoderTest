@@ -10,11 +10,12 @@
 
 import { renderHook, act } from '@testing-library/react';
 import { useSnakeGame } from '../useSnakeGame';
-import { GameConfig } from '../types/game';
+import { GameConfig } from '../../types/game';
 
 const mockConfig: GameConfig = {
   cols: 10,
   rows: 10,
+  gridSize: 20,
   baseInterval: 200,
   minInterval: 50,
   speedStep: 10,

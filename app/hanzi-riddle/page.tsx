@@ -1,7 +1,7 @@
 'use client';
 
 import { GameLayout } from '@/lib/components/GameLayout';
-import { useHanziRiddle } from './hooks/useHanziRiddle';
+import { useHanziRiddleGame } from './hooks/useHanziRiddleGame';
 import { CluePanel } from './components/CluePanel';
 import { CharacterInput } from './components/CharacterInput';
 import { ScoreBoard } from './components/ScoreBoard';
@@ -22,7 +22,7 @@ export default function HanziRiddlePage() {
         guessCharacter,
         nextRound,
         resetGame,
-    } = useHanziRiddle();
+    } = useHanziRiddleGame();
 
     const isRoundOver = roundStatus !== 'playing';
     const lastPoints =

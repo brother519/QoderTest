@@ -5,7 +5,7 @@
  *
  * 管理密码生成、猜测验证、游戏状态转换等核心逻辑。
  *
- * @module guess-number/hooks/useGuessNumber
+ * @module guess-number/hooks/useGuessNumberGame
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -63,7 +63,7 @@ function saveBestScore(difficulty: Difficulty, score: number): void {
     }
 }
 
-export interface UseGuessNumberReturn {
+export interface UseGuessNumberGameReturn {
     status: GuessNumberStatus;
     history: GuessResult[];
     attempts: number;
@@ -79,7 +79,7 @@ export interface UseGuessNumberReturn {
     setDifficulty: (d: Difficulty) => void;
 }
 
-export function useGuessNumber(initialDifficulty: Difficulty = 'medium'): UseGuessNumberReturn {
+export function useGuessNumberGame(initialDifficulty: Difficulty = 'medium'): UseGuessNumberGameReturn {
     const [difficulty, setDifficultyState] = useState<Difficulty>(initialDifficulty);
     const config = DIFFICULTY_CONFIGS[difficulty];
 

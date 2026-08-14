@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { Cell, Position, FlowFreeStatus, UseFlowFreeReturn, FlowPuzzle } from '../types/game';
+import { Cell, Position, FlowFreeStatus, UseFlowFreeGameReturn, FlowPuzzle } from '../types/game';
 import { getDifficultyForLevel, BASE_LEVEL_SCORE, CLEAR_PENALTY } from '../constants/config';
 import { generatePuzzle, validateSolution } from '../utils/generator';
 import { useHighScore } from '@/lib/hooks/useHighScore';
@@ -45,7 +45,7 @@ function createBoard(puzzle: FlowPuzzle): Cell[][] {
   return board;
 }
 
-export function useFlowFree(): UseFlowFreeReturn {
+export function useFlowFreeGame(): UseFlowFreeGameReturn {
   const [board, setBoard] = useState<Cell[][]>([]);
   const [paths, setPaths] = useState<Map<number, Position[]>>(new Map());
   const [status, setStatus] = useState<FlowFreeStatus>('idle');

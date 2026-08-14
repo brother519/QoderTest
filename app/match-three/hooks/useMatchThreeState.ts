@@ -3,7 +3,7 @@
  *
  * 管理游戏分数、步数、状态和胜利/失败判定。
  *
- * @module app/match-three/hooks/useGameState
+ * @module app/match-three/hooks/useMatchThreeState
  */
 
 'use client';
@@ -19,7 +19,7 @@ import type {
 
 import { SCORE_CONFIG } from '../constants/config';
 
-export interface UseGameStateReturn {
+export interface UseMatchThreeStateReturn {
   status: GameStatus;
   score: number;
   movesLeft: number;
@@ -41,7 +41,7 @@ function inferLevel(config: LevelConfig): GameLevel {
   return 'easy';
 }
 
-export function useGameState(config: LevelConfig): UseGameStateReturn {
+export function useMatchThreeState(config: LevelConfig): UseMatchThreeStateReturn {
   const [status, setStatus] = useState<GameStatus>('idle');
   const [score, setScore] = useState(0);
   const [movesLeft, setMovesLeft] = useState(config.moves);

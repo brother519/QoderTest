@@ -11,7 +11,7 @@
 import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
 import { GamePageHeader } from '@/lib/components/GamePageHeader';
-import { use2048Game } from './hooks/use2048Game';
+import { usePuzzle2048Game } from './hooks/usePuzzle2048Game';
 import { Board } from './components/Board';
 import { ScorePanel } from './components/ScorePanel';
 import { DEFAULT_CONFIG } from './constants/config';
@@ -35,7 +35,7 @@ const KEY_MAP: Record<string, string> = {
 };
 
 export default function Puzzle2048Page() {
-    const game = use2048Game(DEFAULT_CONFIG);
+    const game = usePuzzle2048Game(DEFAULT_CONFIG);
 
     useKeyboard(KEY_MAP, {
         onKeyDown: (action) => {

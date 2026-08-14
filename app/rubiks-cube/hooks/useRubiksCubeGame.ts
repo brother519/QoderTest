@@ -1,13 +1,13 @@
 /**
  * 魔方游戏核心逻辑 Hook
  *
- * @module rubiks-cube/hooks/useRubiksCube
+ * @module rubiks-cube/hooks/useRubiksCubeGame
  */
 
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CubeState, Move, UseRubiksCubeReturn, ViewAngles } from '../types/game';
+import { CubeState, Move, UseRubiksCubeGameReturn, ViewAngles } from '../types/game';
 import {
     applyMove,
     createSolvedCube,
@@ -34,7 +34,7 @@ function calculateScore(moves: number): number {
 /**
  * 魔方游戏 Hook
  */
-export function useRubiksCube(): UseRubiksCubeReturn {
+export function useRubiksCubeGame(): UseRubiksCubeGameReturn {
     const [cubeState, setCubeState] = useState<CubeState>(createSolvedCube);
     const [status, setStatus] = useState<GameStatus>('idle');
     const [moves, setMoves] = useState(0);

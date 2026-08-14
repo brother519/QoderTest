@@ -1,7 +1,7 @@
 /**
  * 飞机大战游戏主页面
  *
- * 整合 useAircraftGame Hook 与所有 UI 组件，处理键盘事件（按下/抬起）。
+ * 整合 useAircraftBattleGame Hook 与所有 UI 组件，处理键盘事件（按下/抬起）。
  * 包含游戏画布、控制面板、遮罩层和操作提示。
  * 访问路径：/aircraft-battle
  *
@@ -10,7 +10,7 @@
 
 'use client';
 
-import { useAircraftGame } from './hooks/useAircraftGame';
+import { useAircraftBattleGame } from './hooks/useAircraftBattleGame';
 import { AircraftCanvas } from './components/AircraftCanvas';
 import { AircraftControls } from './components/AircraftControls';
 import { GameLayout } from '@/lib/components/GameLayout';
@@ -30,7 +30,7 @@ const KEY_MAP: Record<string, string> = {
 };
 
 export default function AircraftBattlePage() {
-    const { state, highScore, start, restart, togglePause, setKey } = useAircraftGame();
+    const { state, highScore, start, restart, togglePause, setKey } = useAircraftBattleGame();
 
     useKeyboard(KEY_MAP, {
         onKeyDown: (action) => {

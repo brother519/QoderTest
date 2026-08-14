@@ -9,7 +9,7 @@
  * - 合并产生新 Tile（id 自增），原两个 Tile 在动画完成后被替换；
  *   动画期间通过 row/col 的 CSS 过渡平移，再叠加 isMerged/isNew 关键帧。
  *
- * @module puzzle-2048/hooks/use2048Game
+ * @module puzzle-2048/hooks/usePuzzle2048Game
  */
 
 'use client';
@@ -20,7 +20,7 @@ import { useHighScore } from '@/lib/hooks/useHighScore';
 import { HIGH_SCORE_KEY } from '../constants/config';
 
 /** Hook 返回类型 */
-export interface Use2048GameReturn {
+export interface UsePuzzle2048GameReturn {
   /** 当前所有方块（包含动画标记） */
   tiles: Tile[];
   /** 棋盘大小 */
@@ -262,7 +262,7 @@ function createInitialTiles(size: number, fourChance: number): Tile[] {
  *
  * @param config - 游戏配置
  */
-export function use2048Game(config: GameConfig): Use2048GameReturn {
+export function usePuzzle2048Game(config: GameConfig): UsePuzzle2048GameReturn {
   const { size, winValue, fourChance, moveDuration } = config;
 
   // 初始状态为空数组，避免 SSR/CSR 水合错误（随机数在服务端和客户端不一致）

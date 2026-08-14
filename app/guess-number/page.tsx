@@ -10,7 +10,7 @@ import { GameLayout } from '@/lib/components/GameLayout';
 import { GamePageHeader } from '@/lib/components/GamePageHeader';
 import { GameOverlay } from '@/lib/components/GameOverlay';
 import { ControlHints } from '@/lib/components/ControlHints';
-import { useGuessNumber } from './hooks/useGuessNumber';
+import { useGuessNumberGame } from './hooks/useGuessNumberGame';
 import { GuessInput } from './components/GuessInput';
 import { GuessHistory } from './components/GuessHistory';
 import { DIFFICULTY_LABELS } from './constants/config';
@@ -18,7 +18,7 @@ import { Difficulty } from './types/game';
 import { formatTime } from '@/lib/utils/format';
 
 export default function GuessNumberPage() {
-    const game = useGuessNumber('medium');
+    const game = useGuessNumberGame('medium');
 
     const isGameOver = game.status === 'won' || game.status === 'lost';
 

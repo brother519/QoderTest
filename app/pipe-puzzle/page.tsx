@@ -1,7 +1,7 @@
 /**
  * 接水管游戏主页面
  *
- * 整合 usePipePuzzle Hook 与 UI 组件。
+ * 整合 usePipePuzzleGame Hook 与 UI 组件。
  * 访问路径：/pipe-puzzle
  *
  * @module pipe-puzzle/page
@@ -9,7 +9,7 @@
 
 'use client';
 
-import { usePipePuzzle } from './hooks/usePipePuzzle';
+import { usePipePuzzleGame } from './hooks/usePipePuzzleGame';
 import { PipeBoard } from './components/PipeBoard';
 import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
@@ -17,7 +17,7 @@ import { GamePageHeader } from '@/lib/components/GamePageHeader';
 import { ControlHints } from '@/lib/components/ControlHints';
 
 export default function PipePuzzlePage() {
-    const game = usePipePuzzle();
+    const game = usePipePuzzleGame();
 
     return (
         <GameLayout

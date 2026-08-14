@@ -6,7 +6,7 @@
 
 import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
-import { useMonopoly } from './hooks/useMonopoly';
+import { useMonopolyGame } from './hooks/useMonopolyGame';
 import { MonopolyBoard } from './components/MonopolyBoard';
 import { MonopolyControls } from './components/MonopolyControls';
 import { PLAYER_COLORS } from './constants/config';
@@ -23,7 +23,7 @@ export default function MonopolyPage() {
     upgradeProperty,
     confirm,
     payBail,
-  } = useMonopoly();
+  } = useMonopolyGame();
 
   const isIdle = state.status === 'idle';
   const isWon = state.status === 'won';

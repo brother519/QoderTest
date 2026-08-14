@@ -5,7 +5,7 @@ import { GameOverlay } from '@/lib/components/GameOverlay';
 import { GamePageHeader } from '@/lib/components/GamePageHeader';
 import { ControlHints } from '@/lib/components/ControlHints';
 import { useKeyboard } from '@/lib/hooks';
-import { useMemoryCard } from './hooks/useMemoryCard';
+import { useMemoryCardGame } from './hooks/useMemoryCardGame';
 import { Board } from './components/Board';
 import { GameControls } from './components/GameControls';
 import { formatTime } from '@/lib/utils/format';
@@ -16,7 +16,7 @@ const KEY_MAP: Record<string, string> = {
 };
 
 export default function MemoryCardPage() {
-    const game = useMemoryCard('easy');
+    const game = useMemoryCardGame('easy');
 
     useKeyboard(KEY_MAP, {
         onKeyDown: (action) => {

@@ -3,7 +3,7 @@
  *
  * 管理棋盘生成、管道旋转、连通性检测、关卡进度和分数。
  *
- * @module pipe-puzzle/hooks/usePipePuzzle
+ * @module pipe-puzzle/hooks/usePipePuzzleGame
  */
 
 'use client';
@@ -15,7 +15,7 @@ import {
     Rotation,
     PipePuzzleConfig,
     PipePuzzleStatus,
-    UsePipePuzzleReturn,
+    UsePipePuzzleGameReturn,
 } from '../types/game';
 import { BASE_LEVEL_SCORE, MOVE_PENALTY, DIFFICULTY_CONFIG } from '../constants/config';
 import { useHighScore } from '@/lib/hooks/useHighScore';
@@ -287,7 +287,7 @@ function shuffle<T>(arr: T[]): void {
     }
 }
 
-export function usePipePuzzle(): UsePipePuzzleReturn {
+export function usePipePuzzleGame(): UsePipePuzzleGameReturn {
     const [board, setBoard] = useState<PipeCell[][]>([]);
     const [status, setStatus] = useState<PipePuzzleStatus>('idle');
     const [moves, setMoves] = useState(0);

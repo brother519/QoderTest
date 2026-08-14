@@ -1,7 +1,7 @@
 /**
  * Flow Free game main page
  *
- * Integrates useFlowFree Hook with UI components.
+ * Integrates useFlowFreeGame Hook with UI components.
  * Route: /flow-free
  *
  * @module flow-free/page
@@ -9,7 +9,7 @@
 
 'use client';
 
-import { useFlowFree } from './hooks/useFlowFree';
+import { useFlowFreeGame } from './hooks/useFlowFreeGame';
 import FlowBoard from './components/FlowBoard';
 import ColorPalette from './components/ColorPalette';
 import { GameLayout } from '@/lib/components/GameLayout';
@@ -18,7 +18,7 @@ import { GamePageHeader } from '@/lib/components/GamePageHeader';
 import { ControlHints } from '@/lib/components/ControlHints';
 
 export default function FlowFreePage() {
-  const game = useFlowFree();
+  const game = useFlowFreeGame();
 
   return (
     <GameLayout

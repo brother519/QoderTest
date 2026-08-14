@@ -69,6 +69,8 @@ module.exports = [
       // Custom rules
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
+      // styled-jsx (<style jsx global>) props
+      'react/no-unknown-property': ['error', { ignore: ['jsx', 'global'] }],
       '@typescript-eslint/no-unused-vars': ['warn', { 
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_|^React$',

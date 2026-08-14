@@ -2,9 +2,9 @@
  * 连连看游戏主页面
  *
  * 作为 Next.js App Router 页面组件，整合三个核心 Hook：
- * - useGameLogic：棋盘管理、路径匹配、卡牌选择
- * - useGameState：分数、计时、连击、提示次数
- * - useHintManager：提示高亮的显示与自动清除
+ * - useLinkMatchGame：棋盘管理、路径匹配、卡牌选择
+ * - useLinkMatchState：分数、计时、连击、提示次数
+ * - useLinkMatchHint：提示高亮的显示与自动清除
  *
  * 页面结构（从上到下）：
  * 1. 标题区：游戏名称和简要说明
@@ -20,9 +20,9 @@
 'use client';
 
 import { useEffect, useCallback, useState } from 'react';
-import { useGameLogic } from './hooks/useGameLogic';
-import { useGameState } from './hooks/useGameState';
-import { useHintManager } from './hooks/useHintManager';
+import { useLinkMatchGame } from './hooks/useLinkMatchGame';
+import { useLinkMatchState } from './hooks/useLinkMatchState';
+import { useLinkMatchHint } from './hooks/useLinkMatchHint';
 import { GameBoard } from './components/GameBoard';
 import { GameControls } from './components/GameControls';
 import { VictoryModal } from './components/VictoryModal';
@@ -41,15 +41,15 @@ export default function LinkMatchPage() {
   const [gameStarted, setGameStarted] = useState(false);
 
   // 游戏运营状态：分数、计时、连击、提示次数、生命周期控制
-  const gameState = useGameState();
+  const gameState = useLinkMatchState();
   // 提示高亮管理
-  const { hintedCards, showHint, clearHint } = useHintManager();
+  const { hintedCards, showHint, clearHint } = useLinkMatchHint();
 
   // 获取当前关卡配置
   const currentConfig = LEVELS[currentLevel].config;
 
   // 游戏核心逻辑：棋盘管理、路径匹配、卡牌选择
-  const gameLogic = useGameLogic(
+  const gameLogic = useLinkMatchGame(
     currentConfig,
     // 匹配成功回调
     useCallback(() => {

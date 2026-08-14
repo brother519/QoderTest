@@ -3,7 +3,7 @@
 /**
  * 点灯游戏核心逻辑 Hook
  *
- * @module lights-out/hooks/useLightsOut
+ * @module lights-out/hooks/useLightsOutGame
  */
 
 import { useState, useCallback, useMemo } from 'react';
@@ -18,7 +18,7 @@ function isAllOff(grid: boolean[][]): boolean {
     return grid.every((row) => row.every((cell) => !cell));
 }
 
-export function useLightsOut(levelIndex: number) {
+export function useLightsOutGame(levelIndex: number) {
     const level = LEVELS[levelIndex];
     const size = level.size;
 

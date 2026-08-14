@@ -44,7 +44,7 @@ export interface DifficultyConfig {
 export type FlowFreeStatus = 'idle' | 'playing' | 'won';
 
 // Hook return type
-export interface UseFlowFreeReturn {
+export interface UseFlowFreeGameReturn {
   board: Cell[][];
   paths: Map<number, Position[]>;
   status: FlowFreeStatus;

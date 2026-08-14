@@ -49,7 +49,7 @@ export interface PipePuzzleConfig {
 export type PipePuzzleStatus = Extract<GameStatus, 'idle' | 'playing' | 'won'>;
 
 /** Hook 返回类型 */
-export interface UsePipePuzzleReturn {
+export interface UsePipePuzzleGameReturn {
     board: PipeCell[][];
     status: PipePuzzleStatus;
     moves: number;

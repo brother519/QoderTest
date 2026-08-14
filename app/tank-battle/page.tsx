@@ -1,7 +1,7 @@
 /**
  * 坦克大战游戏主页面
  *
- * 整合 useTankGame Hook 与所有 UI 组件，处理键盘事件（按下/抬起）。
+ * 整合 useTankBattleGame Hook 与所有 UI 组件，处理键盘事件（按下/抬起）。
  * 包含游戏画布、控制面板、遮罩层和操作提示。
  * 访问路径：/tank-battle
  *
@@ -10,7 +10,7 @@
 
 'use client';
 
-import { useTankGame } from './hooks/useTankGame';
+import { useTankBattleGame } from './hooks/useTankBattleGame';
 import { TankCanvas } from './components/TankCanvas';
 import { TankControls } from './components/TankControls';
 import { DEFAULT_CONFIG } from './constants/config';
@@ -31,7 +31,7 @@ const KEY_MAP: Record<string, string> = {
 };
 
 export default function TankBattlePage() {
-    const game = useTankGame(DEFAULT_CONFIG);
+    const game = useTankBattleGame(DEFAULT_CONFIG);
 
     useKeyboard(KEY_MAP, {
         onKeyDown: (action) => {

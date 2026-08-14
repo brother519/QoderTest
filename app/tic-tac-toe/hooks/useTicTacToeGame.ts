@@ -7,7 +7,7 @@
  * PvE 模式使用 minimax 算法实现不可战胜的 AI。
  * 使用 useReducer 确保状态更新在 React Strict Mode 下安全可靠。
  *
- * @module tic-tac-toe/hooks/useTicTacToe
+ * @module tic-tac-toe/hooks/useTicTacToeGame
  */
 
 import { useReducer, useCallback, useEffect } from 'react';
@@ -188,7 +188,7 @@ function createInitialState(): GameState {
     };
 }
 
-export function useTicTacToe(mode: GameMode, difficulty: Difficulty) {
+export function useTicTacToeGame(mode: GameMode, difficulty: Difficulty) {
     const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
 
     const aiMark: Player = 'X';

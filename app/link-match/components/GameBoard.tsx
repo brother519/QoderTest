@@ -14,7 +14,7 @@
  */
 
 import { Card, ConnectionPath } from '../types/game';
-import { Board } from '../hooks/useGameLogic';
+import { Board } from '../hooks/useLinkMatchGame';
 import { GameCard } from './GameCard';
 import { ConnectionLine } from './ConnectionLine';
 import { GAME_CONFIG } from '../constants/config';

@@ -10,7 +10,7 @@ import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
 import { GamePageHeader } from '@/lib/components/GamePageHeader';
 import { ControlHints } from '@/lib/components/ControlHints';
-import { useRubiksCube } from './hooks/useRubiksCube';
+import { useRubiksCubeGame } from './hooks/useRubiksCubeGame';
 import { CubeScene } from './components/CubeScene';
 import { GameControls } from './components/GameControls';
 
@@ -21,7 +21,7 @@ function formatTime(seconds: number): string {
 }
 
 export default function RubiksCubePage() {
-    const game = useRubiksCube();
+    const game = useRubiksCubeGame();
 
     return (
         <GameLayout

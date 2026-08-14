@@ -5,7 +5,7 @@
  * 子弹碰撞检测（地图/坦克）、道具系统、爆炸动画和胜负判定。
  * 使用 requestAnimationFrame 驱动游戏主循环。
  *
- * @module tank-battle/hooks/useTankGame
+ * @module tank-battle/hooks/useTankBattleGame
  */
 
 'use client';
@@ -137,7 +137,7 @@ function tankCollidesOtherTanks(
   return false;
 }
 
-export function useTankGame(config: TankGameConfig) {
+export function useTankBattleGame(config: TankGameConfig) {
   const tankSize = config.tileSize * 2; // 坦克占2x2格子
   const bulletSize = 4;
   const canvasW = config.cols * config.tileSize;

@@ -59,8 +59,8 @@ export interface AnimationGroup {
     positions: CubeletPosition[];
 }
 
-/** useRubiksCube 返回值 */
-export interface UseRubiksCubeReturn {
+/** useRubiksCubeGame 返回值 */
+export interface UseRubiksCubeGameReturn {
     /** 当前魔方状态 */
     cubeState: CubeState;
     /** 游戏状态 */

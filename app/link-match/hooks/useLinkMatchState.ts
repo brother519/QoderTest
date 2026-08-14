@@ -6,11 +6,11 @@
  * 负责管理连连看游戏的核心状态，包括分数、计时、连击（combo）、提示次数等，
  * 并提供开始、暂停、继续、重置等游戏控制方法。
  *
- * 与 useGameLogic 的分工：
- * - useGameState：管理"游戏运营"层面的状态（分数、时间、连击、提示、生命周期）
- * - useGameLogic：管理"游戏规则"层面的逻辑（棋盘、路径、匹配、重排）
+ * 与 useLinkMatchGame 的分工：
+ * - useLinkMatchState：管理"游戏运营"层面的状态（分数、时间、连击、提示、生命周期）
+ * - useLinkMatchGame：管理"游戏规则"层面的逻辑（棋盘、路径、匹配、重排）
  *
- * @module link-match/hooks/useGameState
+ * @module link-match/hooks/useLinkMatchState
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -21,9 +21,9 @@ import {
 } from '../constants/config';
 
 /**
- * useGameState Hook 的返回值类型定义
+ * useLinkMatchState Hook 的返回值类型定义
  */
-export interface UseGameStateReturn {
+export interface UseLinkMatchStateReturn {
   /** 当前游戏得分 */
   score: number;
   /** 已用时间（秒） */
@@ -60,9 +60,9 @@ export interface UseGameStateReturn {
  * - 提示系统：有限次提示，使用提示会扣分
  * - 游戏生命周期控制：开始、暂停、继续、胜利、重置
  *
- * @returns {UseGameStateReturn} 游戏状态与控制方法
+ * @returns {UseLinkMatchStateReturn} 游戏状态与控制方法
  */
-export function useGameState(): UseGameStateReturn {
+export function useLinkMatchState(): UseLinkMatchStateReturn {
   const [score, setScore] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [status, setStatus] = useState<GameStatus>('idle');

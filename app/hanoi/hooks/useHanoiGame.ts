@@ -158,7 +158,7 @@ export function useHanoiGame() {
         }
 
         return true;
-    }, [state.pegs, state.status, state.level, elapsedTime]);
+    }, [state.pegs, state.status, state.level, state.moveCount, elapsedTime]);
 
     /** 选择柱子 (点击模式) */
     const selectPeg = useCallback((pegIndex: PegIndex) => {

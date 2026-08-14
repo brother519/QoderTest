@@ -1,15 +1,15 @@
 /**
- * useGameLogic Hook 测试
+ * useLinkMatchGame Hook 测试
  *
  * 测试游戏核心逻辑，包括棋盘初始化、卡牌选择、匹配判定、
  * 死局检测和自动重排功能。
  *
- * @module link-match/hooks/__tests__/useGameLogic
+ * @module link-match/hooks/__tests__/useLinkMatchGame
  */
 
 import { renderHook, act } from '@testing-library/react';
-import { useGameLogic } from '../useGameLogic';
-import { GameConfig } from '../types/game';
+import { useLinkMatchGame } from '../useLinkMatchGame';
+import { GameConfig } from '../../types/game';
 
 // Mock 游戏配置
 const mockConfig: GameConfig = {
@@ -25,7 +25,7 @@ const mockConfig2: GameConfig = {
   icons: ['🍎', '🍊', '🍋', '🍇', '🍓', '🍒', '🌸', '🌺', '🌻', '🌹', '🍀', '🌙', '⭐', '🔥', '💎', '🎵', '🎈', '🦋'],
 };
 
-describe('useGameLogic', () => {
+describe('useLinkMatchGame', () => {
   const onMatch = jest.fn();
   const onMismatch = jest.fn();
 
@@ -36,7 +36,7 @@ describe('useGameLogic', () => {
   describe('初始化', () => {
     it('应该初始化空棋盘', () => {
       const { result } = renderHook(() =>
-        useGameLogic(mockConfig, onMatch, onMismatch)
+        useLinkMatchGame(mockConfig, onMatch, onMismatch)
       );
 
       // 初始棋盘应该是空棋盘（只有外围边界）
@@ -46,7 +46,7 @@ describe('useGameLogic', () => {
 
     it('应该初始化选中卡牌为空数组', () => {
       const { result } = renderHook(() =>
-        useGameLogic(mockConfig, onMatch, onMismatch)
+        useLinkMatchGame(mockConfig, onMatch, onMismatch)
       );
 
       expect(result.current.selectedCards).toEqual([]);
@@ -54,7 +54,7 @@ describe('useGameLogic', () => {
 
     it('应该初始化连接路径为 null', () => {
       const { result } = renderHook(() =>
-        useGameLogic(mockConfig, onMatch, onMismatch)
+        useLinkMatchGame(mockConfig, onMatch, onMismatch)
       );
 
       expect(result.current.connectionPath).toBeNull();
@@ -64,7 +64,7 @@ describe('useGameLogic', () => {
   describe('配置变化', () => {
     it('应该在配置变化时重新初始化棋盘', () => {
       const { result, rerender } = renderHook(
-        ({ config }) => useGameLogic(config, onMatch, onMismatch),
+        ({ config }) => useLinkMatchGame(config, onMatch, onMismatch),
         { initialProps: { config: mockConfig } }
       );
 
@@ -81,7 +81,7 @@ describe('useGameLogic', () => {
   describe('游戏控制', () => {
     it('应该提供重置游戏方法', () => {
       const { result } = renderHook(() =>
-        useGameLogic(mockConfig, onMatch, onMismatch)
+        useLinkMatchGame(mockConfig, onMatch, onMismatch)
       );
 
       expect(result.current.resetGame).toBeDefined();
@@ -90,7 +90,7 @@ describe('useGameLogic', () => {
 
     it('应该提供获取提示方法', () => {
       const { result } = renderHook(() =>
-        useGameLogic(mockConfig, onMatch, onMismatch)
+        useLinkMatchGame(mockConfig, onMatch, onMismatch)
       );
 
       expect(result.current.getHint).toBeDefined();
@@ -99,7 +99,7 @@ describe('useGameLogic', () => {
 
     it('应该提供检查可移动方法', () => {
       const { result } = renderHook(() =>
-        useGameLogic(mockConfig, onMatch, onMismatch)
+        useLinkMatchGame(mockConfig, onMatch, onMismatch)
       );
 
       expect(result.current.hasAvailableMoves).toBeDefined();
@@ -108,7 +108,7 @@ describe('useGameLogic', () => {
 
     it('应该提供重排方法', () => {
       const { result } = renderHook(() =>
-        useGameLogic(mockConfig, onMatch, onMismatch)
+        useLinkMatchGame(mockConfig, onMatch, onMismatch)
       );
 
       expect(result.current.reshuffle).toBeDefined();
@@ -119,7 +119,7 @@ describe('useGameLogic', () => {
   describe('死局检测', () => {
     it('应该提供 hasAvailableMoves 方法', () => {
       const { result } = renderHook(() =>
-        useGameLogic(mockConfig, onMatch, onMismatch)
+        useLinkMatchGame(mockConfig, onMatch, onMismatch)
       );
 
       // 验证方法存在且可调用
@@ -132,7 +132,7 @@ describe('useGameLogic', () => {
   describe('卡牌选择', () => {
     it('应该提供处理卡牌选择方法', () => {
       const { result } = renderHook(() =>
-        useGameLogic(mockConfig, onMatch, onMismatch)
+        useLinkMatchGame(mockConfig, onMatch, onMismatch)
       );
 
       expect(result.current.handleCardSelect).toBeDefined();

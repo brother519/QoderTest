@@ -9,7 +9,7 @@
  *
  * 纯棋盘逻辑函数来自 utils/boardLogic.ts，本模块仅负责 React 状态管理。
  *
- * @module link-match/hooks/useGameLogic
+ * @module link-match/hooks/useLinkMatchGame
  */
 
 'use client';
@@ -33,8 +33,8 @@ interface PendingMatch {
   card2: Card;
 }
 
-/** useGameLogic Hook 的返回值类型 */
-export interface UseGameLogicReturn {
+/** useLinkMatchGame Hook 的返回值类型 */
+export interface UseLinkMatchGameReturn {
   /** 当前棋盘状态 */
   board: Board;
   /** 当前选中的卡牌列表 */
@@ -61,11 +61,11 @@ export interface UseGameLogicReturn {
  * @param onMismatch - 卡牌匹配失败时的回调
  * @returns 棋盘状态与操作方法
  */
-export function useGameLogic(
+export function useLinkMatchGame(
   config: GameConfig,
   onMatch: () => void,
   onMismatch: () => void
-): UseGameLogicReturn {
+): UseLinkMatchGameReturn {
   // 使用空棋盘初始化，避免 SSR/客户端随机结果不一致导致的 hydration 错误
   const [board, setBoard] = useState<Board>(() => 
     Array(config.rows + 2).fill(null).map(() => Array(config.cols + 2).fill(null))

@@ -3,7 +3,7 @@
 /**
  * 消消乐游戏主页面
  *
- * 整合 useMatchThreeGame 和 useGameState Hook，
+ * 整合 useMatchThreeGame 和 useMatchThreeState Hook，
  * 管理关卡选择 → 游戏进行 → 结束弹窗的完整流程。
  * 访问路径：/match-three
  *
@@ -16,7 +16,7 @@ import type { GameLevel, LevelConfig } from './types/game';
 
 import { LEVELS } from './constants/config';
 import { useMatchThreeGame } from './hooks/useMatchThreeGame';
-import { useGameState } from './hooks/useGameState';
+import { useMatchThreeState } from './hooks/useMatchThreeState';
 import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
 import { GameBoard } from './components/GameBoard';
@@ -34,7 +34,7 @@ export default function MatchThreePage() {
   const [levelSelected, setLevelSelected] = useState(false);
 
   // 游戏状态 Hook
-  const gameState = useGameState(currentConfig);
+  const gameState = useMatchThreeState(currentConfig);
 
   // 游戏逻辑 Hook —— 回调连接 gameState
   const game = useMatchThreeGame(

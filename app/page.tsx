@@ -69,7 +69,7 @@ export default function HomePage() {
               className={`group block animate-slide-up-delay-${index + 1}`}
             >
               <div
-                className={`game-card neon-border relative bg-white/[0.04] backdrop-blur-md border border-white/[0.08] rounded-2xl p-4 md:p-5 h-full flex flex-col ${game.glowColor} hover:shadow-2xl`}
+                className={`game-card neon-border relative bg-white/[0.08] backdrop-blur-md border border-white/[0.15] rounded-2xl p-4 md:p-5 h-full flex flex-col ${game.glowColor} hover:shadow-2xl`}
               >
                 {/* 卡片顶部渐变光条 */}
                 <div

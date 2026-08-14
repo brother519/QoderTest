@@ -5,7 +5,7 @@
  * 道具系统、爆炸动画、难度递增和游戏循环（requestAnimationFrame）。
  * 使用 Ref 模式管理可变状态，避免频繁 re-render。
  *
- * @module aircraft-battle/hooks/useAircraftGame
+ * @module aircraft-battle/hooks/useAircraftBattleGame
  */
 
 'use client';
@@ -244,7 +244,7 @@ function createExplosion(x: number, y: number, radius: number = EXPLOSION_BASE_R
   };
 }
 
-export function useAircraftGame() {
+export function useAircraftBattleGame() {
   const [highScore, updateHighScore] = useHighScore('aircraft-battle-high-score');
 
   const stateRef = useRef<AircraftGameState>(null!);

@@ -12,7 +12,7 @@ import { GamePageHeader } from '@/lib/components/GamePageHeader';
 import { ControlHints } from '@/lib/components/ControlHints';
 import { useKeyboard } from '@/lib/hooks/useKeyboard';
 import { GameMode, Difficulty } from './types/game';
-import { useTicTacToe } from './hooks/useTicTacToe';
+import { useTicTacToeGame } from './hooks/useTicTacToeGame';
 import { Board } from './components/Board';
 import { GameControls } from './components/GameControls';
 
@@ -24,7 +24,7 @@ interface GameAreaProps {
 }
 
 function GameArea({ mode, difficulty, onModeChange, onDifficultyChange }: GameAreaProps) {
-    const game = useTicTacToe(mode, difficulty);
+    const game = useTicTacToeGame(mode, difficulty);
 
     useKeyboard(
         { r: 'reset', R: 'reset' },

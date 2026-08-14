@@ -268,7 +268,7 @@ function createInitialState(playerCount: number): MonopolyGameState {
 
 // ─── Hook 返回类型 ────────────────────────────────────────────────────────────
 
-export interface UseMonopolyReturn {
+export interface UseMonopolyGameReturn {
   state: MonopolyGameState;
   currentPlayer: Player;
   startGame: (playerCount: number) => void;
@@ -298,7 +298,7 @@ const IDLE_STATE: MonopolyGameState = {
 
 // ─── 主 Hook ─────────────────────────────────────────────────────────────────
 
-export function useMonopoly(): UseMonopolyReturn {
+export function useMonopolyGame(): UseMonopolyGameReturn {
   const [state, setState] = useState<MonopolyGameState>(IDLE_STATE);
 
   /** 获取当前玩家（保证存在） */

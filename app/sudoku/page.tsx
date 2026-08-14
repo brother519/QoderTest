@@ -11,7 +11,7 @@ import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
 import { GamePageHeader } from '@/lib/components/GamePageHeader';
 import { ControlHints } from '@/lib/components/ControlHints';
-import { useSudoku } from './hooks/useSudoku';
+import { useSudokuGame } from './hooks/useSudokuGame';
 import { Board } from './components/Board';
 import { NumberPad } from './components/NumberPad';
 import { GameInfo } from './components/GameInfo';
@@ -50,7 +50,7 @@ function DifficultySelector({
 }
 
 function GameArea({ difficulty }: { difficulty: SudokuDifficulty }) {
-    const game = useSudoku(difficulty);
+    const game = useSudokuGame(difficulty);
 
     return (
         <div className="flex flex-col items-center gap-4">

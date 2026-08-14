@@ -11,7 +11,7 @@ import { GameLayout } from '@/lib/components/GameLayout';
 import { GameOverlay } from '@/lib/components/GameOverlay';
 import { GamePageHeader } from '@/lib/components/GamePageHeader';
 import { ControlHints } from '@/lib/components/ControlHints';
-import { useLightsOut } from './hooks/useLightsOut';
+import { useLightsOutGame } from './hooks/useLightsOutGame';
 import { Board } from './components/Board';
 import { GameControls } from './components/GameControls';
 import { LevelSelector } from './components/LevelSelector';
@@ -19,7 +19,7 @@ import { LEVELS } from './constants/levels';
 import { useKeyboard } from '@/lib/hooks/useKeyboard';
 
 function GameArea({ levelIndex }: { levelIndex: number }) {
-    const game = useLightsOut(levelIndex);
+    const game = useLightsOutGame(levelIndex);
     const level = LEVELS[levelIndex];
 
     useKeyboard(

@@ -1,13 +1,13 @@
 /**
- * useGuessNumber Hook 测试
+ * useGuessNumberGame Hook 测试
  *
  * 测试核心游戏逻辑：密码生成、猜测验证、状态转换。
  */
 
 import { renderHook, act } from '@testing-library/react';
-import { useGuessNumber } from '../useGuessNumber';
+import { useGuessNumberGame } from '../useGuessNumberGame';
 
-describe('useGuessNumber', () => {
+describe('useGuessNumberGame', () => {
     beforeAll(() => {
         (localStorage.getItem as jest.Mock).mockReturnValue(null);
     });
@@ -18,7 +18,7 @@ describe('useGuessNumber', () => {
 
     describe('初始化', () => {
         it('应该初始化游戏状态为 idle', () => {
-            const { result } = renderHook(() => useGuessNumber('medium'));
+            const { result } = renderHook(() => useGuessNumberGame('medium'));
 
             expect(result.current.status).toBe('idle');
             expect(result.current.attempts).toBe(0);
@@ -29,26 +29,26 @@ describe('useGuessNumber', () => {
         });
 
         it('不同难度应有不同配置', () => {
-            const { result: easy } = renderHook(() => useGuessNumber('easy'));
+            const { result: easy } = renderHook(() => useGuessNumberGame('easy'));
             expect(easy.current.codeLength).toBe(3);
             expect(easy.current.maxAttempts).toBe(12);
             expect(easy.current.digitRange).toBe(6);
 
-            const { result: hard } = renderHook(() => useGuessNumber('hard'));
+            const { result: hard } = renderHook(() => useGuessNumberGame('hard'));
             expect(hard.current.codeLength).toBe(5);
             expect(hard.current.maxAttempts).toBe(8);
             expect(hard.current.digitRange).toBe(10);
         });
 
         it('secret 在游戏未结束时不暴露', () => {
-            const { result } = renderHook(() => useGuessNumber('medium'));
+            const { result } = renderHook(() => useGuessNumberGame('medium'));
             expect(result.current.secret).toBeNull();
         });
     });
 
     describe('猜测逻辑', () => {
         it('错误长度的猜测应返回 false', () => {
-            const { result } = renderHook(() => useGuessNumber('medium'));
+            const { result } = renderHook(() => useGuessNumberGame('medium'));
 
             let success: boolean = false;
             act(() => {
@@ -60,7 +60,7 @@ describe('useGuessNumber', () => {
         });
 
         it('含重复数字的猜测应返回 false', () => {
-            const { result } = renderHook(() => useGuessNumber('medium'));
+            const { result } = renderHook(() => useGuessNumberGame('medium'));
 
             let success: boolean = false;
             act(() => {
@@ -72,7 +72,7 @@ describe('useGuessNumber', () => {
         });
 
         it('超出数字范围的猜测应返回 false', () => {
-            const { result } = renderHook(() => useGuessNumber('medium'));
+            const { result } = renderHook(() => useGuessNumberGame('medium'));
 
             // medium 的 digitRange 为 8，所以 8 和 9 超出范围
             let success: boolean = false;
@@ -84,7 +84,7 @@ describe('useGuessNumber', () => {
         });
 
         it('有效猜测应增加 attempts 并记入 history', () => {
-            const { result } = renderHook(() => useGuessNumber('medium'));
+            const { result } = renderHook(() => useGuessNumberGame('medium'));
 
             act(() => {
                 result.current.makeGuess('0123');
@@ -97,7 +97,7 @@ describe('useGuessNumber', () => {
         });
 
         it('猜测结果应包含正确的 bulls 和 cows', () => {
-            const { result } = renderHook(() => useGuessNumber('easy'));
+            const { result } = renderHook(() => useGuessNumberGame('easy'));
 
             // 多次猜测检查结果格式
             act(() => {
@@ -113,7 +113,7 @@ describe('useGuessNumber', () => {
 
     describe('游戏结束', () => {
         it('达到最大次数后状态变为 lost', () => {
-            const { result } = renderHook(() => useGuessNumber('easy'));
+            const { result } = renderHook(() => useGuessNumberGame('easy'));
             // easy: maxAttempts = 12, codeLength = 3, digitRange = 6
 
             const guesses = [
@@ -135,7 +135,7 @@ describe('useGuessNumber', () => {
         });
 
         it('猜对后状态变为 won 且暴露 secret', () => {
-            const { result } = renderHook(() => useGuessNumber('easy'));
+            const { result } = renderHook(() => useGuessNumberGame('easy'));
 
             // 用尽所有次数使游戏结束以暴露 secret
             const guesses = [
@@ -160,7 +160,7 @@ describe('useGuessNumber', () => {
 
     describe('重启与难度切换', () => {
         it('restart 应重置游戏状态', () => {
-            const { result } = renderHook(() => useGuessNumber('medium'));
+            const { result } = renderHook(() => useGuessNumberGame('medium'));
 
             act(() => {
                 result.current.makeGuess('0123');
@@ -181,7 +181,7 @@ describe('useGuessNumber', () => {
         });
 
         it('切换难度应重置游戏并更新配置', () => {
-            const { result } = renderHook(() => useGuessNumber('medium'));
+            const { result } = renderHook(() => useGuessNumberGame('medium'));
 
             act(() => {
                 result.current.makeGuess('0123');
