@@ -38,27 +38,20 @@ export default function MinesweeperPage() {
   return (
     <GameLayout
       title="扫雷"
-      className="bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.18),_transparent_38%),linear-gradient(180deg,#03131b_0%,#08111f_45%,#111827_100%)] py-8 px-4"
+      className="bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.18),_transparent_38%),linear-gradient(180deg,#03131b_0%,#08111f_45%,#111827_100%)] h-screen flex flex-col py-4 px-3"
     >
-      <div className="relative max-w-7xl mx-auto pt-12">
-        <div className="absolute inset-x-0 top-4 flex justify-center pointer-events-none">
-          <div className="h-40 w-40 rounded-full bg-cyan-400/10 blur-3xl" />
+      <div className="relative max-w-7xl mx-auto w-full flex flex-col min-h-0">
+        <div className="flex items-center justify-center gap-3 mb-3 shrink-0">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-400/20 bg-cyan-400/10 text-cyan-100/70 text-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            经典逻辑 · 首击安全 · 长按插旗
+          </div>
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white drop-shadow-[0_0_30px_rgba(34,211,238,0.16)]">
+            💣 扫雷
+          </h1>
         </div>
 
-        <div className="relative z-10 space-y-6">
-          <div className="text-center space-y-3">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-400/20 bg-cyan-400/10 text-cyan-100/70 text-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              经典逻辑游戏 · 首击安全 · 长按插旗
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white drop-shadow-[0_0_30px_rgba(34,211,238,0.16)]">
-              💣 扫雷
-            </h1>
-            <p className="max-w-2xl mx-auto text-cyan-50/70 leading-relaxed text-sm md:text-base">
-              左键揭开格子，右键或长按标记地雷。首次点击与周围 8 格绝对安全，尽可能用最短时间完成整局排雷。
-            </p>
-          </div>
-
+        <div className="relative z-10 flex flex-col min-h-0 gap-3">
           <Controls
             difficultyKey={game.difficultyKey}
             remainingMines={game.remainingMines}
@@ -71,7 +64,7 @@ export default function MinesweeperPage() {
 
           <StatsPanel stats={game.stats} />
 
-          <div className="rounded-[32px] border border-cyan-400/10 bg-white/[0.03] backdrop-blur-sm px-3 py-4 md:px-5 md:py-6 shadow-[0_24px_80px_rgba(2,12,27,0.45)]">
+          <div className="flex-1 min-h-0 rounded-[32px] border border-cyan-400/10 bg-white/[0.03] backdrop-blur-sm px-3 py-4 md:px-5 md:py-6 shadow-[0_24px_80px_rgba(2,12,27,0.45)] overflow-hidden">
             <Board
               board={game.board}
               difficulty={game.difficulty}
@@ -112,21 +105,6 @@ export default function MinesweeperPage() {
                 </>
               }
             />
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-3 text-sm">
-            <div className="rounded-2xl border border-white/8 bg-slate-950/45 px-4 py-3 text-cyan-50/75">
-              <div className="text-xs uppercase tracking-[0.2em] text-cyan-200/45">桌面操作</div>
-              <div className="mt-2">左键揭开，右键插旗，双击数字格可快速展开周围。</div>
-            </div>
-            <div className="rounded-2xl border border-white/8 bg-slate-950/45 px-4 py-3 text-cyan-50/75">
-              <div className="text-xs uppercase tracking-[0.2em] text-cyan-200/45">移动端操作</div>
-              <div className="mt-2">轻触揭开，长按切换插旗；高级难度支持横向滚动查看完整棋盘。</div>
-            </div>
-            <div className="rounded-2xl border border-white/8 bg-slate-950/45 px-4 py-3 text-cyan-50/75">
-              <div className="text-xs uppercase tracking-[0.2em] text-cyan-200/45">快捷键</div>
-              <div className="mt-2">R 重新开局，1 / 2 / 3 快速切换初级、中级、高级。</div>
-            </div>
           </div>
         </div>
       </div>

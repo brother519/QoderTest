@@ -44,7 +44,7 @@ export function Board({
   const isFinished = status === 'won' || status === 'lost';
 
   return (
-    <div className="w-full overflow-x-auto pb-2">
+    <div className="w-full h-full overflow-auto pb-2">
       <div className="relative inline-block min-w-max mx-auto">
         <div className="inline-block border-2 border-slate-500 bg-slate-400">
           <div
