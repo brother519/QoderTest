@@ -32,6 +32,7 @@
     "coverage",
     "docs",
     "test_data",
-    "world.ts"
+    "world.ts",
+    "**/*.canvas.tsx"
   ]
 }
