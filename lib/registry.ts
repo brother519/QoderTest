@@ -43,6 +43,7 @@ import { hanziRiddleMeta } from '@/app/hanzi-riddle/meta';
 import { flowFreeMeta } from '@/app/flow-free/meta';
 import { tangramMeta } from '@/app/tangram/meta';
 import { reversiMeta } from '@/app/reversi/meta';
+import { lightBotMeta } from '@/app/light-bot/meta';
 
 /** All registered games — array order determines homepage display order. */
 export const GAME_REGISTRY: GameMeta[] = [
@@ -77,4 +78,5 @@ export const GAME_REGISTRY: GameMeta[] = [
   hanziRiddleMeta,
   tangramMeta,
   reversiMeta,
+  lightBotMeta,
 ];
