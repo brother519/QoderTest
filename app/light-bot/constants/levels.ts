@@ -99,7 +99,7 @@ export const LEVELS: Level[] = [
 ];
 
 /** 最大队列长度 */
-export const MAX_QUEUE_LENGTH = 20;
+export const MAX_QUEUE_LENGTH = 30;
 
 /** 每步执行间隔（毫秒） */
 export const STEP_INTERVAL_MS = 400;
