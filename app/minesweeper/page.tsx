@@ -17,7 +17,7 @@ import { formatTime } from '@/lib/utils/format';
 import { useKeyboard } from '@/lib/hooks/useKeyboard';
 
 const KEY_MAP: Record<string, string> = {
-    r: 'restart', R: 'restart',
+    r: 'restart',
     '1': 'beginner',
     '2': 'intermediate',
     '3': 'expert',

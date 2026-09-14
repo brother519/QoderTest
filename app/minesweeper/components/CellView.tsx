@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 import { LONG_PRESS_DURATION } from '../constants/config';
 import type { Cell } from '../types/game';
 
@@ -33,7 +33,7 @@ const NUMBER_COLORS: Record<number, string> = {
   8: 'text-gray-500',
 };
 
-export function CellView({
+export const CellView = memo(function CellView({
   cell,
   row,
   col,
@@ -153,4 +153,4 @@ export function CellView({
       )}
     </button>
   );
-}
+});

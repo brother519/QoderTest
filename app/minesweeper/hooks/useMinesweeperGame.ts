@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BEST_TIME_STORAGE_KEY,
   DEFAULT_DIFFICULTY,
@@ -189,13 +189,10 @@ function revealArea(board: Cell[][], start: GridPosition): boolean {
   }
 
   const queue: GridPosition[] = [start];
+  let head = 0;
 
-  while (queue.length > 0) {
-    const current = queue.shift();
-
-    if (!current) {
-      continue;
-    }
+  while (head < queue.length) {
+    const current = queue[head++];
 
     const cell = board[current.row][current.col];
     if (cell.isRevealed || cell.isFlagged) {
@@ -551,6 +548,16 @@ export function useMinesweeperGame(
     [resetGame]
   );
 
+  const remainingMines = useMemo(
+    () => difficulty.mines - countFlags(board),
+    [board, difficulty.mines]
+  );
+
+  const currentStats = useMemo<DifficultyStats>(
+    () => gameStats[difficultyKey] ?? { gamesPlayed: 0, gamesWon: 0, totalTime: 0 },
+    [gameStats, difficultyKey]
+  );
+
   return {
     board,
     difficulty,
@@ -558,8 +565,8 @@ export function useMinesweeperGame(
     status,
     elapsedTime,
     bestTime: bestTimes[difficultyKey] ?? null,
-    remainingMines: difficulty.mines - countFlags(board),
-    stats: gameStats[difficultyKey] ?? { gamesPlayed: 0, gamesWon: 0, totalTime: 0 },
+    remainingMines,
+    stats: currentStats,
     revealCell,
     toggleFlag,
     chordCell,
